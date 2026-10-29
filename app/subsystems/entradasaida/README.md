@@ -18,7 +18,7 @@ Defina também `APP_ENV=production`. Em requisições hospedadas, a aplicação 
 
 O tipo de usuário `usuario_recepcao`, atribuído à pessoa para o sistema Entrada/saída no gerenciador de permissões, ativa a interface simplificada. Os usuários com outros tipos, como `Admin_entrada_saida`, continuam usando a interface padrão. O tipo é carregado na sessão durante o login; não é necessário configurar e-mails nem usar parâmetros de URL para selecionar a interface.
 
-O perfil da recepção terá acesso a registrar atrasos, registrar saídas antecipadas, registrar saídas para estágio e consultar ausências registradas.
+O perfil da recepção terá acesso a registrar atrasos, registrar saídas antecipadas, registrar saídas para estágio, consultar ausências registradas e acompanhar as últimas saídas. Ao registrar uma saída para estágio pelo crachá, a interface direciona para a lista de últimas saídas.
 
 ## Banco de dados
 

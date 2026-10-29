@@ -58,7 +58,7 @@ $validacaoAtrasosDisponivel = $select->suportaValidacaoAtrasos();
 $sectionInicial = $_GET['section'] ?? ($ehRecepcao ? 'inicio' : 'entrada');
 $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'cadastro'];
 if ($ehRecepcao) {
-    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos'];
+    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'ultimas-saidas'];
 }
 if ($ehAdminEntradaSaida) {
     $sectionsPermitidas = array_values(array_diff($sectionsPermitidas, ['inicio']));
@@ -5527,6 +5527,12 @@ input[type="radio"] {
         --reception-card-tint: #edf8f0;
     }
 
+    .reception-card-latest-exits {
+        --reception-card-color: #0891b2;
+        --reception-card-border: #c5e8ef;
+        --reception-card-tint: #ecfbff;
+    }
+
     .reception-interface .menu-card h3 {
         margin: 0 0 3px;
         color: #1c2d23;
@@ -6039,6 +6045,7 @@ input[type="radio"] {
             <button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída antecipada</button>
             <button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button>
             <button class="nav-item" type="button" data-target="consulta-ausencias"><i class="fas fa-user-xmark"></i>Ausências registradas</button>
+            <button class="nav-item" type="button" data-target="ultimas-saidas"><i class="fas fa-clock"></i>Últimas saídas</button>
         </div>
         <?php } else { ?>
         <details class="nav-group" data-sidebar-group="registros"><summary class="nav-label">Registros</summary><button class="nav-item" type="button" data-target="entrada"><i class="fas fa-arrow-right-to-bracket"></i>Registro de Atraso</button><button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída Antecipada</button><button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button><button class="nav-item" type="button" data-target="cadastro"><i class="fas fa-user-plus"></i>Cadastrar aluno</button><button class="nav-item" type="button" data-target="restricoes"><i class="fas fa-ban"></i>Restrições</button></details>
@@ -6160,6 +6167,16 @@ input[type="radio"] {
           <div>
             <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Ausências registradas</h3>
             <p class="text-sm text-gray-500">Consulte os alunos ausentes para estágio</p>
+          </div>
+        </a>
+
+        <a href="#" data-section-target="ultimas-saidas" class="menu-card reception-card-latest-exits p-6 flex items-center gap-4 group">
+          <div class="menu-icon">
+            <i class="fas fa-history text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Últimas saídas</h3>
+            <p class="text-sm text-gray-500">Acompanhe as últimas saídas registradas</p>
           </div>
         </a>
         <?php } ?>
