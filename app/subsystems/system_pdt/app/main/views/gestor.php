@@ -236,14 +236,6 @@
             filter: brightness(1.06);
         }
 
-        @media (max-width: 1023px){
-            .pdt-sidebar.mobile-open{
-                display:flex !important;
-                z-index:60;
-                width:min(85vw, 320px);
-            }
-        }
-
         @keyframes fade {
             from{
                 opacity: 0;
@@ -256,19 +248,19 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=16">
-    <script src="../assets/js/system-pdt-ui.js" defer></script>
+    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=35">
+    <script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
 </head>
 <body class="pdt-interface">
 
 <div class="flex min-h-screen">
 
     <!-- SIDEBAR -->
-    <aside class="pdt-sidebar sidebar-panel border-r fixed h-screen px-6 py-8 flex flex-col justify-between">
+    <aside id="pdtSidebar" class="pdt-sidebar sidebar-panel border-r fixed h-screen px-6 py-8 flex flex-col justify-between">
 
         <div>
             <div class="pdt-brand flex items-center gap-3">
-                <span class="pdt-brand-mark"><img src="../assets/images/s_simbol.png" alt="" class="pdt-brand-logo"></span>
+                <span class="pdt-brand-mark"><img src="../../../../entradasaida/app/main/assets/img/logo.png" alt="" class="pdt-brand-logo"></span>
                 <div>
                     <h1 class="font-bold text-[18px]">Sistema <span>Salaberga</span></h1>
                     <p>Professor Diretor de Turma</p>
@@ -299,54 +291,46 @@
             </nav>
         </div>
 
+        <div class="w-full">
+        <div class="pdt-account-tools">
+            <div class="pdt-account-user">
+                <span class="pdt-account-avatar"><?= htmlspecialchars(substr((string) ($_SESSION['nome'] ?? 'U'), 0, 1), ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="pdt-account-details">
+                    <span><?= htmlspecialchars((string) ($_SESSION['nome'] ?? 'Usuário'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="pdt-account-role"><?= htmlspecialchars(ucfirst((string) ($_SESSION['tipo'] ?? 'gestor')), ENT_QUOTES, 'UTF-8') ?></span>
+                </span>
+            </div>
+            <button id="btnNotificacoes" class="pdt-notifications-toggle" type="button" aria-label="Notificações" aria-controls="notificacoesPanel" aria-expanded="false">
+                <i class="bi bi-bell" aria-hidden="true"></i>
+                <span id="contadorNotificacoes" class="absolute -right-2 -top-2 hidden min-w-5 rounded-full bg-red-600 px-1 text-xs text-white"></span>
+            </button>
+            <div id="notificacoesPanel" class="pdt-notifications-panel hidden rounded-3xl border border-slate-700 bg-slate-950 p-4 shadow-2xl text-slate-200">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-sm font-semibold">Notificações</span>
+                    <button id="fecharNotificacoes" class="text-slate-400 hover:text-white text-sm">Fechar</button>
+                </div>
+                <div id="listaNotificacoes" class="max-h-96 space-y-3 overflow-y-auto text-sm text-slate-300">
+                    <p>Nenhuma notificação no momento.</p>
+                </div>
+            </div>
+        </div>
+
         <form action="../controllers/usuario_controller.php?action=logout" method="POST" class="m-0 p-0">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-            <button type="submit" class="menu-item option-nav-sair w-full flex items-center gap-3 px-4 py-3 rounded-xl transition">
+            <button type="submit" class="pdt-logout-button">
                 <i class="bi bi-box-arrow-right icon-nav-sair"></i>
                 <span>Sair</span>
             </button>
         </form>
+        </div>
 
     </aside>
+    <button class="pdt-sidebar-collapse-toggle" type="button" aria-controls="pdtSidebar" aria-label="Recolher barra lateral" aria-expanded="true" title="Recolher barra lateral">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+    </button>
 
     <!-- CONTEÚDO -->
     <div class="pdt-main-offset flex-1 lg:ml-[280px]">
-
-        <!-- HEADER -->
-        <header class="pdt-topbar h-[85px] topbar-panel border-b flex items-center justify-between px-8">
-            <div class="flex items-center gap-4">
-                <button id="openMenuBtn" class="lg:hidden text-2xl text-gray-700">
-                    <i class="bi bi-list"></i>
-                </button>
-                <h2 class="font-bold text-gray-800">Sistema PDT</h2>
-            </div>
-
-            <div class="flex items-center gap-6 relative">
-                <button id="btnNotificacoes" class="relative" type="button" aria-label="Notificações">
-                    <i class="bi bi-bell"></i>
-                    <span id="contadorNotificacoes" class="absolute -right-2 -top-2 hidden min-w-5 rounded-full bg-red-600 px-1 text-xs text-white"></span>
-                </button>
-                <div id="notificacoesPanel" class="hidden absolute right-0 top-full mt-3 w-80 rounded-3xl border border-slate-700 bg-slate-950 p-4 shadow-2xl text-slate-200 z-50">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-semibold">Notificações</span>
-                        <button id="fecharNotificacoes" class="text-slate-400 hover:text-white text-sm">Fechar</button>
-                    </div>
-                    <div id="listaNotificacoes" class="max-h-96 space-y-3 overflow-y-auto text-sm text-slate-300">
-                        <p>Nenhuma notificação no momento.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-full bg-green-700 text-white flex items-center justify-center font-semibold">
-                        <?= $_SESSION['nome'][0] ?>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-800 text-sm"><?= $_SESSION['nome'] ?></p>
-                        <p class="text-xs text-gray-500"><?= ucfirst($_SESSION['tipo']) ?></p>
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <!-- MAIN -->
         <main class="pdt-content p-8 main-shell">
 
@@ -474,7 +458,7 @@
                                         id="cursoTurma"
                                         class="w-full h-12 border border-slate-700 rounded-xl px-4 outline-none focus:border-emerald-500 bg-slate-900 text-white transition"
                                     >
-                                        <option value="" class="text-white bg-slate-900">Selecione</option>
+                                        <option value="">Selecione</option>
                                     </select>
                                 </div>
 
@@ -487,10 +471,10 @@
                                         id="serieTurma"
                                         class="w-full h-12 border border-slate-700 rounded-xl px-4 outline-none focus:border-emerald-500 bg-slate-900 text-white transition"
                                     >
-                                        <option value="" class="text-white bg-slate-900">Selecione</option>
-                                        <option value="1" class="text-white bg-slate-900">1º Ano</option>
-                                        <option value="2" class="text-white bg-slate-900">2º Ano</option>
-                                        <option value="3" class="text-white bg-slate-900">3º Ano</option>
+                                        <option value="">Selecione</option>
+                                        <option value="1">1º Ano</option>
+                                        <option value="2">2º Ano</option>
+                                        <option value="3">3º Ano</option>
                                     </select>
                                 </div>
                             </div>
@@ -513,7 +497,7 @@
                                     <label class="block text-sm font-semibold text-slate-200 mb-2">
                                         Ano letivo
                                     </label>
-                                    <div class="w-full h-12 border border-slate-700 rounded-xl px-4 flex items-center bg-[#020e05] text-white font-semibold">
+                                    <div class="pdt-year-field w-full h-12 border border-slate-700 rounded-xl px-4 flex items-center font-semibold">
                                         2026
                                     </div>
                                 </div>
@@ -528,9 +512,9 @@
                                     id="selectProfessor"
                                     class="w-full h-12 border border-slate-700 rounded-xl px-4 outline-none focus:border-emerald-500 bg-slate-900 text-white transition"
                                 >
-                                    <option value="" class="text-white bg-slate-900">Selecione um professor</option>
+                                    <option value="">Selecione um professor</option>
                                     <?php foreach($professores as $prof): ?>
-                                        <option value="<?= $prof['id'] ?>" class="text-white bg-slate-900"><?= htmlspecialchars($prof['nome']) ?> (<?= htmlspecialchars($prof['matricula']) ?>)</option>
+                                        <option value="<?= $prof['id'] ?>"><?= htmlspecialchars($prof['nome']) ?> (<?= htmlspecialchars($prof['matricula']) ?>)</option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -786,7 +770,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnOptionsPdt = document.querySelectorAll(".menu-item[data-section]");
     const secoesGestor = document.querySelectorAll(".gestor-section");
     const sidebarGestor = document.querySelector(".pdt-sidebar");
-    const menuMobileGestor = document.getElementById("openMenuBtn");
 
     function abrirSecaoGestor(sectionId) {
         const secao = document.getElementById(sectionId);
@@ -797,7 +780,7 @@ document.addEventListener("DOMContentLoaded", function() {
             item.classList.toggle("active", ativo);
             item.classList.toggle("effect-bar-select", ativo);
         });
-        sidebarGestor?.classList.remove("mobile-open");
+        sidebarGestor?.classList.remove("is-open");
         if (sectionId === "sec-ocorrencias-gestor") carregarOcorrenciasGestor();
         if (sectionId === "sec-relatorios-gestor") carregarRelatoriosGestor();
     }
@@ -841,7 +824,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             lista.replaceChildren();
             if (!filtradas.length) {
-                lista.append(elementoTexto(
+                lista.append(elementoTextoGestor(
                     "p",
                     "col-span-full rounded-2xl border border-gray-200 bg-white p-6 text-gray-500",
                     busca ? "Nenhuma ocorrência corresponde à busca." : "Nenhuma ocorrência registrada neste período."
@@ -950,17 +933,6 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll("[data-go-section]").forEach(btn => {
         btn.addEventListener("click", () => abrirSecaoGestor(btn.dataset.goSection));
     });
-    menuMobileGestor?.addEventListener("click", () => sidebarGestor?.classList.toggle("mobile-open"));
-    document.addEventListener("click", event => {
-        if (
-            sidebarGestor?.classList.contains("mobile-open")
-            && !sidebarGestor.contains(event.target)
-            && !menuMobileGestor?.contains(event.target)
-        ) {
-            sidebarGestor.classList.remove("mobile-open");
-        }
-    });
-
     // ================================
     // VARIÁVEIS GLOBAIS
     // ================================
@@ -1048,7 +1020,9 @@ document.addEventListener("DOMContentLoaded", function() {
     if (btnNotificacoes && notificacoesPanel) {
         btnNotificacoes.addEventListener("click", (e) => {
             e.stopPropagation();
-            notificacoesPanel.classList.toggle("hidden");
+            const abrir = notificacoesPanel.classList.contains("hidden");
+            notificacoesPanel.classList.toggle("hidden", !abrir);
+            btnNotificacoes.setAttribute("aria-expanded", String(abrir));
             if (!notificacoesPanel.classList.contains('hidden')) {
                 carregarNotificacoes();
             }
@@ -1058,12 +1032,14 @@ document.addEventListener("DOMContentLoaded", function() {
     if (fecharNotificacoes) {
         fecharNotificacoes.addEventListener("click", () => {
             if (notificacoesPanel) notificacoesPanel.classList.add("hidden");
+            btnNotificacoes?.setAttribute("aria-expanded", "false");
         });
     }
 
     document.addEventListener("click", (e) => {
         if (notificacoesPanel && !notificacoesPanel.contains(e.target) && !(btnNotificacoes && btnNotificacoes.contains(e.target))) {
             notificacoesPanel.classList.add("hidden");
+            btnNotificacoes?.setAttribute("aria-expanded", "false");
         }
     });
 
@@ -1321,41 +1297,43 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             turmas.forEach(turma => {
                 const card = document.createElement("div");
-                card.className = "bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl transition duration-300 h-full w-full flex flex-col justify-between";
+                card.className = "pdt-class-card h-full w-full";
                 card.innerHTML = `
-                    <div class="flex items-start justify-between mb-6">
-                        <div>
-                            <div class="w-16 h-16 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl mb-4">
-                                <i class="bi bi-mortarboard-fill"></i>
-                            </div>
-                            <h2 class="text-2xl font-bold text-gray-800">
+                    <div class="pdt-class-card-heading">
+                        <div class="pdt-class-icon">
+                            <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h2 class="pdt-class-title">
                                 ${turma.serie_turma}º ${turma.letra}
                             </h2>
-                            <p class="text-gray-500 text-sm">${turma.nome_curso}</p>
+                            <p class="pdt-class-course">${turma.nome_curso}</p>
                         </div>
                     </div>
 
-                    <div class="space-y-4 mb-7">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Sala</span>
-                            <span class="font-semibold text-gray-700">${turma.sala_turma}</span>
+                    <div class="pdt-class-details">
+                        <div class="pdt-class-detail">
+                            <span class="pdt-class-detail-label"><i class="bi bi-geo-alt" aria-hidden="true"></i>Sala</span>
+                            <span class="pdt-class-detail-value">${turma.sala_turma}</span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Ano letivo</span>
-                            <span class="font-semibold text-gray-700">${turma.ano_letivo}</span>
+                        <div class="pdt-class-detail">
+                            <span class="pdt-class-detail-label"><i class="bi bi-calendar3" aria-hidden="true"></i>Ano letivo</span>
+                            <span class="pdt-class-detail-value">${turma.ano_letivo}</span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-500">Professor</span>
-                            <span class="font-semibold text-gray-700 text-right">${turma.professor_nome}</span>
+                        <div class="pdt-class-detail">
+                            <span class="pdt-class-detail-label"><i class="bi bi-person" aria-hidden="true"></i>Professor</span>
+                            <span class="pdt-class-detail-value">${turma.professor_nome}</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3">
-                        <button class="flex-1 h-11 rounded-xl border border-gray-200 hover:bg-gray-100 transition font-medium btn-editar-turma" data-turma-id="${turma.id_turma}">
-                            Editar
+                    <div class="pdt-class-card-actions">
+                        <button class="pdt-class-edit btn-editar-turma" data-turma-id="${turma.id_turma}">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                            <span>Editar</span>
                         </button>
-                        <button class="flex-1 h-11 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition font-medium btn-desvincula-turma" data-turma-id="${turma.id_turma}">
-                            Desvincular
+                        <button class="pdt-class-unlink btn-desvincula-turma" data-turma-id="${turma.id_turma}">
+                            <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                            <span>Desvincular</span>
                         </button>
                     </div>
                 `;
@@ -1363,15 +1341,15 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             document.querySelectorAll(".btn-editar-turma").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    const idTurma = parseInt(e.target.dataset.turmaId);
+                btn.addEventListener("click", (event) => {
+                    const idTurma = parseInt(event.currentTarget.dataset.turmaId, 10);
                     abrirModalTurma(idTurma);
                 });
             });
 
             document.querySelectorAll(".btn-desvincula-turma").forEach(btn => {
-                btn.addEventListener("click", (e) => {
-                    const idTurma = parseInt(e.target.dataset.turmaId);
+                btn.addEventListener("click", (event) => {
+                    const idTurma = parseInt(event.currentTarget.dataset.turmaId, 10);
                     const turma = turmas.find(t => t.id_turma === idTurma);
                     if (turma) abrirModalDesvinculacao(turma);
                 });

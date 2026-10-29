@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 	session_start();
 
@@ -38,7 +38,7 @@
 		$turmasPdtIds[(int) $turmaPdt['id_turma']] = true;
 	}
 
-	// Se houver exatamente uma turma, expor seu id para inicializa��o client-side
+	// Se houver exatamente uma turma, expor seu id para inicialização client-side
 	$initialTurmaId = (is_array($turmas) && count($turmas) === 1) ? $turmas[0]['id_turma'] : '';
 
 ?>
@@ -241,8 +241,8 @@
 			}
 		}
 	</style>
-	<link rel="stylesheet" href="../assets/css/system-pdt.css?v=16">
-	<script src="../assets/js/system-pdt-ui.js" defer></script>
+	<link rel="stylesheet" href="../assets/css/system-pdt.css?v=39">
+	<script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
 </head>
 <body class="pdt-interface">
 
@@ -267,11 +267,11 @@
 	</div>
 
 	<!-- SIDEBAR -->
-	<aside class="w-[280px] sidebar-panel border-r fixed h-screen px-6 py-8 hidden lg:flex flex-col justify-between">
+	<aside id="pdtSidebar" class="w-[280px] sidebar-panel border-r fixed h-screen px-6 py-8 hidden lg:flex flex-col justify-between">
 
 		<div>
 			<div class="pdt-brand flex items-center gap-3">
-				<span class="pdt-brand-mark"><img src="../assets/images/s_simbol.png" alt="" class="pdt-brand-logo"></span>
+				<span class="pdt-brand-mark"><img src="../../../../entradasaida/app/main/assets/img/logo.png" alt="" class="pdt-brand-logo"></span>
 
 				<div>
 					<h1 class="font-bold text-[18px]">Sistema <span>Salaberga</span></h1>
@@ -329,20 +329,38 @@
 			</nav>
 		</div>
 
+		<div class="w-full">
+		<div class="pdt-account-tools">
+			<div class="pdt-account-user">
+				<span class="pdt-account-avatar"><?= htmlspecialchars(substr((string) ($_SESSION['nome'] ?? 'U'), 0, 1), ENT_QUOTES, 'UTF-8') ?></span>
+				<span class="pdt-account-details">
+					<span><?= htmlspecialchars((string) ($_SESSION['nome'] ?? 'Usuário'), ENT_QUOTES, 'UTF-8') ?></span>
+					<span class="pdt-account-role"><?= htmlspecialchars(ucfirst((string) ($_SESSION['tipo'] ?? 'professor')), ENT_QUOTES, 'UTF-8') ?></span>
+				</span>
+			</div>
+			<button class="pdt-notifications-toggle" type="button" aria-label="Notificações" aria-controls="notificacoesPanel" aria-expanded="false">
+				<i class="bi bi-bell" aria-hidden="true"></i>
+				<span class="contadorNotificacoes hidden absolute -right-2 -top-2 min-w-5 rounded-full bg-red-600 px-1 text-xs text-white"></span>
+			</button>
+		</div>
 		<form action="../controllers/usuario_controller.php?action=logout" method="POST" class="m-0 p-0">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-				<button type="submit" class="flex items-center gap-2 rounded-xl px-4 py-3 text-white transition bg-green-700 hover:bg-green-600">
+				<button type="submit" class="pdt-logout-button">
 					<i class="bi bi-box-arrow-right icon-nav-sair"></i>
 					<span>Sair</span>
 				</button>
 			</form>
+		</div>
 
 		</aside>
+		<button class="pdt-sidebar-collapse-toggle" type="button" aria-controls="pdtSidebar" aria-label="Recolher barra lateral" aria-expanded="true" title="Recolher barra lateral">
+			<i class="bi bi-chevron-left" aria-hidden="true"></i>
+		</button>
 
 		<div id="menuPdtMobile" class="sidebar-panel fixed inset-y-0 left-0 z-50 w-[280px] hidden -translate-x-full transform border-r bg-[#001a0c] p-6 overflow-y-auto lg:hidden transition-transform duration-200 ease-out">
 			<div class="flex items-center justify-between mb-8">
 				<div class="pdt-brand flex items-center gap-3">
-					<span class="pdt-brand-mark"><img src="../assets/images/s_simbol.png" alt="" class="pdt-brand-logo"></span>
+					<span class="pdt-brand-mark"><img src="../../../../entradasaida/app/main/assets/img/logo.png" alt="" class="pdt-brand-logo"></span>
 					<div>
 						<h1 class="font-bold text-[18px]">Sistema <span>Salaberga</span></h1>
 						<p>Professor Diretor de Turma</p>
@@ -388,9 +406,22 @@
 				<?php endif; ?>
 			</nav>
 
-			<form action="../controllers/usuario_controller.php?action=logout" method="POST" class="mt-8">
+			<div class="pdt-account-tools mt-8">
+				<div class="pdt-account-user">
+					<span class="pdt-account-avatar"><?= htmlspecialchars(substr((string) ($_SESSION['nome'] ?? 'U'), 0, 1), ENT_QUOTES, 'UTF-8') ?></span>
+					<span class="pdt-account-details">
+						<span><?= htmlspecialchars((string) ($_SESSION['nome'] ?? 'Usuário'), ENT_QUOTES, 'UTF-8') ?></span>
+						<span class="pdt-account-role"><?= htmlspecialchars(ucfirst((string) ($_SESSION['tipo'] ?? 'professor')), ENT_QUOTES, 'UTF-8') ?></span>
+					</span>
+				</div>
+				<button class="pdt-notifications-toggle" type="button" aria-label="Notificações" aria-controls="notificacoesPanel" aria-expanded="false">
+					<i class="bi bi-bell" aria-hidden="true"></i>
+					<span class="contadorNotificacoes hidden absolute -right-2 -top-2 min-w-5 rounded-full bg-red-600 px-1 text-xs text-white"></span>
+				</button>
+			</div>
+			<form action="../controllers/usuario_controller.php?action=logout" method="POST" class="mt-3">
 				<input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-				<button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl border border-green-600 bg-green-700 px-4 py-3 text-white transition hover:bg-green-600">
+				<button type="submit" class="pdt-logout-button">
 					<i class="bi bi-box-arrow-right"></i>
 					<span>Sair</span>
 				</button>
@@ -398,54 +429,19 @@
 		</div>
 
 		<div id="mobileMenuBackdrop" class="fixed inset-0 hidden bg-black/50 z-40 lg:hidden"></div>
-	<!-- CONTE�DO -->
+		<div id="notificacoesPanel" class="pdt-notifications-panel hidden rounded-3xl border border-slate-700 bg-slate-950 p-4 shadow-2xl text-slate-200">
+			<div class="flex items-center justify-between mb-3">
+				<span class="text-sm font-semibold">Notificações</span>
+				<button id="fecharNotificacoes" class="text-slate-400 hover:text-white text-sm" type="button">Fechar</button>
+			</div>
+			<div id="listaNotificacoes" class="max-h-96 space-y-3 overflow-y-auto text-sm text-slate-300"></div>
+		</div>
+	<!-- CONTEÚDO -->
 	<div class="pdt-main-offset flex-1 lg:ml-[280px]">
 
-		<!-- HEADER -->
-		<header class="pdt-topbar h-[85px] topbar-panel border-b flex items-center justify-between px-8 w-full">
-
-			<div class="flex items-center gap-1">
-				<button id="openMenuBtn" class="lg:hidden text-2xl text-gray-700">
-					<i class="bi bi-list"></i>
-				</button>
-
-				<div class="text-sm lg:text-[18px] font-bold text-white flex items-center space-x-0">
-					<img src="../assets/images/s_simbol.png" alt="Logo" class="w-10 h-10">
-					<p class="text-sm lg:text-[18px] font-bold text-white">Sistema PDT</p>
-				</div>
-			</div>
-
-			<div class="flex items-center gap-6">
-
-				<button id="btnNotificacoes" class="relative hidden" type="button" aria-label="Notificações">
-					<i class="bi bi-bell"></i>
-					<span id="contadorNotificacoes" class="hidden absolute -top-2 -right-2 min-w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center px-1"></span>
-				</button>
-				<div id="notificacoesPanel" class="hidden absolute right-8 top-16 w-80 rounded-3xl border border-slate-700 bg-slate-950 p-4 shadow-2xl text-slate-200 z-50">
-					<div class="flex items-center justify-between mb-3">
-						<span class="text-sm font-semibold">Notificações</span>
-						<button id="fecharNotificacoes" class="text-slate-400 hover:text-white text-sm">Fechar</button>
-					</div>
-					<div id="listaNotificacoes" class="space-y-3 text-sm text-slate-300"></div>
-				</div>
-
-				<div class="flex items-center gap-3">
-
-					<div class="w-11 h-11 rounded-full bg-green-700 text-white flex items-center justify-center font-semibold">
-						<?= $_SESSION['nome'][0] ?>
-					</div>
-
-					<div>
-						<p class="font-semibold text-gray-800 text-sm hidden sm:block"><?= $_SESSION['nome'] ?></p>
-						<p class="text-xs text-gray-500"><?= ucfirst($_SESSION['tipo']) ?></p>
-					</div>
-
-				</div>
-
-			</div>
-
-		</header>
-
+		<button id="openMenuBtn" class="pdt-mobile-menu-button lg:hidden" type="button" aria-label="Abrir menu" aria-expanded="false">
+			<i class="bi bi-list" aria-hidden="true"></i>
+		</button>
 
 		<!-- MAIN -->
 		<main class="pdt-content p-8 main-shell">
@@ -461,47 +457,72 @@
 					</p>
 				</div>
 				<!-- CARDS -->
-				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-					<div class="card-dashboard">
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-gray-500 text-sm mb-2">Alunos</p>
-								<h2 id="contadorAlunos" class="text-4xl font-bold text-gray-800">0</h2>
-								<span class="text-gray-400 text-sm">Total de alunos</span>
-							</div>
-							<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
-								<i class="bi bi-people-fill"></i>
-							</div>
-						</div>
-					</div>
-					<div class="card-dashboard">
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-gray-500 text-sm mb-2">Ocorrências</p>
-								<h2 id="contadorOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
-								<span class="text-gray-400 text-sm">Este mês</span>
-							</div>
-							<div class="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl">
-								<i class="bi bi-exclamation-circle-fill"></i>
-							</div>
-						</div>
-					</div>
-					<div class="card-dashboard">
-						<div class="flex items-center justify-between">
-							<div>
-								<p class="text-gray-500 text-sm mb-2">Frequência Média</p>
-								<div class="flex items-center space-x-0 text-4xl font-bold text-gray-800">
-									<h2 id="contadorFrequencia" class="">0</h2>
-									<span>%</span>
+				<div class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start mb-8">
+					<div class="space-y-6 xl:col-span-3">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div class="card-dashboard">
+								<div class="flex items-center justify-between">
+									<div>
+										<p class="text-gray-500 text-sm mb-2">Alunos</p>
+										<h2 id="contadorAlunos" class="text-4xl font-bold text-gray-800">0</h2>
+										<span class="text-gray-400 text-sm">Total de alunos</span>
+									</div>
+									<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+										<i class="bi bi-people-fill"></i>
+									</div>
 								</div>
-								<span class="text-gray-400 text-sm">Este mês</span>
 							</div>
-							<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
-								<i class="bi bi-person-check-fill"></i>
+							<div class="card-dashboard">
+								<div class="flex items-center justify-between">
+									<div>
+										<p class="text-gray-500 text-sm mb-2">Ocorrências</p>
+										<h2 id="contadorOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
+										<span class="text-gray-400 text-sm">Este mês</span>
+									</div>
+									<div class="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl">
+										<i class="bi bi-exclamation-circle-fill"></i>
+									</div>
+								</div>
+							</div>
+							<div class="card-dashboard">
+								<div class="flex items-center justify-between">
+									<div>
+										<p class="text-gray-500 text-sm mb-2">Frequência Média</p>
+										<div class="flex items-center space-x-0 text-4xl font-bold text-gray-800">
+											<h2 id="contadorFrequencia" class="">0</h2>
+											<span>%</span>
+										</div>
+										<span class="text-gray-400 text-sm">Este mês</span>
+									</div>
+									<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+										<i class="bi bi-person-check-fill"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+							<div class="bg-white border border-gray-200 rounded-2xl p-6">
+								<div class="flex items-center justify-between mb-6">
+									<h2 class="text-xl font-bold text-gray-800">Últimas ocorrências</h2>
+									<button id="btnDashboardVerTodasOcorrencias" class="text-green-700 font-medium text-sm hover:underline">
+										Ver todas
+									</button>
+								</div>
+								<div id="listaUltimasOcorrencias" class="flex flex-col gap-5"></div>
+							</div>
+							<div class="bg-white border border-gray-200 rounded-2xl p-6">
+								<div class="flex items-center justify-between mb-8">
+									<h2 class="text-xl font-bold text-gray-800">Frequência da turma</h2>
+									<select class="border border-gray-200 rounded-xl px-4 py-2 outline-none text-sm">
+										<option>Este mês</option>
+										<option>Últimos 3 meses</option>
+									</select>
+								</div>
+								<div id="graficoFrequencia" class="w-full h-[300px] flex items-end justify-between gap-2"></div>
 							</div>
 						</div>
 					</div>
-					<div class="bg-white border border-gray-200 rounded-2xl p-6">
+					<div class="bg-white border border-gray-200 rounded-2xl p-6 self-start">
 						<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
 							<div>
 								<p class="text-gray-500 text-sm mb-2">Painel de desempenho</p>
@@ -510,7 +531,7 @@
 								<select id="selectTurmaDesempenhoProfessor" class="border border-gray-200 rounded-xl px-4 py-2 outline-none text-sm hidden"></select>
 							</div>
 						</div>
-						<div id="desempenhoProfessorMensagem" class="rounded-2xl border border-gray-200  p-4 text-gray-700 hidden"></div>
+						<div id="desempenhoProfessorMensagem" class="rounded-2xl border border-gray-200 p-4 text-gray-700 hidden"></div>
 						<div id="desempenhoProfessorCard" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 hidden">
 							<div class="bg-white border border-gray-200 rounded-2xl p-4">
 								<p class="text-gray-500 text-sm mb-2">Turma</p>
@@ -522,7 +543,7 @@
 							</div>
 							<div class="bg-white border border-gray-200 rounded-2xl p-4">
 								<p class="text-gray-500 text-sm mb-2">Classificação</p>
-								<h3 id="desempenhoProfessorClassificacao" class="text-xl font-semibold text-gray-800">-</h3>
+								<h3 id="desempenhoProfessorClassificacao" class="text-xl font-semibold">-</h3>
 							</div>
 							<div class="bg-white border border-gray-200 rounded-2xl p-4">
 								<p class="text-gray-500 text-sm mb-2">Total de alunos</p>
@@ -533,32 +554,6 @@
 								<h3 id="desempenhoProfessorTotalNotas" class="text-xl font-semibold text-gray-800">0</h3>
 							</div>
 						</div>
-					</div>
-				</div>
-
-				<!-- GRID INFERIOR -->
-				<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-					<!-- OCORR�NCIAS -->
-					<div class="bg-white border border-gray-200 rounded-2xl p-6">
-						<div class="flex items-center justify-between mb-6">
-							<h2 class="text-xl font-bold text-gray-800">Últimas ocorrências</h2>
-							<button id="btnDashboardVerTodasOcorrencias" class="text-green-700 font-medium text-sm hover:underline">	
-								Ver todas
-							</button>
-						</div>
-						<div id="listaUltimasOcorrencias" class="flex flex-col gap-5">
-						</div>
-					</div>  
-					<!-- GR�FICO -->
-					<div class="bg-white border border-gray-200 rounded-2xl p-6">
-						<div class="flex items-center justify-between mb-8">
-							<h2 class="text-xl font-bold text-gray-800">Frequência da turma</h2>
-							<select class="border border-gray-200 rounded-xl px-4 py-2 outline-none text-sm">
-								<option>Este mês</option>
-								<option>Últimos 3 meses</option>
-							</select>
-						</div>
-						<div id="graficoFrequencia" class="w-full h-[300px] flex items-end justify-between gap-2"></div>
 					</div>
 				</div>
 			</div>
@@ -576,76 +571,53 @@
 					<?php foreach($todasTurmas as $turma): ?>
 						<?php $souPdtDaTurma = isset($turmasPdtIds[(int) $turma['id_turma']]); ?>
 
-						<div class="bg-white border border-gray-200 rounded-xl px-6 pt-6">
-
-							<div class="flex items-start justify-between mb-6">
-
-								<div>
-
-									<div class="w-16 h-16 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl mb-4">
-										<i class="bi bi-mortarboard-fill"></i>
-									</div>
-
-									<h2 class="text-2xl font-bold text-gray-800">
-										<?= htmlspecialchars((string) $turma['serie_turma'], ENT_QUOTES, 'UTF-8') ?>º <?= htmlspecialchars((string) $turma['nome_turma'], ENT_QUOTES, 'UTF-8') ?>
+						<div class="pdt-class-card h-full w-full">
+							<div class="pdt-class-card-heading">
+								<div class="pdt-class-icon">
+									<i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+								</div>
+								<div class="min-w-0">
+									<div class="flex flex-wrap items-center gap-2">
+										<h2 class="pdt-class-title">
+											<?= htmlspecialchars((string) $turma['serie_turma'], ENT_QUOTES, 'UTF-8') ?>º <?= htmlspecialchars((string) $turma['nome_turma'], ENT_QUOTES, 'UTF-8') ?>
+										</h2>
 										<?php if($souPdtDaTurma): ?>
-											<span class="ml-3 inline-block bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold">PDT</span>
+											<span class="inline-flex rounded-full bg-amber-500 px-2 py-1 text-xs font-semibold text-white">PDT</span>
 										<?php endif; ?>
-									</h2>
-									<p class="text-sm text-gray-500 mt-2">
+									</div>
+									<p class="pdt-class-course">
 										<?= htmlspecialchars((string) ($turma['nome_curso'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
 									</p>
-
-    								</div>
-
+								</div>
 							</div>
 
-
-
-						<div class="space-y-4 mb-7">
-
-								<div class="flex items-center justify-between">
-
-									<span class="text-gray-500">
-										Sala
-									</span>
-
-									<span class="font-semibold text-gray-700">
-										<?= htmlspecialchars((string) $turma['sala_turma'], ENT_QUOTES, 'UTF-8') ?>
-									</span>
-
+							<div class="pdt-class-details">
+								<div class="pdt-class-detail">
+									<span class="pdt-class-detail-label"><i class="bi bi-geo-alt" aria-hidden="true"></i>Sala</span>
+									<span class="pdt-class-detail-value"><?= htmlspecialchars((string) $turma['sala_turma'], ENT_QUOTES, 'UTF-8') ?></span>
 								</div>
-
-
-								<div class="flex items-center justify-between">
-
-									<span class="text-gray-500">
-										Ano letivo
-									</span>
-
-									<span class="font-semibold text-gray-700">
-										<?= htmlspecialchars((string) $turma['ano_letivo'], ENT_QUOTES, 'UTF-8') ?>
-									</span>
-
-						</div>
-
-						<div class="flex items-center gap-3">
+								<div class="pdt-class-detail">
+									<span class="pdt-class-detail-label"><i class="bi bi-calendar3" aria-hidden="true"></i>Ano letivo</span>
+									<span class="pdt-class-detail-value"><?= htmlspecialchars((string) $turma['ano_letivo'], ENT_QUOTES, 'UTF-8') ?></span>
+								</div>
+								<div class="pdt-class-detail">
+									<span class="pdt-class-detail-label"><i class="bi bi-person" aria-hidden="true"></i>Professor</span>
+									<span class="pdt-class-detail-value"><?= htmlspecialchars((string) ($turma['professor_nome'] ?? 'Não informado'), ENT_QUOTES, 'UTF-8') ?></span>
+								</div>
+							</div>
 
 							<?php if($souPdtDaTurma): ?>
-								<button data-turma-id="<?= (int) $turma['id_turma'] ?>" class="btn-entrar-turma flex-1 h-11 rounded-xl bg-green-700 text-white hover:bg-green-800 transition font-medium">
-									Acessar turma
-								</button>
+								<div class="pdt-class-card-actions">
+									<button data-turma-id="<?= (int) $turma['id_turma'] ?>" class="pdt-class-access btn-entrar-turma">
+										<i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+										<span>Acessar turma</span>
+									</button>
+								</div>
 							<?php else: ?>
-								<p class="text-sm text-gray-500">
-									PDT responsável: <?= htmlspecialchars((string) ($turma['professor_nome'] ?? 'Não informado'), ENT_QUOTES, 'UTF-8') ?>.
-									Acesso completo exclusivo ao PDT.
+								<p class="pdt-class-access-note">
+									Acesso completo exclusivo ao PDT responsável.
 								</p>
 							<?php endif; ?>
-
-						</div>
-
-							</div>
-
 						</div>
 
 					<?php endforeach; ?>
@@ -661,12 +633,17 @@
 					<p class="mt-1 text-gray-500">Registre intervenções individuais e atas de conselho das turmas pelas quais você responde como PDT.</p>
 				</div>
 				<div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5">
-					<label for="selectTurmaPedagogico" class="mb-2 block text-sm font-medium text-gray-700">Turma PDT</label>
-					<select id="selectTurmaPedagogico" class="w-full rounded-xl border border-gray-200 px-4 py-3 md:max-w-xl">
-						<?php foreach ($turmas as $turma): ?>
-							<option value="<?= (int) $turma['id_turma'] ?>"><?= htmlspecialchars($turma['serie_turma'] . 'º ' . $turma['nome_turma'] . ' - ' . $turma['sala_turma'], ENT_QUOTES, 'UTF-8') ?></option>
-						<?php endforeach; ?>
-					</select>
+					<input id="turmaPedagogicoId" type="hidden" value="<?= (int) ($turmas[0]['id_turma'] ?? 0) ?>">
+					<p class="mb-2 text-sm font-medium text-gray-700">Sua turma como PDT</p>
+					<p class="text-lg font-semibold text-gray-800">
+						<?= htmlspecialchars(
+							$turmas
+								? ($turmas[0]['serie_turma'] . 'º ' . $turmas[0]['nome_turma'] . ' · Sala ' . $turmas[0]['sala_turma'])
+								: 'Nenhuma turma PDT vinculada',
+							ENT_QUOTES,
+							'UTF-8'
+						) ?>
+					</p>
 				</div>
 
 				<div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -781,7 +758,7 @@
 					</button>
 				</div>
 				<div id="conteudoDetalhe" class="bg-white border border-gray-200 rounded-2xl p-8">
-					<!-- Conte�do da turma ser� preenchido aqui -->
+					<!-- Conteúdo da turma será preenchido aqui -->
 				</div>
 			</div>
 			
@@ -860,7 +837,7 @@
 				</div>
 			</div>
 
-			<!-- Ocorr�ncias -->
+			<!-- Ocorrências -->
 			<div id="sec-ocorrencias" class="secs hidden">
 				<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 					<div>
@@ -913,12 +890,12 @@
 					<div class="flex flex-wrap gap-3 items-center">
 						<button id="btnProfessorRelatoriosExportarCSV" type="button" class="h-12 px-5 rounded-xl bg-slate-800 text-white hover:bg-slate-900 transition">Exportar CSV</button>
 						<button id="btnProfessorRelatoriosExportarXLS" type="button" class="h-12 px-5 rounded-xl bg-slate-700 text-white hover:bg-slate-800 transition">Exportar XLS</button>
-						<button id="btnProfessorRelatoriosExportarOcorrenciasCSV" type="button" class="h-12 px-5 rounded-xl bg-cyan-700 text-white hover:bg-cyan-800 transition">Ocorr�ncias CSV</button>
-						<button id="btnProfessorRelatoriosExportarOcorrenciasXLS" type="button" class="h-12 px-5 rounded-xl bg-cyan-600 text-white hover:bg-cyan-700 transition">Ocorr�ncias XLS</button>
+						<button id="btnProfessorRelatoriosExportarOcorrenciasCSV" type="button" class="h-12 px-5 rounded-xl bg-cyan-700 text-white hover:bg-cyan-800 transition">Ocorrências CSV</button>
+						<button id="btnProfessorRelatoriosExportarOcorrenciasXLS" type="button" class="h-12 px-5 rounded-xl bg-cyan-600 text-white hover:bg-cyan-700 transition">Ocorrências XLS</button>
 						<button id="btnProfessorRelatoriosImprimir" type="button" class="h-12 px-5 rounded-xl bg-slate-200 text-gray-800 hover:bg-slate-300 transition">Imprimir</button>
 					</div>
 				</div>
-				<div class="mb-4 text-sm text-gray-500">Resumo do per�odo: <span id="profRelResumoPeriodo">�ltimo m�s</span></div>
+				<div class="mb-4 text-sm text-gray-500">Resumo do período: <span id="profRelResumoPeriodo">último mês</span></div>
 				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 					<div class="card-dashboard">
 						<p class="text-gray-500 text-sm mb-2">Turmas</p>
@@ -931,14 +908,14 @@
 						<span class="text-gray-400 text-sm">Total de alunos</span>
 					</div>
 					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Ocorr�ncias</p>
+						<p class="text-gray-500 text-sm mb-2">Ocorrências</p>
 						<h2 id="profRelTotalOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Este m�s</span>
+						<span class="text-gray-400 text-sm">Este mês</span>
 					</div>
 					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Frequ�ncia m�dia</p>
+						<p class="text-gray-500 text-sm mb-2">Frequência média</p>
 						<h2 id="profRelMediaFrequencia" class="text-4xl font-bold text-gray-800">0%</h2>
-						<span class="text-gray-400 text-sm">Este m�s</span>
+						<span class="text-gray-400 text-sm">Este mês</span>
 					</div>
 					<div class="card-dashboard">
 						<p class="text-gray-500 text-sm mb-2">Acompanhamentos</p>
@@ -958,15 +935,15 @@
 				</div>
 				<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
 					<div class="bg-white border border-gray-200 rounded-2xl p-6">
-						<h2 class="text-xl font-bold text-gray-800 mb-4">Ocorr�ncias recentes</h2>
+						<h2 class="text-xl font-bold text-gray-800 mb-4">Ocorrências recentes</h2>
 						<div id="profRelOcorrenciasRecentes" class="space-y-4 text-gray-500">Carregando...</div>
 					</div>
 					<div class="bg-white border border-gray-200 rounded-2xl p-6">
-						<h2 class="text-xl font-bold text-gray-800 mb-4">Top turmas (ocorr�ncias)</h2>
+						<h2 class="text-xl font-bold text-gray-800 mb-4">Top turmas (ocorrências)</h2>
 						<div id="profRelTopTurmasOcorrencias" class="space-y-4 text-gray-500">Carregando...</div>
 					</div>
 					<div class="bg-white border border-gray-200 rounded-2xl p-6">
-						<h2 class="text-xl font-bold text-gray-800 mb-4">Ocorr�ncias por tipo</h2>
+						<h2 class="text-xl font-bold text-gray-800 mb-4">Ocorrências por tipo</h2>
 						<div id="profRelOcorrenciasPorTipo" class="space-y-4 text-gray-500">Carregando...</div>
 					</div>
 				</div>
@@ -980,12 +957,12 @@
 			<div id="sec-calendario" class="secs hidden">
 				<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 					<div>
-						<h1 class="text-3xl font-bold text-gray-800">Calend�rio</h1>
-						<p class="text-gray-500 mt-1">Eventos com base em ocorr�ncias e compromissos.</p>
+						<h1 class="text-3xl font-bold text-gray-800">Calendário</h1>
+						<p class="text-gray-500 mt-1">Eventos com base em ocorrências e compromissos.</p>
 					</div>
 					<div class="flex gap-3">
 						<button id="profCalendarioPrev" type="button" class="h-12 px-5 rounded-xl bg-slate-200 text-gray-800 hover:bg-slate-300 transition">Anterior</button>
-						<button id="profCalendarioNext" type="button" class="h-12 px-5 rounded-xl bg-slate-200 text-gray-800 hover:bg-slate-300 transition">Pr�ximo</button>
+						<button id="profCalendarioNext" type="button" class="h-12 px-5 rounded-xl bg-slate-200 text-gray-800 hover:bg-slate-300 transition">Próximo</button>
 					</div>
 				</div>
 				<div class="bg-white border border-gray-200 rounded-2xl p-5 mb-6">
@@ -996,10 +973,10 @@
 						</div>
 						<p id="profCalendarioContagem" class="text-gray-500 text-sm"></p>
 					</div>
-					<div id="profCalendarioGrid" class="grid grid-cols-7 gap-2 text-center text-sm"></div>
+					<div id="profCalendarioGrid" class="pdt-calendar-grid grid grid-cols-7 gap-2 text-center text-sm"></div>
 				</div>
 				<div class="bg-white border border-gray-200 rounded-2xl p-5">
-					<h2 class="text-xl font-bold text-gray-800 mb-4">Eventos do m�s</h2>
+					<h2 class="text-xl font-bold text-gray-800 mb-4">Eventos do mês</h2>
 					<div id="profCalendarioEventos" class="space-y-4 text-gray-500">Carregando...</div>
 				</div>
 			</div>
@@ -1044,7 +1021,7 @@
 
 	async function carregarNotificacoes() {
 		const lista = document.getElementById('listaNotificacoes');
-		const contador = document.getElementById('contadorNotificacoes');
+		const contadores = document.querySelectorAll('.contadorNotificacoes');
 		if (!lista) return;
 		try {
 			const res = await fetch('../controllers/notificacao_controller.php?action=listar', {
@@ -1055,22 +1032,53 @@
 			const data = await res.json();
 			if (!data?.sucesso) return;
 			const itens = data.dados || [];
-			if (contador) {
-				const total = data.nao_lidas || 0;
+			const total = data.nao_lidas || 0;
+			contadores.forEach(contador => {
 				contador.textContent = total > 0 ? total : '';
 				contador.classList.toggle('hidden', total <= 0);
-			}
+			});
 			lista.innerHTML = itens.length ? itens.map((item) => `
 					<div class="rounded-2xl border ${item.lida ? 'border-slate-800 bg-slate-900/70' : 'border-emerald-500/30 bg-emerald-500/10'} p-3">
 						<p class="font-semibold text-white">${item.titulo}</p>
 						<p class="mt-1 text-slate-300">${item.mensagem}</p>
 						<p class="mt-2 text-[11px] text-slate-500">${item.criado_em || ''}</p>
 					</div>
-				`).join('') : '<div class="text-slate-400">Nenhuma notifica��o</div>';
+				`).join('') : '<div class="text-slate-400">Nenhuma notificação</div>';
 		} catch (e) {
-			console.error('Erro ao carregar notifica��es:', e);
+			console.error('Erro ao carregar notificações:', e);
 		}
 	}
+
+	const notificacoesPanelProfessor = document.getElementById('notificacoesPanel');
+	const fecharNotificacoesProfessor = document.getElementById('fecharNotificacoes');
+	const botoesNotificacoesProfessor = document.querySelectorAll('.pdt-notifications-toggle');
+
+	botoesNotificacoesProfessor.forEach(botao => {
+		botao.addEventListener('click', event => {
+			event.stopPropagation();
+			const abrir = notificacoesPanelProfessor.classList.contains('hidden');
+			notificacoesPanelProfessor.classList.toggle('hidden', !abrir);
+			botoesNotificacoesProfessor.forEach(item => item.setAttribute('aria-expanded', String(abrir)));
+			if (abrir) carregarNotificacoes();
+		});
+	});
+
+	fecharNotificacoesProfessor?.addEventListener('click', () => {
+		notificacoesPanelProfessor.classList.add('hidden');
+		botoesNotificacoesProfessor.forEach(item => item.setAttribute('aria-expanded', 'false'));
+	});
+
+	document.addEventListener('click', event => {
+		if (
+			notificacoesPanelProfessor
+			&& !notificacoesPanelProfessor.classList.contains('hidden')
+			&& !notificacoesPanelProfessor.contains(event.target)
+			&& !Array.from(botoesNotificacoesProfessor).some(botao => botao.contains(event.target))
+		) {
+			notificacoesPanelProfessor.classList.add('hidden');
+			botoesNotificacoesProfessor.forEach(item => item.setAttribute('aria-expanded', 'false'));
+		}
+	});
 
 	// MENU MOBILE
 	const openMenuBtn = document.getElementById("openMenuBtn");
@@ -1133,7 +1141,7 @@
 		});
 	});
 
-	const selectTurmaPedagogico = document.getElementById('selectTurmaPedagogico');
+	const turmaPedagogicoId = document.getElementById('turmaPedagogicoId');
 	const formAcompanhamentoPedagogico = document.getElementById('formAcompanhamentoPedagogico');
 	const formConselhoClasse = document.getElementById('formConselhoClasse');
 	const formItemConselhoClasse = document.getElementById('formItemConselhoClasse');
@@ -1263,8 +1271,8 @@
 	}
 
 	async function carregarModuloPedagogico() {
-		if (!selectTurmaPedagogico || !selectTurmaPedagogico.value) return;
-		const idTurma = selectTurmaPedagogico.value;
+		if (!turmaPedagogicoId || !turmaPedagogicoId.value) return;
+		const idTurma = turmaPedagogicoId.value;
 		try {
 			const [alunosResposta, dados] = await Promise.all([
 				fetch(`../controllers/aluno_controller.php?action=listar_alunos&id_turma=${encodeURIComponent(idTurma)}`).then(resposta => resposta.json()),
@@ -1286,8 +1294,7 @@
 		}
 	}
 
-	if (selectTurmaPedagogico) {
-		selectTurmaPedagogico.addEventListener('change', carregarModuloPedagogico);
+	if (turmaPedagogicoId?.value) {
 		['dataAcompanhamento', 'dataConselhoClasse'].forEach(id => {
 			const input = document.getElementById(id);
 			if (input) input.value = dataLocalISO();
@@ -1302,7 +1309,7 @@
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					id_turma: selectTurmaPedagogico.value,
+					id_turma: turmaPedagogicoId.value,
 					id_aluno: document.getElementById('alunoAcompanhamento').value,
 					data_registro: document.getElementById('dataAcompanhamento').value,
 					motivo: document.getElementById('motivoAcompanhamento').value,
@@ -1326,7 +1333,7 @@
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					id_turma: selectTurmaPedagogico.value,
+					id_turma: turmaPedagogicoId.value,
 					data_conselho: document.getElementById('dataConselhoClasse').value,
 					bimestre: document.getElementById('bimestreConselhoClasse').value,
 					pauta: document.getElementById('pautaConselhoClasse').value,
@@ -1361,7 +1368,7 @@
 		}
 	});
 
-	// NAVEGA��O TURMA DETALHE
+	// NAVEGAÇÃO TURMA DETALHE
 	const btnVoltar = document.getElementById('btnVoltar');
 	const secTurmaDetalhe = document.getElementById('sec-turma-detalhe');
 	const secTurmas = document.getElementById('sec-turmas');
@@ -1380,7 +1387,7 @@
 		if (!btnEntrar) return;
 
 		turmaAtualId = btnEntrar.getAttribute('data-turma-id');
-		console.log('? Bot�o "Entrar" clicado - Turma ID:', turmaAtualId);
+		console.log('? Botão "Entrar" clicado - Turma ID:', turmaAtualId);
 		
 		// Encontrar os dados da turma
 		const turmaCard = btnEntrar.closest('.bg-white');
@@ -1404,10 +1411,10 @@
 			modalInput.value = turmaAtualId;
 			console.log('turmaIdModal.value setado para:', modalInput.value);
 		} else {
-			console.error('? turmaIdModal � NULL!');
+			console.error('? turmaIdModal é NULL!');
 		}
 
-		// Preencher detalhe com informa��es da turma
+		// Preencher detalhe com informações da turma
 		const conteudo = document.getElementById('conteudoDetalhe');
 		if (conteudo) {
 			conteudo.innerHTML = `
@@ -1473,8 +1480,9 @@
 					</button>
 				</div>
 			`;
+			atualizarContadorAlunosDetalhe(turmaAtualId);
 
-			// Adicionar evento ao bot�o de gerenciar alunos
+			// Adicionar evento ao botão de gerenciar alunos
 			const btnGerenciar = conteudo.querySelector('#btnGerenciarAlunos');
 			if (btnGerenciar) {
 				btnGerenciar.addEventListener('click', () => {
@@ -1482,11 +1490,11 @@
 				});
 			}
 
-				// Adicionar evento ao bot�o de aplicar ocorr�ncia dentro do card (criado dinamicamente)
+				// Adicionar evento ao botão de aplicar ocorrência dentro do card (criado dinamicamente)
 				const btnAplicarOcorrenciaTurma = conteudo.querySelector('#btnAplicarOcorrenciaTurma');
 				if (btnAplicarOcorrenciaTurma) {
 					btnAplicarOcorrenciaTurma.addEventListener('click', () => {
-						// Abrir modal de ocorr�ncia e selecionar a turma atual
+						// Abrir modal de ocorrência e selecionar a turma atual
 						abrirModalOcorrencia();
 						if (typeof selectTurmaOcorrencia !== 'undefined' && selectTurmaOcorrencia) {
 							selectTurmaOcorrencia.value = turmaAtualId;
@@ -1620,32 +1628,32 @@
 			const res = await fetch('../controllers/ocorrencia_controller.php?action=listar_ocorrencias&filtro=mes');
 			const json = await res.json();
 			if (!json.sucesso) {
-				listaUltimasOcorrencias.innerHTML = '<div class="text-red-500">Erro ao carregar ocorr�ncias</div>';
+				listaUltimasOcorrencias.innerHTML = '<div class="text-red-500">Erro ao carregar ocorrências</div>';
 				return;
 			}
 			renderizarCardsOcorrenciasDashboard(json.dados || []);
 		} catch (err) {
 			console.error(err);
-			listaUltimasOcorrencias.innerHTML = '<div class="text-red-500">Erro de conex�o</div>';
+			listaUltimasOcorrencias.innerHTML = '<div class="text-red-500">Erro de conexão</div>';
 		}
 	}
 
 	async function carregarOcorrenciasSec(){
 		if (!listaOcorrenciasSec) return;
-		listaOcorrenciasSec.innerHTML = '<div class="text-gray-500">Carregando ocorr�ncias...</div>';
+		listaOcorrenciasSec.innerHTML = '<div class="text-gray-500">Carregando ocorrências...</div>';
 		try {
 			const filtro = filtroOcorrenciasSec ? filtroOcorrenciasSec.value : 'mes';
 			const res = await fetch('../controllers/ocorrencia_controller.php?action=listar_ocorrencias&filtro=' + encodeURIComponent(filtro));
 			const json = await res.json();
 			if (!json.sucesso) {
-				listaOcorrenciasSec.innerHTML = '<div class="text-red-500">Erro ao carregar ocorr�ncias</div>';
+				listaOcorrenciasSec.innerHTML = '<div class="text-red-500">Erro ao carregar ocorrências</div>';
 				return;
 			}
 			ocorrenciasSecCache = json.dados || [];
 			renderizarCardsOcorrenciasSec(ocorrenciasSecCache);
 		} catch (err) {
 			console.error(err);
-			listaOcorrenciasSec.innerHTML = '<div class="text-red-500">Erro de conex�o</div>';
+			listaOcorrenciasSec.innerHTML = '<div class="text-red-500">Erro de conexão</div>';
 		}
 	}
 
@@ -1740,8 +1748,8 @@
 		if (porCursoEl) porCursoEl.innerHTML = 'Carregando...';
 		if (detalhesTurmasEl) detalhesTurmasEl.innerHTML = 'Carregando...';
 		if (detalhesOcorrenciasEl) detalhesOcorrenciasEl.innerHTML = 'Carregando...';
-		if (resumoPeriodoEl) resumoPeriodoEl.textContent = document.getElementById('profRelPeriodo')?.selectedOptions?.[0]?.textContent || '�ltimo m�s';
-		if (ocorrenciasPeriodoLabelEl) ocorrenciasPeriodoLabelEl.textContent = document.getElementById('profRelPeriodo')?.selectedOptions?.[0]?.textContent || '�ltimo m�s';
+		if (resumoPeriodoEl) resumoPeriodoEl.textContent = document.getElementById('profRelPeriodo')?.selectedOptions?.[0]?.textContent || 'último mês';
+		if (ocorrenciasPeriodoLabelEl) ocorrenciasPeriodoLabelEl.textContent = document.getElementById('profRelPeriodo')?.selectedOptions?.[0]?.textContent || 'último mês';
 
 		try {
 			const [res, turmasRes, ocorrenciasRes] = await Promise.all([
@@ -1755,7 +1763,7 @@
 			const ocorrenciasData = await ocorrenciasRes.json();
 
 			if (!data.sucesso || !turmasData.sucesso || !ocorrenciasData.sucesso) {
-				const errorHtml = '<div class="text-red-500">Erro ao carregar relat�rios.</div>';
+				const errorHtml = '<div class="text-red-500">Erro ao carregar relatórios.</div>';
 				if (recentesEl) recentesEl.innerHTML = errorHtml;
 				if (topEl) topEl.innerHTML = errorHtml;
 				if (tipoEl) tipoEl.innerHTML = errorHtml;
@@ -1799,7 +1807,7 @@
 							<div class="text-slate-700 font-semibold">${item.frequencia_media_periodo ?? 0}%</div>
 						</div>
 					</div>
-				`).join('') : '<div class="text-gray-500">Sem dados de turmas para o per�odo.</div>';
+				`).join('') : '<div class="text-gray-500">Sem dados de turmas para o período.</div>';
 			}
 
 			if (detalhesOcorrenciasEl) {
@@ -1861,16 +1869,16 @@
 		}, {});
 
 		grid.innerHTML = '';
-		['Dom','Seg','Ter','Qua','Qui','Sex','S�b'].forEach(day => {
+		['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(day => {
 			const header = document.createElement('div');
-			header.className = 'text-sm font-semibold text-gray-500';
+			header.className = 'pdt-calendar-weekday text-sm font-semibold text-gray-500';
 			header.textContent = day;
 			grid.appendChild(header);
 		});
 
 		for (let blank = 0; blank < firstDay; blank++) {
 			const cell = document.createElement('div');
-			cell.className = 'h-20 rounded-2xl bg-gray-100 border border-gray-200';
+			cell.className = 'pdt-calendar-empty h-20 rounded-2xl border';
 			grid.appendChild(cell);
 		}
 
@@ -1879,22 +1887,22 @@
 			const events = eventsByDate[dateKey] || [];
 			const cell = document.createElement('button');
 			cell.type = 'button';
-			cell.className = `group h-20 rounded-2xl border p-3 text-left transition ${events.length ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-white border-gray-200 hover:bg-gray-50'}`;
+			cell.className = `pdt-calendar-day group h-20 rounded-2xl border p-3 text-left transition${events.length ? ' has-events' : ''}`;
 			cell.innerHTML = `
 				<div class="flex items-center justify-between">
-					<span class="font-semibold text-gray-900">${day}</span>
-					${events.length ? `<span class="rounded-full bg-green-600 px-2 py-1 text-[11px] text-white">${events.length}</span>` : ''}
+					<span class="pdt-calendar-date font-semibold">${day}</span>
+					${events.length ? `<span class="pdt-calendar-event-count rounded-full px-2 py-1 text-[11px]">${events.length}</span>` : ''}
 				</div>
 			`;
 			const title = document.createElement('p');
-			title.className = 'mt-2 text-xs text-gray-500';
+			title.className = 'pdt-calendar-day-title mt-2 text-xs';
 			title.textContent = events[0]?.titulo || '';
 			cell.appendChild(title);
 			cell.addEventListener('click', () => renderProfessorCalendarEvents(dateKey));
 			grid.appendChild(cell);
 		}
 
-		counter.textContent = `${(window.professorCalendarEvents || []).length} evento(s) no per�odo`;
+		counter.textContent = `${(window.professorCalendarEvents || []).length} evento(s) no período`;
 		renderProfessorCalendarEvents(selectedDate);
 	}
 
@@ -1903,13 +1911,13 @@
 		if (!eventsEl) return;
 		const filtered = dateKey ? (window.professorCalendarEvents || []).filter(item => item.evento_data === dateKey) : (window.professorCalendarEvents || []);
 		if (!filtered.length) {
-			eventsEl.innerHTML = '<div class="rounded-2xl border border-gray-200 bg-white p-5 text-gray-500">Nenhum evento dispon�vel.</div>';
+			eventsEl.innerHTML = '<div class="rounded-2xl border border-gray-200 bg-white p-5 text-gray-500">Nenhum evento disponível.</div>';
 			return;
 		}
 		eventsEl.replaceChildren();
 		filtered.forEach(item => {
 			const card = document.createElement('article');
-			card.className = 'rounded-2xl border border-gray-200 bg-white p-5';
+			card.className = 'pdt-calendar-event rounded-2xl border border-gray-200 bg-white p-5';
 			const header = document.createElement('div');
 			header.className = 'mb-2 flex items-center justify-between gap-3';
 			const details = document.createElement('div');
@@ -1917,7 +1925,7 @@
 				elementoTexto('p', 'text-gray-500 text-sm', item.evento_data || ''),
 				elementoTexto('h3', 'mt-2 text-gray-800 text-lg font-semibold', item.titulo || '')
 			);
-			header.append(details, elementoTexto('span', 'rounded-full bg-green-100 px-3 py-1 text-xs text-green-700', item.tipo || ''));
+			header.append(details, elementoTexto('span', 'pdt-calendar-event-type rounded-full px-3 py-1 text-xs', item.tipo || ''));
 			card.append(header);
 			if (item.descricao) card.append(elementoTexto('p', 'text-gray-600 text-sm', item.descricao));
 			eventsEl.append(card);
@@ -1967,7 +1975,7 @@
 			card.innerHTML = `
 				<div class="flex items-start justify-between gap-3">
 					<div>
-						<div class="font-semibold text-gray-800">${o.tipo_ocorrencia || 'Ocorr�ncia'}</div>
+						<div class="font-semibold text-gray-800">${o.tipo_ocorrencia || 'Ocorrência'}</div>
 						<div class="text-sm text-gray-500 mt-1">${o.nome_aluno || ''} - ${o.matricula || ''} - ${o.nome_turma || ''}</div>
 					</div>
 					<div class="text-xs text-gray-400">${formatarDataHora(o.data_ocorrencia)}</div>
@@ -2022,7 +2030,7 @@ if (listaOcorrenciasSec) {
 		const btn = e.target.closest('.btn-excluir-ocorrencia');
 		if (!btn) return;
 		const id = btn.getAttribute('data-id');
-		const tipo = btn.getAttribute('data-tipo') || 'Ocorr�ncia';
+		const tipo = btn.getAttribute('data-tipo') || 'Ocorrência';
 		abrirModalExcluirOcorrencia(id, tipo);
 	});
 }
@@ -2082,18 +2090,18 @@ if (btnAtualizarOcorrenciasSec) {
 					fecharModalExcluirOcorrencia();
 					carregarOcorrenciasSec();
 					carregarUltimasOcorrencias();
-					mostrarToastAluno('Ocorr�ncia cancelada com sucesso!', 'ocorrencia_cancelada');
+					mostrarToastAluno('Ocorrência cancelada com sucesso!', 'ocorrencia_cancelada');
 				} else {
-					alert('Erro ao cancelar ocorr�ncia: ' + (json.erro || 'Erro desconhecido'));
+					alert('Erro ao cancelar ocorrência: ' + (json.erro || 'Erro desconhecido'));
 				}
 			} catch (err) {
 				console.error(err);
-				alert('Erro de conex�o');
+				alert('Erro de conexão');
 			}
 		});
 	}
 
-		// --- Fun��es da se��o Notas (front-end) ---
+		// --- Funções da seção Notas (front-end) ---
 
 		const selectTurmaNotas = document.getElementById('selectTurmaNotas');
 		const selectDisciplinaNotas = document.getElementById('selectDisciplinaNotas');
@@ -2242,7 +2250,7 @@ if (btnAtualizarOcorrenciasSec) {
 				}
 			} catch (err) {
 				console.error(err);
-				mostrarToastAluno('Erro de conex�o', 'erro');
+				mostrarToastAluno('Erro de conexão', 'erro');
 			}
 		}
 
@@ -2296,7 +2304,7 @@ if (btnAtualizarOcorrenciasSec) {
 				}
 			} catch (err) {
 				console.error(err);
-				mostrarToastAluno('Erro de conex�o', 'erro');
+				mostrarToastAluno('Erro de conexão', 'erro');
 			}
 		}
 
@@ -2411,7 +2419,7 @@ if (btnAtualizarOcorrenciasSec) {
 
 			<div class="mb-6 grid gap-3 grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] items-end">
 				<div>
-					<label for="dataFrequencia" class="text-sm font-semibold text-gray-700 block mb-2">Data para frequ�ncia</label>
+					<label for="dataFrequencia" class="text-sm font-semibold text-gray-700 block mb-2">Data para frequência</label>
 					<input id="dataFrequencia" type="date" class="w-full h-12 border border-gray-200 rounded-xl px-3 outline-none focus:border-green-500 transition">
 				</div>
 				<button id="btnRealizarFrequencia" type="button" class="h-12 px-3 rounded-xl bg-green-700 text-white text-xs font-medium hover:bg-green-800 transition whitespace-nowrap">
@@ -2491,7 +2499,7 @@ if (btnAtualizarOcorrenciasSec) {
 	</div>
 </div>
 
-<!-- MODAL APLICAR OCORR�NCIA -->
+<!-- MODAL APLICAR OCORRÊNCIA -->
 <div id="overlayModalOcorrencia" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[305] p-4 backdrop-blur-[2px]">
 	<div class="bg-white w-full max-w-2xl rounded-[16px] p-6 relative shadow-2xl modal-card">
 		<div class="mb-4 flex items-start justify-between gap-4">
@@ -2547,7 +2555,7 @@ if (btnAtualizarOcorrenciasSec) {
 					<option>Advertncia verbal</option>
 					<option>Advertncia escrita</option>
 					<option>Suspensão</option>
-					<option>Encaminhamento � coordenação</option>
+					<option>Encaminhamento à coordenação</option>
 					<option>Responsável convocado</option>
 					<option>Uso de linguagem inadequada</option>
 					<option>Cola em avaliação</option>
@@ -2571,7 +2579,7 @@ if (btnAtualizarOcorrenciasSec) {
 	</div>
 </div>
 
-<!-- MODAL CONFIRMA��O EXCLUS�O OCORR�NCIA -->
+<!-- MODAL CONFIRMAÇÃO EXCLUSÃO OCORRÊNCIA -->
 <div id="overlayConfirmExcluirOcorrencia" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[310] p-4 backdrop-blur-[2px]">
 	<div class="bg-white w-full max-w-md rounded-[16px] p-6 relative shadow-2xl modal-card">
 		<div class="mb-4 flex items-start justify-between gap-4">
@@ -2679,7 +2687,7 @@ if (btnAtualizarOcorrenciasSec) {
 </div>
 
 <script>
-// MODAL E FUN��ES DE ALUNOS
+// MODAL E FUNÇÕES DE ALUNOS
 const overlayModalAluno = document.getElementById('overlayModalAluno');
 const fecharModalAlunoBtn = document.getElementById('fecharModalAluno');
 const listaAlunosModal = document.getElementById('listaAlunosModal');
@@ -2734,6 +2742,7 @@ function abrirModalAlunos(turmaId, turmaNome){
 	dataFrequenciaInput.value = new Date().toISOString().slice(0, 10);
 	frequenciaMode = null;
 	frequenciaRegistros = {};
+	if (btnRegistrarAlunoModal) btnRegistrarAlunoModal.classList.remove('hidden');
 	areaFrequenciaAviso.classList.add('hidden');
 	const secBase = document.getElementById('sec-alunos-modal-base');
 	const secGerenciar = document.getElementById('sec-gerenciar-alunos');
@@ -2802,7 +2811,7 @@ function renderizarListaAlunosFull(alunos = []){
 				<div class="text-xs text-gray-500 mt-1">
 					<span class="inline-block mr-3">Matrícula: ${a.matricula || 'N/A'}</span>
 					<span class="inline-block mr-3">Email: ${a.email || 'N/A'}</span>
-					<span class="inline-block">PCD: ${(a.pcd === 'sim' ? 'Sim' : 'N�o')}</span>
+					<span class="inline-block">PCD: ${(a.pcd === 'sim' ? 'Sim' : 'Não')}</span>
 				</div>
 			</div>
 			${acoes}
@@ -2810,7 +2819,7 @@ function renderizarListaAlunosFull(alunos = []){
 		listaFull.appendChild(div);
 	});
 	
-	// Attach event listeners ap�s criar os elementos
+	// Attach event listeners após criar os elementos
 	listaFull.querySelectorAll('.btn-editar-aluno').forEach(btn => {
 		btn.addEventListener('click', () => {
 			abrirModalEditarAluno(btn.getAttribute('data-id'), btn.getAttribute('data-nome'), btn.getAttribute('data-matricula'), btn.getAttribute('data-email'), btn.getAttribute('data-pcd'), btn.getAttribute('data-rendimento'));
@@ -2838,6 +2847,15 @@ function escaparTextoPerfil(valor){
 	}[caractere]));
 }
 
+function classeClassificacaoDesempenho(classificacao){
+	return {
+		'Muito Crítico': 'pdt-classification--very-critical',
+		'Crítico': 'pdt-classification--critical',
+		'Intermediário': 'pdt-classification--intermediate',
+		'Adequado': 'pdt-classification--adequate'
+	}[classificacao] || '';
+}
+
 async function abrirPerfilPedagogico(idAluno){
 	const modal = document.getElementById('perfilPedagogicoModal');
 	const identificacao = document.getElementById('perfilPedagogicoIdentificacao');
@@ -2860,14 +2878,18 @@ async function abrirPerfilPedagogico(idAluno){
 
 		const aluno = result.dados;
 		const frequencia = aluno.frequencia || {};
-		identificacao.textContent = `${aluno.turma || 'Turma não informada'} · Ano letivo ${aluno.ano_letivo || 'não informado'}`;
+		const conclusao = aluno.status_aluno === 'concluinte'
+			? ` · Concluinte ${aluno.ano_conclusao || ''}`
+			: '';
+		identificacao.textContent = `${aluno.turma || 'Turma não informada'} · Ano letivo ${aluno.ano_letivo || 'não informado'}${conclusao}`;
 
 		const linhasNotas = (aluno.notas || []).map(nota => `
 			<tr class="border-t border-gray-100">
+				<td class="px-3 py-2">${escaparTextoPerfil(nota.ano_letivo || '—')}</td>
 				<td class="px-3 py-2">${escaparTextoPerfil(nota.bimestre)}º</td>
 				<td class="px-3 py-2">${escaparTextoPerfil(nota.disciplina)}</td>
 				<td class="px-3 py-2">${nota.nota === null ? '—' : Number(nota.nota).toFixed(2).replace('.', ',')}</td>
-				<td class="px-3 py-2">${escaparTextoPerfil(nota.classificacao || (nota.situacao === 'sem_nota' ? 'Sem nota lançada' : 'Nota inválida'))}</td>
+				<td class="px-3 py-2"><span class="pdt-classification-label ${classeClassificacaoDesempenho(nota.classificacao)}">${escaparTextoPerfil(nota.classificacao || (nota.situacao === 'sem_nota' ? 'Sem nota lançada' : 'Nota inválida'))}</span></td>
 			</tr>
 		`).join('');
 
@@ -2875,7 +2897,7 @@ async function abrirPerfilPedagogico(idAluno){
 			<li class="rounded-xl border border-gray-100 bg-gray-50 p-3">
 				<p class="font-semibold text-gray-800">${escaparTextoPerfil(ocorrencia.tipo_ocorrencia)}</p>
 				<p class="mt-1 text-sm text-gray-600">${escaparTextoPerfil(ocorrencia.descricao || 'Sem descrição')}</p>
-				<p class="mt-2 text-xs text-gray-500">${escaparTextoPerfil(ocorrencia.data_ocorrencia)}</p>
+				<p class="mt-2 text-xs text-gray-500">${escaparTextoPerfil(ocorrencia.data_ocorrencia)} · ${escaparTextoPerfil(ocorrencia.serie_turma)}º ano / ${escaparTextoPerfil(ocorrencia.ano_letivo)}</p>
 			</li>
 		`).join('');
 		const acompanhamentos = (aluno.acompanhamentos || []).map(acompanhamento => `
@@ -2883,12 +2905,12 @@ async function abrirPerfilPedagogico(idAluno){
 				<p class="font-semibold text-gray-800">${escaparTextoPerfil(acompanhamento.motivo)} · ${escaparTextoPerfil(acompanhamento.status)}</p>
 				<p class="mt-1 whitespace-pre-wrap text-sm text-gray-600">${escaparTextoPerfil(acompanhamento.observacao)}</p>
 				${acompanhamento.encaminhamento ? `<p class="mt-1 whitespace-pre-wrap text-sm text-gray-600">Encaminhamento: ${escaparTextoPerfil(acompanhamento.encaminhamento)}</p>` : ''}
-				<p class="mt-2 text-xs text-gray-500">Registro: ${escaparTextoPerfil(acompanhamento.data_registro)}${acompanhamento.data_retorno ? ` · Retorno previsto: ${escaparTextoPerfil(acompanhamento.data_retorno)}` : ''}</p>
+				<p class="mt-2 text-xs text-gray-500">${escaparTextoPerfil(acompanhamento.serie_turma)}º ano / ${escaparTextoPerfil(acompanhamento.ano_letivo)} · Registro: ${escaparTextoPerfil(acompanhamento.data_registro)}${acompanhamento.data_retorno ? ` · Retorno previsto: ${escaparTextoPerfil(acompanhamento.data_retorno)}` : ''}</p>
 			</li>
 		`).join('');
 		const deliberacoesConselho = (aluno.deliberacoes_conselho || []).map(deliberacao => `
 			<li class="rounded-xl border border-gray-100 bg-gray-50 p-3">
-				<p class="font-semibold text-gray-800">${escaparTextoPerfil(deliberacao.bimestre)}º bimestre · ${escaparTextoPerfil(deliberacao.data_conselho)}</p>
+				<p class="font-semibold text-gray-800">${escaparTextoPerfil(deliberacao.bimestre)}º bimestre · ${escaparTextoPerfil(deliberacao.data_conselho)} · ${escaparTextoPerfil(deliberacao.serie_turma)}º ano / ${escaparTextoPerfil(deliberacao.ano_letivo)}</p>
 				<p class="mt-1 text-sm text-gray-600">${escaparTextoPerfil(deliberacao.pauta)}</p>
 				<p class="mt-1 whitespace-pre-wrap text-sm text-gray-600">${escaparTextoPerfil(deliberacao.observacao)}</p>
 				${deliberacao.encaminhamento ? `<p class="mt-1 whitespace-pre-wrap text-sm text-gray-600">Encaminhamento: ${escaparTextoPerfil(deliberacao.encaminhamento)}</p>` : ''}
@@ -2902,7 +2924,7 @@ async function abrirPerfilPedagogico(idAluno){
 				<div class="rounded-xl border border-gray-100 bg-gray-50 p-4"><p class="text-xs text-gray-500">Período de frequência</p><p class="mt-1 font-semibold text-gray-800">${frequencia.primeira_data ? escaparTextoPerfil(frequencia.primeira_data) : 'Sem dados registrados'}</p><p class="text-sm text-gray-600">${frequencia.ultima_data ? `Último registro: ${escaparTextoPerfil(frequencia.ultima_data)}` : ''}</p></div>
 			</div>
 			<section><h3 class="mb-2 text-lg font-semibold text-gray-800">Notas por disciplina e bimestre</h3>
-				${linhasNotas ? `<div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="text-gray-500"><th class="px-3 py-2">Bimestre</th><th class="px-3 py-2">Disciplina</th><th class="px-3 py-2">Nota</th><th class="px-3 py-2">Classificação</th></tr></thead><tbody>${linhasNotas}</tbody></table></div>` : '<p class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Sem notas registradas.</p>'}
+				${linhasNotas ? `<div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="text-gray-500"><th class="px-3 py-2">Ano</th><th class="px-3 py-2">Bimestre</th><th class="px-3 py-2">Disciplina</th><th class="px-3 py-2">Nota</th><th class="px-3 py-2">Classificação</th></tr></thead><tbody>${linhasNotas}</tbody></table></div>` : '<p class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Sem notas registradas.</p>'}
 			</section>
 			<section><h3 class="mb-2 text-lg font-semibold text-gray-800">Ocorrências</h3>
 				${ocorrencias ? `<ul class="space-y-2">${ocorrencias}</ul>` : '<p class="rounded-xl bg-gray-50 p-4 text-sm text-gray-500">Sem ocorrências registradas.</p>'}
@@ -2971,7 +2993,7 @@ function abrirModalRegistrarAluno(turmaIdParam = null){
 	
 	formRegistrarAluno.reset();
 	
-	// Prioridade de c�pia: par�metro > turmaAtualId > turmaIdModal.value > turmaIdRegistrar.value
+	// Prioridade de cópia: parâmetro > turmaAtualId > turmaIdModal.value > turmaIdRegistrar.value
 	let turmaFinal = null;
 	
 	if (turmaIdParam) {
@@ -3002,7 +3024,7 @@ function fecharModalRegistrarAluno(){
 
 if (btnRegistrarAlunoModal) {
 	btnRegistrarAlunoModal.addEventListener('click', () => {
-		// Passar turmaIdModal.value como par�metro
+		// Passar turmaIdModal.value como parâmetro
 		abrirModalRegistrarAluno(getTurmaIdModal()?.value);
 	});
 }
@@ -3082,7 +3104,7 @@ if (campoBuscarAlunoFull) {
 	});
 }
 
-// Quando a data da frequ�ncia mudar e o modal estiver aberto, recarregar registros
+// Quando a data da frequência mudar e o modal estiver aberto, recarregar registros
 if (dataFrequenciaInput) {
 	dataFrequenciaInput.addEventListener('change', async () => {
 		try {
@@ -3093,7 +3115,7 @@ if (dataFrequenciaInput) {
 				await abrirConsultarFrequencia();
 			}
 		} catch (e) {
-			console.error('Erro ao recarregar frequ�ncia ap�s mudan�a de data:', e);
+			console.error('Erro ao recarregar frequência após mudança de data:', e);
 		}
 	});
 }
@@ -3158,7 +3180,7 @@ if (selectTurmaOcorrencia) {
 			});
 		} catch (err) {
 			console.error(err);
-			selectAlunoOcorrencia.innerHTML = '<option value="">Erro de conex�o</option>';
+			selectAlunoOcorrencia.innerHTML = '<option value="">Erro de conexão</option>';
 			selectAlunoOcorrencia.disabled = true;
 		}
 	});
@@ -3267,7 +3289,7 @@ async function carregarAlunosTurma(turmaId){
 		renderizarListaAlunos(alunosModalCache);
 		renderizarListaAlunosFull(alunosModalCache);
 
-		// Atualizar contador na visualiza��o detalhada da turma (quando presente)
+		// Atualizar contador na visualização detalhada da turma (quando presente)
 		try {
 			const contadorDetalhe = document.getElementById('contadorAlunosDetalhe');
 			if (contadorDetalhe) {
@@ -3278,7 +3300,7 @@ async function carregarAlunosTurma(turmaId){
 		}
 	} catch (err) {
 		console.error(err);
-		listaAlunosModal.innerHTML = '<div class="text-red-500">Erro de conex�o</div>';
+		listaAlunosModal.innerHTML = '<div class="text-red-500">Erro de conexão</div>';
 	}
 }
 
@@ -3287,7 +3309,7 @@ async function carregarFrequenciaTurma(turmaId, data){
 		const res = await fetch(`../controllers/frequencia_controller.php?action=listar_frequencia&id_turma=${encodeURIComponent(turmaId)}&data=${encodeURIComponent(data)}`);
 		const json = await res.json();
 		if (!json.sucesso) {
-			throw new Error(json.erro || 'Erro ao carregar frequ�ncia');
+			throw new Error(json.erro || 'Erro ao carregar frequência');
 		}
 		return json.dados || [];
 	} catch (err) {
@@ -3298,6 +3320,7 @@ async function carregarFrequenciaTurma(turmaId, data){
 
 function definirModoFrequencia(modo, data){
 	frequenciaMode = modo;
+	btnRegistrarAlunoModal?.classList.toggle('hidden', modo !== null);
 	if (modo === 'realizar') {
 		textoModoFrequencia.textContent = `Registrando frequência para ${data}`;
 		btnSalvarFrequencia.classList.remove('hidden');
@@ -3321,12 +3344,12 @@ function definirModoFrequencia(modo, data){
 
 async function abrirRealizarFrequencia(){
 	if (!dataFrequenciaInput.value) {
-		alert('Selecione a data da frequ�ncia primeiro');
+		alert('Selecione a data da frequência primeiro');
 		return;
 	}
 	const turmaId = getTurmaIdModal()?.value;
 	if (!turmaId) {
-		alert('Turma inv�lida');
+		alert('Turma inválida');
 		return;
 	}
 	const data = dataFrequenciaInput.value;
@@ -3353,7 +3376,7 @@ async function abrirConsultarFrequencia(){
 	}
 	const turmaId = getTurmaIdModal()?.value;
 	if (!turmaId) {
-		alert('Turma inv�lida');
+		alert('Turma inválida');
 		return;
 	}
 	const data = dataFrequenciaInput.value;
@@ -3383,7 +3406,7 @@ async function salvarFrequencia(){
 		status: frequenciaRegistros[id_aluno]
 	}));
 	if (!registros.length) {
-		alert('N�o h� registros para salvar');
+		alert('Não há registros para salvar');
 		return;
 	}
 	try {
@@ -3394,17 +3417,17 @@ async function salvarFrequencia(){
 		});
 		const json = await res.json();
 		if (json.sucesso) {
-			alert('frequ�ncia salva com sucesso!');
+			alert('frequência salva com sucesso!');
 			frequenciaMode = null;
 			definirModoFrequencia(null);
 			carregarAlunosTurma(turmaId);
 			atualizarContadorFrequencia();
 		} else {
-			alert('Erro ao salvar frequ�ncia: ' + (json.erro || 'Erro desconhecido'));
+			alert('Erro ao salvar frequência: ' + (json.erro || 'Erro desconhecido'));
 		}
 	} catch (err) {
 		console.error(err);
-		alert('Erro de conex�o');
+		alert('Erro de conexão');
 	}
 }
 
@@ -3427,7 +3450,7 @@ async function atualizarContadorAlunos(turmaIdParam = null){
 			}
 		}
 
-		// Fallback: contar alunos do professor (endpoint j� existente)
+		// Fallback: contar alunos do professor (endpoint já existente)
 		console.debug('[atualizarContadorAlunos] fazendo fallback contar_alunos');
 		const res2 = await fetch('../controllers/aluno_controller.php?action=contar_alunos');
 		const json2 = await res2.json();
@@ -3437,6 +3460,24 @@ async function atualizarContadorAlunos(turmaIdParam = null){
 		}
 	} catch (err) {
 		console.error('Erro ao atualizar contador de alunos:', err);
+	}
+}
+
+async function atualizarContadorAlunosDetalhe(turmaId){
+	const contadorDetalhe = document.getElementById('contadorAlunosDetalhe');
+	if (!contadorDetalhe || !turmaId) return;
+
+	contadorDetalhe.textContent = '…';
+	try {
+		const res = await fetch('../controllers/aluno_controller.php?action=listar_alunos&id_turma=' + encodeURIComponent(turmaId));
+		const json = await res.json();
+		if (!res.ok || !json.sucesso) {
+			throw new Error(json.erro || 'Não foi possível carregar a quantidade de alunos.');
+		}
+		contadorDetalhe.textContent = String((json.dados || []).length);
+	} catch (err) {
+		console.error('Erro ao atualizar contador de alunos da turma:', err);
+		contadorDetalhe.textContent = '—';
 	}
 }
 
@@ -3451,7 +3492,7 @@ async function atualizarContadorOcorrencias(){
 			contadorOcorrencias.textContent = json.total;
 		}
 	} catch (err) {
-		console.error('Erro ao atualizar contador de ocorr�ncias:', err);
+		console.error('Erro ao atualizar contador de ocorrências:', err);
 	}
 }
 
@@ -3465,7 +3506,7 @@ async function atualizarContadorFrequencia(){
 			contadorFrequencia.textContent = json.media || 0;
 		}
 	} catch (err) {
-		console.error('Erro ao atualizar contador de frequ�ncia:', err);
+		console.error('Erro ao atualizar contador de frequência:', err);
 	}
 }
 
@@ -3509,7 +3550,7 @@ async function carregarDesempenhoProfessor(turmaId = null) {
 
 	if (!isPdt || !turmas.length) {
 		if (mensagemEl) {
-			mensagemEl.textContent = 'Voc� n�o � Professor Diretor de Turma (PDT) de nenhuma turma. O painel de desempenho est� dispon�vel apenas para professores PDT.';
+			mensagemEl.textContent = 'Você não é Professor Diretor de Turma (PDT) de nenhuma turma. O painel de desempenho está disponível apenas para professores PDT.';
 			mensagemEl.classList.remove('hidden');
 		}
 		if (cardEl) cardEl.classList.add('hidden');
@@ -3523,7 +3564,7 @@ async function carregarDesempenhoProfessor(turmaId = null) {
 	turmas.forEach((turma) => {
 		const option = document.createElement('option');
 		option.value = turma.id_turma;
-		option.textContent = `${turma.serie_turma}� ${turma.letra} - ${turma.nome_curso}`;
+		option.textContent = `${turma.serie_turma}º ${turma.letra} - ${turma.nome_curso}`;
 		selectEl.appendChild(option);
 	});
 
@@ -3569,8 +3610,20 @@ async function carregarDesempenhoProfessorDados(turmaId) {
 		mediaEl.textContent = dados.media_geral === null || dados.media_geral === undefined
 			? '—'
 			: Number(dados.media_geral).toFixed(2).replace('.', ',');
-		classificacaoEl.textContent = dados.classificacao
+		const classificacao = dados.classificacao
 			|| (dados.situacao_desempenho === 'dados_invalidos' ? 'Dados inválidos' : 'Sem dados registrados');
+		classificacaoEl.textContent = classificacao;
+		classificacaoEl.classList.remove(
+			'pdt-classification-label',
+			'pdt-classification--very-critical',
+			'pdt-classification--critical',
+			'pdt-classification--intermediate',
+			'pdt-classification--adequate'
+		);
+		const classeClassificacao = classeClassificacaoDesempenho(classificacao);
+		if (classeClassificacao) {
+			classificacaoEl.classList.add('pdt-classification-label', classeClassificacao);
+		}
 		alunosEl.textContent = String(dados.total_alunos ?? 0);
 		notasEl.textContent = String(dados.total_notas ?? 0);
 		if (document.getElementById('contadorDesempenho')) {
@@ -3581,7 +3634,7 @@ async function carregarDesempenhoProfessorDados(turmaId) {
 	} catch (err) {
 		console.error('Erro ao carregar desempenho da turma:', err);
 		if (mensagemEl) {
-			mensagemEl.textContent = 'N�o foi poss�vel carregar o desempenho desta turma.';
+			mensagemEl.textContent = 'Não foi possível carregar o desempenho desta turma.';
 			mensagemEl.classList.remove('hidden');
 		}
 		if (cardEl) cardEl.classList.add('hidden');
@@ -3595,7 +3648,7 @@ if (selectTurmaDesempenhoProfessor) {
 	});
 }
 
-// Carregar gr�fico de frequ�ncia: �ltimos N dias (por turma)
+// Carregar gráfico de frequência: últimos N dias (por turma)
 async function carregarGraficoFrequencia(days = 8){
 	const container = document.getElementById('graficoFrequencia');
 	if (!container) return;
@@ -3608,7 +3661,7 @@ async function carregarGraficoFrequencia(days = 8){
 		return;
 	}
 
-	// Montar lista de datas (dias atr�s)
+	// Montar lista de datas (dias atrás)
 	const dates = [];
 	const today = new Date();
 	for (let i = days - 1; i >= 0; i--) {
@@ -3617,7 +3670,7 @@ async function carregarGraficoFrequencia(days = 8){
 		dates.push(d.toISOString().slice(0,10));
 	}
 
-	// Buscar frequ�ncia para cada data e calcular percentual
+	// Buscar frequência para cada data e calcular percentual
 	const results = [];
 	for (const data of dates) {
 		try {
@@ -3634,7 +3687,7 @@ async function carregarGraficoFrequencia(days = 8){
 			const percent = total === 0 ? 0 : Math.round((presentes / total) * 100);
 			results.push({data, percent});
 		} catch (e) {
-			console.error('Erro ao carregar frequ�ncia para', data, e);
+			console.error('Erro ao carregar frequência para', data, e);
 			results.push({data, percent: 0});
 		}
 	}
@@ -3661,7 +3714,7 @@ async function carregarGraficoFrequencia(days = 8){
 	});
 }
 
-// Atualizar gr�fico na inicializa��o e quando mudar turma
+// Atualizar gráfico na inicialização e quando mudar turma
 document.addEventListener('click', (e) => {
 	const btnEntrar = e.target.closest('.btn-entrar-turma');
 	if (btnEntrar) {
@@ -3713,7 +3766,7 @@ function renderizarListaAlunos(alunos, registros = {}, mode = 'alunos', edit = f
 		div.innerHTML = `
 			<div>
 				<div class="font-semibold">${a.nome || ''} <span class="text-sm text-gray-500">(${a.matricula})</span></div>
-				<div class="text-sm text-gray-500">${a.email} - PCD: ${a.pcd || 'n�o'}</div>
+				<div class="text-sm text-gray-500">${a.email} - PCD: ${a.pcd || 'não'}</div>
 			</div>
 			<div class="flex items-center gap-2">
 				${canEdit ? `<button data-id="${a.id_aluno}" data-nome="${a.nome}" data-matricula="${a.matricula}" data-email="${a.email}" data-pcd="${a.pcd}" data-rendimento="${a.rendimento}" class="btn-editar-aluno h-8 px-3 rounded-xl border border-[#FBBF24]">Editar</button>` : ''}
@@ -3787,7 +3840,7 @@ if (confirmarExcluirAlunoBtn) {
 			}
 		} catch (err) {
 			console.error(err);
-			alert('Erro de conex�o');
+			alert('Erro de conexão');
 		}
 	});
 }
@@ -3819,7 +3872,7 @@ if (formAlunoModal) {
 
 		if (!nome) { alert('Preencha o nome do aluno'); return; }
 
-		if (!/^[0-9]{7}$/.test(matricula)) { alert('Matr�cula deve ter exatamente 7 d�gitos num�ricos'); return; }
+		if (!/^[0-9]{7}$/.test(matricula)) { alert('Matrícula deve ter exatamente 7 dígitos numéricos'); return; }
 
 		if (!email) { alert('Preencha o email do aluno'); return; }
 
@@ -3841,7 +3894,7 @@ if (formAlunoModal) {
 			}
 		} catch (err) {
 			console.error(err);
-			alert('Erro de conex�o');
+			alert('Erro de conexão');
 		}
 	});
 }
@@ -3858,7 +3911,7 @@ if (formRegistrarAluno) {
 		const pcd = document.getElementById('pcdAlunoRegistrar').value;
 		const rendimento = 0;
 		
-		// Converter turmaId para n�mero inteiro
+		// Converter turmaId para número inteiro
 		const turmaIdValue = (turmaIdRegistrar.value || '').trim();
 		const turmaId = turmaIdValue ? parseInt(turmaIdValue, 10) : null;
 
@@ -3866,13 +3919,13 @@ if (formRegistrarAluno) {
 
 		if (!nome) { alert('Preencha o nome do aluno'); return; }
 
-		if (!/^[0-9]{7}$/.test(matricula)) { alert('Matr�cula deve ter exatamente 7 d�gitos num�ricos'); return; }
+		if (!/^[0-9]{7}$/.test(matricula)) { alert('Matrícula deve ter exatamente 7 dígitos numéricos'); return; }
 
 		if (!email) { alert('Preencha o email do aluno'); return; }
 
 		if (!turmaId || turmaId === 0) { 
-			console.error('Turma n�o foi selecionada. turmaIdRegistrar.value:', turmaIdRegistrar.value, 'turmaId:', turmaId);
-			alert('Turma n�o foi selecionada. Tente novamente.'); 
+			console.error('Turma não foi selecionada. turmaIdRegistrar.value:', turmaIdRegistrar.value, 'turmaId:', turmaId);
+			alert('Turma não foi selecionada. Tente novamente.');
 			return; 
 		}
 
@@ -3897,7 +3950,7 @@ if (formRegistrarAluno) {
 				j = JSON.parse(texto);
 			} catch (parseErr) {
 				console.error('Falha ao decodificar JSON do servidor:', texto);
-				throw new Error('Resposta inv�lida do servidor');
+				throw new Error('Resposta inválida do servidor');
 			}
 			console.log('Resposta do servidor:', j);
 			
@@ -3911,18 +3964,18 @@ if (formRegistrarAluno) {
 			} else {
 				const erro = j.erro || 'Erro desconhecido ao registrar aluno';
 				console.error('? Erro do servidor:', erro);
-				// N�O fecha o modal para user corrigir e tentar de novo
+				// NÃO fecha o modal para user corrigir e tentar de novo
 				mostrarToastAluno('? ' + erro, 'erro');
 				alert('Erro ao registrar: ' + erro);
 			}
 		} catch (err) {
-			console.error('? Erro na requisi��o:', err);
-			mostrarToastAluno('? Erro de conex�o: ' + err.message, 'erro');
-			alert('Erro de conex�o: ' + err.message);
+			console.error('? Erro na requisição:', err);
+			mostrarToastAluno('? Erro de conexão: ' + err.message, 'erro');
+			alert('Erro de conexão: ' + err.message);
 		}
 	});
 } else {
-	console.warn('formRegistrarAluno n�o encontrado!');
+	console.warn('formRegistrarAluno não encontrado!');
 }
 
 // MODAL EDITAR
@@ -3974,7 +4027,7 @@ formEditarAluno.addEventListener('submit', async (e) => {
 	const turmaId = turmaAtualId || getTurmaIdModal()?.value || null;
 
 	if (!id_aluno) {
-		alert('ID do aluno n�o encontrado');
+		alert('ID do aluno não encontrado');
 		return;
 	}
 
@@ -3984,7 +4037,7 @@ formEditarAluno.addEventListener('submit', async (e) => {
 	}
 
 	if (!/^[0-9]{7}$/.test(matricula)) {
-		alert('Matr�cula deve ter exatamente 7 d�gitos num�ricos');
+		alert('Matrícula deve ter exatamente 7 dígitos numéricos');
 		return;
 	}
 
@@ -4013,11 +4066,11 @@ formEditarAluno.addEventListener('submit', async (e) => {
 		}
 	} catch (err) {
 		console.error(err);
-		alert('Erro de conex�o');
+		alert('Erro de conexão');
 	}
 });
 
-// delega��o para bot�es Consultar
+// delegação para botões Consultar
 document.querySelectorAll('.btn-consultar').forEach(btn => {
 	btn.addEventListener('click', (e) => {
 		const id = btn.getAttribute('data-turma-id');
@@ -4045,7 +4098,7 @@ atualizarContadorFrequencia();
 atualizarContadorDesempenho();
 	carregarDesempenhoProfessor();
 	try {
-		// Tenta diversas fontes para obter um id de turma ao carregar a p�gina
+		// Tenta diversas fontes para obter um id de turma ao carregar a página
 		console.debug('[autoLoadTurmaDetail] estado inicial turmaAtualId=', turmaAtualId);
 		if (typeof turmaAtualId === 'undefined' || !turmaAtualId) {
 			const modalInput = getTurmaIdModal();
@@ -4080,7 +4133,7 @@ atualizarContadorDesempenho();
 				atualizarContadorAlunos(turmaAtualId);
 			}
 		} else {
-			// j� temos turmaAtualId definido: garantir que os contadores estejam corretos
+			// já temos turmaAtualId definido: garantir que os contadores estejam corretos
 			atualizarContadorAlunos(turmaAtualId);
 		}
 	} catch (e) {

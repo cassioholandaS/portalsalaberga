@@ -29,3 +29,7 @@ As interfaces autenticadas usam os temas Claro e Escuro, com preferência isolad
 
 Para ativar acompanhamento pedagógico e conselho em bancos existentes, aplique manualmente `app/main/config/migrations/002_acompanhamento_conselho.sql` no banco `sistema_pdt` antes de abrir a tela do professor. A migração usa `CREATE TABLE IF NOT EXISTS` e pode ser reaplicada.
 Para habilitar os metadados de entidade já usados pelo modelo de notificações, aplique também `app/main/config/migrations/003_notificacoes_entidade.sql`.
+
+Para ativar a progressão automática, aplique `app/main/config/migrations/004_progressao_anual.sql` no banco `sistema_pdt`. A partir de 1º de janeiro, na primeira abertura autenticada do sistema, os alunos ativos do 1º e 2º anos avançam para novas turmas do mesmo curso, sala e PDT; os do 3º ano são arquivados como concluintes. As turmas antigas, seus vínculos históricos de alunos e os registros acadêmicos são mantidos. O sistema registra cada ano de destino para impedir a execução duplicada. As novas turmas de 1º ano continuam sendo cadastradas pelo gestor.
+
+A migração registra o ano de instalação como referência inicial para evitar progressão retroativa. Se aplicada durante o ano letivo, a automação começa na virada seguinte; aplique e valide a migração antes do próximo 1º de janeiro.

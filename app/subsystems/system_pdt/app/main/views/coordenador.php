@@ -32,15 +32,15 @@ $csrfToken = $_SESSION['csrf_token'] ?? gerarCsrfToken();
             transition: opacity .25s ease;
         }
     </style>
-    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=16">
-    <script src="../assets/js/system-pdt-ui.js" defer></script>
+    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=35">
+    <script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
 </head>
 <body class="pdt-interface min-h-screen">
 <div class="flex min-h-screen">
-    <aside class="pdt-sidebar sidebar-panel border-r border-slate-800 bg-slate-950 flex flex-col justify-between">
+    <aside id="pdtSidebar" class="pdt-sidebar sidebar-panel border-r border-slate-800 bg-slate-950 flex flex-col justify-between">
         <div>
             <div class="pdt-brand flex items-center gap-3">
-                <span class="pdt-brand-mark"><img src="../assets/images/s_simbol.png" alt="" class="pdt-brand-logo"></span>
+                <span class="pdt-brand-mark"><img src="../../../../entradasaida/app/main/assets/img/logo.png" alt="" class="pdt-brand-logo"></span>
                 <div>
                     <h1 class="font-bold text-[18px]">Sistema <span>Salaberga</span></h1>
                     <p>Professor Diretor de Turma</p>
@@ -55,23 +55,30 @@ $csrfToken = $_SESSION['csrf_token'] ?? gerarCsrfToken();
                 <button data-section="sec-notificacoes" class="coord-nav effect-bar"><i class="bi bi-bell" aria-hidden="true"></i>Notificações</button>
             </nav>
         </div>
+        <div class="w-full">
+        <div class="pdt-account-tools">
+            <div class="pdt-account-user">
+                <span class="pdt-account-avatar"><?= htmlspecialchars(substr((string) ($usuarioAtual['nome'] ?? $_SESSION['nome'] ?? 'U'), 0, 1), ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="pdt-account-details">
+                    <span><?= htmlspecialchars((string) ($usuarioAtual['nome'] ?? $_SESSION['nome'] ?? 'Usuário'), ENT_QUOTES, 'UTF-8') ?></span>
+                    <span class="pdt-account-role"><?= htmlspecialchars((string) ($usuarioAtual['tipo'] ?? $_SESSION['tipo'] ?? 'Coordenador'), ENT_QUOTES, 'UTF-8') ?></span>
+                </span>
+            </div>
+            <button class="pdt-notifications-toggle" type="button" aria-label="Abrir notificações" title="Notificações" onclick="document.querySelector('[data-section=&quot;sec-notificacoes&quot;]').click()">
+                <i class="bi bi-bell" aria-hidden="true"></i>
+            </button>
+        </div>
         <form action="../controllers/usuario_controller.php?action=logout" method="POST" class="m-0 p-0">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-            <button type="submit" class="flex items-center"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Sair</button>
+            <button type="submit" class="pdt-logout-button"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sair</span></button>
         </form>
+        </div>
     </aside>
+    <button class="pdt-sidebar-collapse-toggle" type="button" aria-controls="pdtSidebar" aria-label="Recolher barra lateral" aria-expanded="true" title="Recolher barra lateral">
+        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+    </button>
 
     <div class="pdt-main-offset flex-1 lg:ml-[280px]">
-        <header class="pdt-topbar flex items-center justify-between border-b">
-            <div class="min-w-0">
-                <h2 class="text-2xl font-bold">Sistema PDT</h2>
-                <p class="hidden sm:block">Olá, <?= htmlspecialchars($usuarioAtual['nome'] ?? $_SESSION['nome']) ?>. Acompanhe os principais indicadores do sistema.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="rounded-full bg-slate-800 px-4 py-3 text-slate-200"><?= htmlspecialchars($usuarioAtual['tipo'] ?? '') ?></div>
-            </div>
-        </header>
-
         <div class="pdt-mobile-nav lg:hidden border-b border-slate-800 bg-slate-950 px-6 py-4">
             <div class="grid grid-cols-3 gap-2">
                 <button class="coord-nav w-full rounded-3xl border border-slate-700 bg-slate-900 px-3 py-3 text-sm text-slate-100" data-section="sec-dashboard">Dashboard</button>

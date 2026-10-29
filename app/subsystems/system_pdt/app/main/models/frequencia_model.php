@@ -36,6 +36,21 @@ class FrequenciaModel extends connect
     public function salvarFrequencia($id_turma, $id_aluno, $id_professor, $data, $status)
     {
         try {
+            $stmtAluno = $this->conn->prepare(
+                "SELECT 1 FROM alunos
+                 WHERE id_aluno = :id_aluno
+                   AND id_turma = :id_turma
+                   AND status_aluno = 'ativo'
+                 LIMIT 1"
+            );
+            $stmtAluno->execute([
+                ':id_aluno' => $id_aluno,
+                ':id_turma' => $id_turma
+            ]);
+            if (!$stmtAluno->fetchColumn()) {
+                return false;
+            }
+
             $stmt = $this->conn->prepare(
                 "INSERT INTO frequencias (id_turma, id_aluno, id_professor, data_frequencia, status)
                  VALUES (:id_turma, :id_aluno, :id_professor, :data_frequencia, :status)
