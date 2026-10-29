@@ -6,6 +6,16 @@ iniciarSessaoSegura();
 
 // Verificar sessão e tipo de usuário
 if (isset($_SESSION['id_usuario'])) {
+    require_once('./models/progressao_ano_letivo_model.php');
+
+    try {
+        (new ProgressaoAnoLetivoModel())->executarSeNecessario();
+    } catch (RuntimeException $e) {
+        http_response_code(503);
+        echo '<!DOCTYPE html><html lang="pt-br"><meta charset="UTF-8"><title>Sistema temporariamente indisponível</title>';
+        echo '<body><p>Não foi possível preparar o novo ano letivo. Avise o gestor do sistema.</p></body></html>';
+        exit;
+    }
 
     if ($_SESSION['tipo'] === 'gestor') {
 
@@ -46,7 +56,7 @@ if (isset($_SESSION['id_usuario'])) {
     <meta name="keywords" content="login, acesso, EEEP Salaberga, sistema educacional, Maranguape">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="./assets/images/s_simbol.png">
+    <link rel="icon" type="image/png" href="../../../entradasaida/app/main/assets/img/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -59,8 +69,8 @@ if (isset($_SESSION['id_usuario'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="./assets/css/system-pdt.css?v=16">
-    <script src="./assets/js/system-pdt-ui.js" defer></script>
+    <link rel="stylesheet" href="./assets/css/system-pdt.css?v=35">
+    <script src="./assets/js/system-pdt-ui.js?v=2" defer></script>
 
     <script>
         tailwind.config = {
@@ -585,7 +595,7 @@ if (isset($_SESSION['id_usuario'])) {
                 <!-- Logo Container com efeitos Ghibli -->
                 <div class="text-center mb-6 sm:mb-8 pt-12">
                     <div class="inline-block p-3 sm:p-4 rounded-2xl">
-                        <img src="./assets/images/s_simbol.png"
+                        <img src="../../../entradasaida/app/main/assets/img/logo.png"
                              alt="Logo EEEP Salaberga" 
                              class="w-16 h-16 sm:w-20 sm:h-20 object-contain">
                     </div>

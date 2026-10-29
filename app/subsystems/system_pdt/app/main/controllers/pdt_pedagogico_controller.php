@@ -171,7 +171,7 @@ try {
             responderPdtPedagogico(['sucesso' => false, 'erro' => 'Confira os campos e as datas do acompanhamento'], 422);
         }
 
-        $stmtAluno = $conn->prepare('SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma LIMIT 1');
+        $stmtAluno = $conn->prepare("SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma AND status_aluno = 'ativo' LIMIT 1");
         $stmtAluno->execute([':id_aluno' => $idAluno, ':id_turma' => $idTurma]);
         if (!$stmtAluno->fetchColumn()) {
             responderPdtPedagogico(['sucesso' => false, 'erro' => 'O aluno não pertence à turma selecionada'], 422);
@@ -273,7 +273,7 @@ try {
         if ($conselho['status'] !== 'rascunho') {
             responderPdtPedagogico(['sucesso' => false, 'erro' => 'Conselhos finalizados não podem ser alterados'], 409);
         }
-        $stmtAluno = $conn->prepare('SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma LIMIT 1');
+        $stmtAluno = $conn->prepare("SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma AND status_aluno = 'ativo' LIMIT 1");
         $stmtAluno->execute([':id_aluno' => $idAluno, ':id_turma' => $conselho['id_turma']]);
         if (!$stmtAluno->fetchColumn()) {
             responderPdtPedagogico(['sucesso' => false, 'erro' => 'O aluno não pertence à turma deste conselho'], 422);

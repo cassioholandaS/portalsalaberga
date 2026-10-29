@@ -169,9 +169,12 @@ function go(page, sid) {
   }
   if (nav) { nav.classList.add('active'); if(nav.querySelector('.ni')) nav.querySelector('.ni').style.color = 'var(--gold)'; }
   const [t,s] = pageMeta[page] || ['',''];
-  document.getElementById('pg-title').textContent = t;
-  document.getElementById('pg-sub').textContent = s;
+  const pageTitle = document.getElementById('pg-title');
+  const pageSubtitle = document.getElementById('pg-sub');
+  if (pageTitle) pageTitle.textContent = t;
+  if (pageSubtitle) pageSubtitle.textContent = s;
   document.getElementById('notif-dd').style.display = 'none';
+  document.getElementById('bell-btn').setAttribute('aria-expanded', 'false');
   if (window.innerWidth <= 768) fecharMenu();
   if (page === 'dashboard') refreshDash();
   if (page === 'perfis')    { filtered = [...students]; renderTable(filtered); if(document.getElementById('srch-inp')) document.getElementById('srch-inp').value=''; if(document.getElementById('fil-turma')) document.getElementById('fil-turma').value=''; if(document.getElementById('fil-diag')) document.getElementById('fil-diag').value=''; }
@@ -2810,6 +2813,7 @@ function handleAlunoSaveResponse(data, nome) {
     const dd=document.getElementById('notif-dd');
     const open=dd.style.display==='block';
     dd.style.display=open?'none':'block';
+    document.getElementById('bell-btn').setAttribute('aria-expanded', String(!open));
     if(!open){notifCount=0;document.getElementById('notif-badge').style.display='none';}
   }
 
@@ -2841,7 +2845,10 @@ function handleAlunoSaveResponse(data, nome) {
   document.addEventListener('click', e => {
     const dd=document.getElementById('notif-dd');
     const btn=document.getElementById('bell-btn');
-    if(!dd.contains(e.target)&&!btn.contains(e.target)) dd.style.display='none';
+    if(!dd.contains(e.target)&&!btn.contains(e.target)) {
+      dd.style.display='none';
+      btn.setAttribute('aria-expanded', 'false');
+    }
     const modal = e.target.closest('.modal-bg');
     if (modal && e.target === modal) modal.classList.remove('open');
     const seletor = document.getElementById('diag-multiselect');
@@ -2854,6 +2861,7 @@ function handleAlunoSaveResponse(data, nome) {
     if(e.key==='Escape'){
       document.querySelectorAll('.modal-bg.open').forEach(modal => modal.classList.remove('open'));
       document.getElementById('notif-dd').style.display='none';
+      document.getElementById('bell-btn').setAttribute('aria-expanded', 'false');
     }
   });
 

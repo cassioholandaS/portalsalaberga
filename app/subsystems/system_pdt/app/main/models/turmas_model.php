@@ -38,7 +38,8 @@
 
                 $sql = "SELECT t.id_turma 
                     FROM turmas t
-                    WHERE t.id_professor = :id_professor " . $condition . "
+                    WHERE t.id_professor = :id_professor
+                      AND t.ano_letivo >= YEAR(CURRENT_DATE) " . $condition . "
                     LIMIT 1";
 
                 $stmt = $this->conn->prepare($sql);
@@ -71,8 +72,21 @@
         private function desatribuirPdt($id_professor)
         {
             try {
-                $stmt = $this->conn->prepare("UPDATE usuarios SET atribuicao = NULL WHERE id = :id_professor");
-                return $stmt->execute([':id_professor' => $id_professor]);
+                $stmt = $this->conn->prepare(
+                    "UPDATE usuarios
+                     SET atribuicao = NULL
+                     WHERE id = :id_professor
+                       AND NOT EXISTS (
+                           SELECT 1
+                           FROM turmas
+                           WHERE id_professor = :id_professor_turma
+                             AND ano_letivo >= YEAR(CURRENT_DATE)
+                       )"
+                );
+                return $stmt->execute([
+                    ':id_professor' => $id_professor,
+                    ':id_professor_turma' => $id_professor
+                ]);
             } catch (PDOException $e) {
                 error_log("Erro ao desatribuir PDT do professor: " . $e->getMessage());
                 return false;
@@ -161,6 +175,7 @@
                         INNER JOIN usuarios u ON t.id_professor = u.id
                         INNER JOIN cursos c ON t.id_curso = c.id_curso
                         WHERE t.id_professor = :id_professor
+                          AND t.ano_letivo = YEAR(CURRENT_DATE)
                         ORDER BY t.ano_letivo ASC
                     ");
                     $stmt_select->bindValue(':id_professor', $id_professor, PDO::PARAM_INT);

@@ -1,5 +1,6 @@
 (() => {
     const storageKey = 'system-pdt-theme';
+    const sidebarCollapseStorageKey = 'salaberga-sidebar-collapsed';
     const themes = ['light', 'dark'];
     const html = document.documentElement;
 
@@ -50,9 +51,56 @@
         footer.innerHTML = '<span>Desenvolvido por</span><a href="https://www.instagram.com/_kauanlmx/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Kauan Cristian"><i class="bi bi-instagram" aria-hidden="true"></i><span>Kauan Cristian</span></a>';
         document.body.appendChild(footer);
 
-        const sidebar = document.querySelector('.pdt-sidebar');
+        const sidebar = document.querySelector('.pdt-sidebar') || document.querySelector('aside.sidebar-panel');
         const header = document.querySelector('.pdt-topbar');
-        if (!sidebar || !header) return;
+        if (!sidebar) return;
+        const desktopSidebarQuery = window.matchMedia('(min-width: 1024px)');
+
+        let collapseButton = document.querySelector('.pdt-sidebar-collapse-toggle');
+        if (!collapseButton) {
+            collapseButton = document.createElement('button');
+            collapseButton.type = 'button';
+            collapseButton.className = 'pdt-sidebar-collapse-toggle';
+            collapseButton.setAttribute('aria-controls', sidebar.id || 'pdtSidebar');
+            document.body.appendChild(collapseButton);
+        }
+
+        let sidebarCollapsedPreference = false;
+        try {
+            sidebarCollapsedPreference = localStorage.getItem(sidebarCollapseStorageKey) === 'true';
+        } catch (error) {
+            console.warn('Não foi possível carregar a preferência da barra lateral do PDT:', error);
+        }
+
+        const updateCollapseButton = isCollapsed => {
+            const label = isCollapsed ? 'Mostrar menu lateral' : 'Ocultar menu lateral';
+            collapseButton.setAttribute('aria-label', label);
+            collapseButton.setAttribute('aria-expanded', String(!isCollapsed));
+            collapseButton.title = label;
+        };
+        const updateSidebarCollapse = () => {
+            const isCollapsed = desktopSidebarQuery.matches && sidebarCollapsedPreference;
+            document.body.classList.toggle('pdt-sidebar-collapsed', isCollapsed);
+            sidebar.setAttribute('aria-hidden', String(isCollapsed));
+            sidebar.inert = isCollapsed;
+            updateCollapseButton(isCollapsed);
+        };
+        updateSidebarCollapse();
+        if (collapseButton.dataset.bound !== 'true') {
+            collapseButton.addEventListener('click', () => {
+                sidebarCollapsedPreference = !sidebarCollapsedPreference;
+                try {
+                    localStorage.setItem(sidebarCollapseStorageKey, String(sidebarCollapsedPreference));
+                } catch (error) {
+                    console.warn('Não foi possível salvar a preferência da barra lateral do PDT:', error);
+                }
+                updateSidebarCollapse();
+            });
+            collapseButton.dataset.bound = 'true';
+        }
+        desktopSidebarQuery.addEventListener('change', updateSidebarCollapse);
+
+        if (!sidebar.classList.contains('pdt-sidebar')) return;
 
         let menuButton = document.getElementById('openMenuBtn');
         if (!menuButton) {
@@ -63,7 +111,11 @@
             menuButton.setAttribute('aria-label', 'Abrir menu');
             menuButton.setAttribute('aria-expanded', 'false');
             menuButton.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i>';
-            header.insertBefore(menuButton, header.firstChild);
+            if (header) {
+                header.insertBefore(menuButton, header.firstChild);
+            } else {
+                document.body.prepend(menuButton);
+            }
         } else {
             menuButton.classList.add('pdt-mobile-menu-button');
             menuButton.setAttribute('aria-expanded', 'false');
