@@ -361,11 +361,11 @@ $detalhesAtraso = static function ($registro) {
     window.printEntryReceipt = (data, printWindow) => imprimirComprovante('entrada', data, printWindow, true);
     window.printExitReceipt = (data, printWindow) => imprimirComprovante('saida', data, printWindow, true);
     window.printDelayReceipt = (data, registroId, tipo = 'atraso', printWindow = null) => imprimirComprovante(tipo, {
-        aluno: data.Aluno,
-        matricula: data['Matrícula'],
-        turma: data.Turma,
-        motivo: data.Motivo,
-        justificativa: data['Justificativa do atraso'],
+        aluno: data.Aluno ?? data.aluno,
+        matricula: data['Matrícula'] ?? data.matricula,
+        turma: data.Turma ?? data.turma,
+        motivo: data.Motivo ?? data.motivo,
+        justificativa: data['Justificativa do atraso'] ?? data.justificativa ?? data.observacao,
         registro_id: registroId
     }, printWindow);
 })();
@@ -4475,6 +4475,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
     
  .delay-history-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.delay-history-table{border:1px solid #e7ece8;border-radius:8px;overflow:hidden}.delay-history-table th{position:sticky;top:0;z-index:1}.delay-history-table tbody tr:nth-child(even){background:#fafcf9}.delay-history-table tbody tr:hover{background:#f1f7f1}.delay-status{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.delay-status-pendente{background:#fff4d6;color:#8b5a00}.delay-status-aprovada{background:#e4f5e9;color:#176b38}.delay-status-recusada{background:#fde8e7;color:#9b2c25}.delay-dialog{position:fixed;top:50%;left:calc(var(--sidebar-width,0px) / 2 + 50vw);transform:translate(-50%,-50%);width:min(560px,calc(100vw - var(--sidebar-width,0px) - 2rem));max-width:calc(100vw - var(--sidebar-width,0px) - 2rem);max-height:var(--modal-max-height);padding:0;border:0;border-radius:18px;background:#fff;box-shadow:var(--modal-shadow);overflow:hidden}.delay-dialog-header{align-items:center}.delay-dialog-heading{min-width:0}.delay-dialog-heading p{margin:5px 0 0;color:#64736a;font-size:13px;line-height:1.45}.delay-dialog-content{max-height:min(52dvh,420px);overflow-y:auto;scrollbar-gutter:stable}.delay-validation-summary{margin-bottom:16px;padding:14px 16px;border:1px solid #ffdf83;border-radius:8px;background:#fffbed}.delay-validation-summary-label{margin:0 0 5px;color:#9a4b08;font-size:11px;font-weight:700;text-transform:uppercase}.delay-validation-summary-name{margin:0;color:#17251c;font-size:16px;font-weight:700}.delay-validation-summary-meta{margin:4px 0 0;color:#47574c;font-size:13px}.delay-justification-label,.delay-form-label{display:block;margin:0 0 7px;color:#26372c;font-size:13px;font-weight:700}.delay-justification{width:100%;min-height:74px;resize:vertical;padding:10px 12px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#17251c;font:400 14px/1.5 'Inter',sans-serif}.delay-extra-details{margin-top:14px;border-top:1px solid #e7ece8}.delay-extra-details summary{padding:12px 0 4px;color:#08723a;font-size:12px;font-weight:700;cursor:pointer}.delay-extra-details .delay-dialog-row{padding:8px 0}.delay-validation-form{display:grid;gap:14px}.delay-form-field{display:grid;gap:6px}.delay-form-control{width:100%;min-height:42px;padding:9px 12px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#17251c;font:400 14px 'Inter',sans-serif}.delay-form-control:focus,.delay-justification:focus{outline:2px solid #008c4530;border-color:#008c45}.delay-form-control:disabled{background:#f2f5f2;color:#43534a;opacity:1}.delay-validation-submit{display:flex;min-height:46px;align-items:center;justify-content:center;gap:9px;border:0;border-radius:7px;background:#008c45;color:#fff;font:700 14px 'Inter',sans-serif;cursor:pointer}.delay-validation-submit:hover{background:#06753e}
 .delay-dialog[open]{position:fixed;top:50%;left:calc(var(--sidebar-width,0px) / 2 + 50vw);transform:translate(-50%,-50%);width:min(560px,calc(100vw - var(--sidebar-width,0px) - 2rem));max-width:calc(100vw - var(--sidebar-width,0px) - 2rem);max-height:var(--modal-max-height);overflow-y:auto;border:1px solid rgba(15,23,42,.08);border-radius:18px;background:#fff;box-shadow:var(--modal-shadow)}.delay-dialog::backdrop{background:var(--modal-overlay)}.delay-dialog-header{padding:1.2rem 1.25rem;background:#fff;border-bottom:1px solid rgba(15,23,42,.08)}.delay-dialog-heading{display:flex;align-items:flex-start;gap:10px}.delay-dialog-heading::before{content:'\f058';flex:none;margin-top:2px;color:#008c45;font-family:'Font Awesome 6 Free';font-size:17px;font-weight:900}.delay-dialog-heading h2{font-size:19px}.delay-dialog-heading p{line-height:1.45}.delay-dialog-content{max-height:none;overflow:visible;padding:1.2rem 1.25rem}.delay-validation-summary{padding:12px 15px}.delay-justification{min-height:88px}.delay-demo-note{margin:0 0 17px;color:#64736a;font-size:12px;line-height:1.5}.delay-validation-form{gap:12px;padding:14px 20px 18px}.delay-form-control{min-height:40px}.delay-validation-form[hidden],.delay-form-field[hidden]{display:none}.delay-detail-button{display:inline-flex;min-height:32px;align-items:center;justify-content:center;gap:7px;padding:0 11px;border:1px solid #008c45;border-radius:6px;background:#008c45;color:#fff;font:600 12px 'Inter',sans-serif;text-decoration:none;cursor:pointer}.delay-detail-button:hover{background:#06753e;text-decoration:none}.delay-detail-button-secondary{border-color:#d5e3d9;background:#f2f8f3;color:#08723a}.delay-detail-button-secondary:hover{background:#e4f1e7}.delay-decision-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.delay-decision-option{display:flex;min-height:48px;align-items:center;justify-content:center;gap:8px;padding:9px 10px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#43534a;font:600 13px 'Inter',sans-serif;cursor:pointer}.delay-decision-option-approve{border-color:#b5ddc2;color:#176b38}.delay-decision-option-approve:hover,.delay-decision-option-approve[aria-pressed="true"]{border-color:#008c45;background:#e7f5eb;color:#08723a;box-shadow:inset 0 0 0 1px #008c45}.delay-decision-option-reject{border-color:#f0c4c1;color:#9b2c25}.delay-decision-option-reject:hover,.delay-decision-option-reject[aria-pressed="true"]{border-color:#c9362b;background:#fff0ef;color:#a62f26;box-shadow:inset 0 0 0 1px #c9362b}.delay-validation-submit.is-rejection{background:#c9362b}.delay-validation-submit.is-rejection:hover{background:#a62f26}.delay-validation-submit:disabled{opacity:.55;cursor:not-allowed}
+.delay-justification-display{white-space:pre-wrap;overflow-wrap:anywhere}
 .delay-history-filters{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(4,minmax(130px,1fr)) auto;align-items:end;gap:10px;margin:18px 0 20px;padding:14px;border:1px solid #e3eae5;border-radius:8px;background:#f8faf8}.delay-history-filter{display:grid;gap:6px;color:#53615a;font-size:11px;font-weight:700}.delay-history-filter input,.delay-history-filter select{width:100%;height:39px;padding:0 10px;border:1px solid #d5ded8;border-radius:6px;background:#fff;color:#26352c;font:400 13px 'Inter',sans-serif}.delay-history-filter input:focus,.delay-history-filter select:focus{outline:2px solid #008c4555;border-color:#008c45}.delay-history-reset{height:39px;padding:0 13px;border:1px solid #d5ded8;border-radius:6px;background:#fff;color:#43534a;font:600 12px 'Inter',sans-serif;cursor:pointer}.delay-history-reset:hover{background:#edf5ef}.delay-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.delay-history-card{overflow:hidden;border:1px solid #e1e8e3;border-radius:8px;background:#fff}.delay-history-card-header{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #e7ece8;background:#f7faf7}.delay-history-card-header h3{margin:0;color:#183c27;font-size:15px;font-weight:700}.delay-history-count{display:grid;min-width:27px;height:25px;place-items:center;padding:0 7px;border-radius:14px;background:#e5f3e9;color:#176b38;font-size:11px;font-weight:700}.delay-history-list{max-height:330px;overflow-y:auto;padding:0 14px}.delay-history-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px 12px;padding:12px 1px;border-bottom:1px solid #edf0ee}.delay-history-entry:last-child{border-bottom:0}.delay-history-entry[hidden],.delay-history-card[hidden]{display:none}.delay-history-entry-name{overflow:hidden;color:#26352c;font-size:13px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.delay-history-entry-meta{display:flex;align-items:center;gap:8px;color:#64736a;font-size:11px;white-space:nowrap}.delay-history-entry-action{grid-column:1/-1;justify-self:start}.delay-history-empty{padding:22px 14px;color:#64736a;text-align:center;font-size:13px}.delay-history-no-results{margin:14px 0 0;padding:20px;border:1px dashed #cbd8cf;border-radius:8px;color:#64736a;text-align:center;font-size:13px}.delay-history-no-results[hidden]{display:none}
 @media(max-width:1100px){.delay-history-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.delay-history-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:11px}.delay-history-filter:first-child{grid-column:1/-1}.delay-history-grid{grid-template-columns:1fr}.delay-history-entry{grid-template-columns:minmax(0,1fr)}.delay-history-entry-meta{flex-wrap:wrap}}
@@ -9782,9 +9783,8 @@ class TurmaSelector {
 
             document.addEventListener('click', (event) => {
                 const entry = event.target.closest('[data-history-entry]');
-                if (!entry) return;
+                if (!entry || event.target.closest('button, a, input, select, textarea, summary')) return;
                 <?php if ($podeExcluirAtraso) { ?>
-                if (event.target.closest('[data-delay-print]')) return;
                 document.dispatchEvent(new CustomEvent('history-delay-delete-request', {
                     detail: {
                         id_registro_entrada: entry.dataset.historyRecordId,
@@ -9796,7 +9796,6 @@ class TurmaSelector {
                     }
                 }));
                 <?php } else { ?>
-                if (event.target.closest('button, a, input, select, textarea, summary')) return;
                 entry.querySelector('[data-delay-details]')?.click();
                 <?php } ?>
             });
@@ -9876,23 +9875,35 @@ class TurmaSelector {
                     const justificationLabel = document.createElement('label');
                     justificationLabel.className = 'delay-justification-label';
                     justificationLabel.textContent = 'Justificativa do atraso';
-                    const justification = document.createElement('textarea');
-                    justification.className = 'delay-justification';
-                    justification.name = 'justificativa_atraso';
-                    justification.setAttribute('form', 'delay-validation-form');
-                    justification.maxLength = 2000;
-                    const fixedManualJustification = Boolean(
-                        details['Justificativa do atraso']
-                        && details['Justificativa do atraso'] !== 'Não informada'
-                    );
-                    justification.readOnly = !showValidationForm || fixedManualJustification;
-                    justification.required = showValidationForm;
-                    justification.placeholder = showValidationForm ? 'Informe a justificativa do atraso' : '';
-                    justification.value = details['Justificativa do atraso'] === 'Não informada'
+                    const justificationValue = details['Justificativa do atraso'] === 'Não informada'
                         ? ''
                         : details['Justificativa do atraso'] || '';
-                    justification.addEventListener('input', () => updateDecision(decisionInput.value));
-                    dialogContent.append(justificationLabel, justification);
+                    const fixedManualJustification = Boolean(justificationValue);
+                    dialogContent.appendChild(justificationLabel);
+                    if (showValidationForm && !fixedManualJustification) {
+                        const justification = document.createElement('textarea');
+                        justification.className = 'delay-justification';
+                        justification.name = 'justificativa_atraso';
+                        justification.setAttribute('form', 'delay-validation-form');
+                        justification.maxLength = 2000;
+                        justification.required = true;
+                        justification.placeholder = 'Informe a justificativa do atraso';
+                        justification.addEventListener('input', () => updateDecision(decisionInput.value));
+                        dialogContent.appendChild(justification);
+                    } else {
+                        const justificationDisplay = document.createElement('div');
+                        justificationDisplay.className = 'delay-justification delay-justification-display';
+                        justificationDisplay.textContent = justificationValue || 'Não informada';
+                        dialogContent.appendChild(justificationDisplay);
+                        if (showValidationForm) {
+                            const justification = document.createElement('input');
+                            justification.type = 'hidden';
+                            justification.name = 'justificativa_atraso';
+                            justification.value = justificationValue;
+                            justification.setAttribute('form', 'delay-validation-form');
+                            dialogContent.appendChild(justification);
+                        }
+                    }
 
                     const extraDetails = document.createElement('details');
                     extraDetails.className = 'delay-extra-details';
