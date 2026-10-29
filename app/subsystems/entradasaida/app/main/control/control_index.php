@@ -134,6 +134,7 @@ if (in_array($_POST['acao'] ?? '', ['preparar_saida_estagio_qr', 'registrar_said
         'registrar_atraso_qr',
         'listar_atrasos_hoje',
         'listar_ausencias_estagio',
+        'excluir_atraso_pendente_qr',
         'excluir_atraso_historico'
     ], true), true);
 
@@ -287,11 +288,6 @@ if (in_array($_POST['acao'] ?? '', ['preparar_saida_estagio_qr', 'registrar_said
     }
 
     if ($_POST['acao'] === 'excluir_atraso_historico') {
-        $tiposUsuario = $_SESSION['tipos_usuario_permitidos'] ?? [];
-        if (!is_array($tiposUsuario) || !in_array('Admin_entrada_saida', $tiposUsuario, true)) {
-            responderJson(['success' => false, 'message' => 'Seu perfil não tem acesso a esta função.'], 403);
-        }
-
         $idRegistro = filter_var($_POST['id_registro_entrada'] ?? null, FILTER_VALIDATE_INT);
         if (!$idRegistro || $idRegistro < 1) {
             responderJson(['success' => false, 'message' => 'O atraso selecionado é inválido.'], 400);
@@ -740,7 +736,8 @@ if (isset($_POST['entrada'])) {
         responderJson([
             'success' => $sucesso,
             'message' => $mensagensResultado[$result] ?? 'O registro não foi concluído. Tente novamente.',
-            'tipo_registro' => $result === 5 ? 'estagio' : 'entrada'
+            'tipo_registro' => $result === 5 ? 'estagio' : 'entrada',
+            'registro_id' => $result === 0 ? $obj->obterUltimoRegistroEntradaId() : null
         ], $sucesso ? 200 : (in_array($result, [3, 8], true) ? 500 : (in_array($result, [1, 6], true) ? 409 : 422)));
     }
 

@@ -35,6 +35,7 @@ if (!$acessoLocalTemporario) {
 $ehRecepcao = $session->usuarioAtualEhRecepcao();
 $tiposUsuario = $_SESSION['tipos_usuario_permitidos'] ?? [];
 $ehAdminEntradaSaida = is_array($tiposUsuario) && in_array('Admin_entrada_saida', $tiposUsuario, true);
+$podeExcluirAtraso = $ehAdminEntradaSaida || $ehRecepcao;
 $sectionRetorno = $ehAdminEntradaSaida ? 'entrada' : 'inicio';
 $permiteTemaPt = strtolower(trim((string) ($_SESSION['email'] ?? ''))) === 'otavio.ce@gmail.com';
 $select = new select_model();
@@ -359,14 +360,14 @@ $detalhesAtraso = static function ($registro) {
     };
     window.printEntryReceipt = (data, printWindow) => imprimirComprovante('entrada', data, printWindow, true);
     window.printExitReceipt = (data, printWindow) => imprimirComprovante('saida', data, printWindow, true);
-    window.printDelayReceipt = (data, registroId) => imprimirComprovante('atraso', {
+    window.printDelayReceipt = (data, registroId, tipo = 'atraso', printWindow = null) => imprimirComprovante(tipo, {
         aluno: data.Aluno,
         matricula: data['Matrícula'],
         turma: data.Turma,
         motivo: data.Motivo,
         justificativa: data['Justificativa do atraso'],
         registro_id: registroId
-    });
+    }, printWindow);
 })();
 </script>
 <script>tailwind={config:{theme:{extend:{colors:{'ceara-green':'#008C45','ceara-light-green':'#3CB371','ceara-olive':'#8CA03E','ceara-orange':'#FFA500',primary:'#4CAF50',secondary:'#FFB74D',danger:'#dc3545',admin:'#0dcaf0',grey:'#6c757d',info:'#4169E1'}},fontFamily:{inter:['Inter','sans-serif']}}}};</script>
@@ -397,7 +398,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
 .mobile-menu,.sidebar-close,.sidebar-scrim{display:none}
 @media(max-width:760px){:root{--sidebar-width:0px}.sidebar{width:min(290px,84vw);transform:translateX(-102%);transition:transform .22s ease}.sidebar-open .sidebar{transform:translateX(0)}.sidebar-close{position:absolute;top:20px;right:14px;display:grid;width:34px;height:34px;place-items:center;border:1px solid #ffffff44;border-radius:7px;background:transparent;color:white}.brand{margin-right:38px}.mobile-menu{position:fixed;top:10px;left:12px;z-index:999;display:grid;width:38px;height:38px;place-items:center;border:0;border-radius:7px;background:var(--salaberga-dark);color:#fff}.sidebar-scrim{position:fixed;inset:0;z-index:998;display:none;border:0;background:#081f126b}.sidebar-open .sidebar-scrim{display:block}.main-content{margin-left:0;padding:62px 15px 24px}#ultimas-saidas{width:100%;margin-left:0;margin-right:0}.page-section [id$="Modal"]:not([id$="ModalContent"]){padding:12px}.page-section [id$="ModalContent"]{height:min(520px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);padding:24px}.app-modal-overlay{left:0;width:100vw}.delay-dialog{left:50vw;width:min(560px,calc(100vw - 1.25rem));max-width:calc(100vw - 1.25rem)}.delay-dialog-row{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}.nav-group[open]>.nav-item{animation:none!important}}
-.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.entry-confirm-actions button{min-height:42px;padding:0 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
+.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:24px}.entry-confirm-actions button{min-height:42px;padding:0 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
 @media print{@page{size:80mm auto;margin:0}html,body{width:80mm!important;min-width:80mm!important;margin:0!important;padding:0!important;background:#fff!important}body.printing-thermal-receipt>*:not(.thermal-receipt-active){display:none!important}body *{visibility:hidden!important}.thermal-receipt-active,.thermal-receipt-active *{visibility:visible!important}.thermal-receipt-active{position:absolute!important;top:0!important;left:0!important;display:block!important;width:72mm!important;margin:0!important;padding:3mm!important;background:#fff!important;color:#000!important;font:10pt/1.35 monospace!important;box-shadow:none!important}.thermal-receipt-active,.thermal-receipt-active *{font-family:monospace!important}.thermal-receipt-active h1,.thermal-receipt-active h2,.thermal-receipt-active p{margin:0!important;color:#000!important;font:inherit!important}.thermal-receipt-active h1{text-align:center!important;font-weight:bold!important}.thermal-receipt-active h2{margin-top:3mm!important;border-bottom:1px dashed #000!important;font-weight:bold!important}.thermal-receipt-active .thermal-center{text-align:center!important}.thermal-receipt-active .thermal-row{overflow-wrap:anywhere!important;margin-top:1mm!important}.thermal-receipt-active .thermal-rule{margin:3mm 0!important;border:0!important;border-top:1px dashed #000!important}.thermal-receipt-active .thermal-signature{margin-top:12mm!important;padding-top:2mm!important;border-top:1px solid #000!important;text-align:center!important}}
 
     * {
@@ -6328,11 +6329,12 @@ input[type="radio"] {
     <div id="entrada-confirmacao" class="entry-confirm-overlay" hidden>
         <section class="entry-confirm-card" role="dialog" aria-modal="true" aria-labelledby="entrada-confirmacao-titulo" aria-describedby="entrada-confirmacao-descricao" tabindex="-1">
             <h2 id="entrada-confirmacao-titulo">Salvar registro de atraso?</h2>
-            <p id="entrada-confirmacao-descricao">Imprimir comprovante salva o atraso e abre a impressão. Cancelar fecha sem salvar.</p>
+            <p id="entrada-confirmacao-descricao">Salve o atraso e escolha qual documento deseja imprimir. Os documentos são independentes e não duplicam o registro.</p>
             <p id="entrada-confirmacao-erro" class="entry-confirm-error" role="alert" hidden></p>
             <div class="entry-confirm-actions">
                 <button type="button" data-entry-action="cancel">Cancelar</button>
-                <button type="button" class="primary" data-entry-action="print"><i class="fas fa-print" aria-hidden="true"></i> Imprimir comprovante</button>
+                <button type="button" class="primary" data-entry-action="print-atraso"><i class="fas fa-print" aria-hidden="true"></i> Salvar e imprimir atraso</button>
+                <button type="button" data-entry-action="print-permissao"><i class="fas fa-door-open" aria-hidden="true"></i> Salvar e imprimir permissão</button>
             </div>
         </section>
     </div>
@@ -6600,24 +6602,37 @@ $(document).ready(function() {
             document.querySelectorAll('#entrada-options-container .select-option').forEach(option => option.classList.remove('selected'));
         }
 
-        async function saveEntry(printReceipt = false) {
+        async function saveEntry(tipoComprovante = null) {
             if (savingEntry) return;
             savingEntry = true;
             confirmationModal.setSaving(true);
             confirmationModal.error.hidden = true;
-            const receiptData = printReceipt ? captureReceiptData() : null;
-            const printWindow = printReceipt ? window.prepareThermalReceiptWindow() : null;
+            const receiptData = tipoComprovante ? captureReceiptData() : null;
+            const printWindow = tipoComprovante ? window.prepareThermalReceiptWindow() : null;
             const payload = new FormData(form);
             payload.set('entrada_ajax', '1');
             try {
                 const response = await fetch(form.action, {method: 'POST', body: payload, headers: {'X-Requested-With': 'XMLHttpRequest'}});
                 const result = await response.json();
                 if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível salvar o registro.');
+                const hasReceipt = receiptData && result.tipo_registro !== 'estagio';
+                if (hasReceipt && (!Number.isInteger(Number(result.registro_id)) || Number(result.registro_id) < 1)) {
+                    confirmationModal.close();
+                    showToast(result.message);
+                    resetEntryForm();
+                    window.cancelThermalReceiptWindow(printWindow);
+                    document.dispatchEvent(new CustomEvent('manual-delay-recorded'));
+                    window.alert('O atraso foi salvo, mas não foi possível identificar o registro para gerar o PDF.');
+                    return;
+                }
                 confirmationModal.close();
                 showToast(result.message);
                 resetEntryForm();
-                if (receiptData && result.tipo_registro !== 'estagio') window.printEntryReceipt(receiptData, printWindow);
-                else window.cancelThermalReceiptWindow(printWindow);
+                if (hasReceipt) {
+                    window.printDelayReceipt(receiptData, result.registro_id, tipoComprovante, printWindow);
+                } else {
+                    window.cancelThermalReceiptWindow(printWindow);
+                }
                 if (result.tipo_registro === 'estagio') {
                     document.dispatchEvent(new CustomEvent('stage-exit-recorded'));
                 } else {
@@ -6667,7 +6682,8 @@ $(document).ready(function() {
             if (validateEntryForm()) confirmationModal.open();
         });
         confirmationModal.buttons.find(button => button.dataset.entryAction === 'cancel').addEventListener('click', () => confirmationModal.close());
-        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print').addEventListener('click', () => saveEntry(true));
+        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print-atraso').addEventListener('click', () => saveEntry('atraso'));
+        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print-permissao').addEventListener('click', () => saveEntry('permissao'));
 })();
 </script>
 
@@ -9593,6 +9609,8 @@ class TurmaSelector {
                                         <time><?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time>
                                             <?php $statusAtraso = $registroAtraso['status_justificativa'] ?? 'pendente'; $acaoAtraso = $statusAtraso === 'pendente' && $validacaoAtrasosDisponivel ? 'Validar' : 'Detalhes'; ?>
                                             <button type="button" class="delay-detail-button <?= $acaoAtraso === 'Detalhes' ? 'delay-detail-button-secondary' : '' ?>" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $validacaoAtrasosDisponivel && $statusAtraso === 'pendente' ? '1' : '0' ?>"><?= $acaoAtraso === 'Validar' ? '<i class="fas fa-check" aria-hidden="true"></i>' : '<i class="fas fa-eye" aria-hidden="true"></i>' ?><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
+                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button>
+                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -9622,8 +9640,8 @@ class TurmaSelector {
                             <?php if ($historicoPorTurma[$idTurma]) { ?>
                                 <?php foreach ($historicoPorTurma[$idTurma] as $registroAtraso) { ?>
                                     <?php $jsonDetalhes = json_encode($detalhesAtraso($registroAtraso), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_INVALID_UTF8_SUBSTITUTE); $statusHistorico = $registroAtraso['status_justificativa'] ?? 'pendente'; ?>
-                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $ehAdminEntradaSaida ? 'button' : 'group' ?>" aria-label="<?= $ehAdminEntradaSaida ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
-                                        <div class="delay-history-entry-name-group"><div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Imprimir registro de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir registro de atraso"><i class="fas fa-print" aria-hidden="true"></i></button></div>
+                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <div class="delay-history-entry-name-group"><div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button></div>
                                         <div class="delay-history-entry-meta"><time datetime="<?= date('Y-m-d\TH:i:s', strtotime($registroAtraso['date_time'])) ?>"><?= date('d/m/Y', strtotime($registroAtraso['date_time'])) ?> às <?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time><span class="delay-status delay-status-<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(['pendente' => 'Pendente', 'aprovada' => 'Aprovada', 'recusada' => 'Recusada'][$statusHistorico] ?? 'Pendente', ENT_QUOTES, 'UTF-8') ?></span></div>
                                         <div class="delay-history-entry-actions">
                                             <?php $podeValidarHistorico = $validacaoAtrasosDisponivel && $statusHistorico === 'pendente'; ?>
@@ -9730,7 +9748,7 @@ class TurmaSelector {
                     if (!details || typeof details !== 'object' || Array.isArray(details)) {
                         throw new Error('Os dados deste registro de atraso estão em um formato inválido.');
                     }
-                    window.printDelayReceipt(details, button.dataset.recordId);
+                    window.printDelayReceipt(details, button.dataset.recordId, button.dataset.receiptType || 'atraso');
                 } catch (error) {
                     console.error('Não foi possível imprimir este registro de atraso.', error);
                     window.alert('Não foi possível preparar a impressão deste registro de atraso.');
@@ -9740,7 +9758,7 @@ class TurmaSelector {
             document.addEventListener('click', (event) => {
                 const entry = event.target.closest('[data-history-entry]');
                 if (!entry) return;
-                <?php if ($ehAdminEntradaSaida) { ?>
+                <?php if ($podeExcluirAtraso) { ?>
                 if (event.target.closest('[data-delay-print]')) return;
                 document.dispatchEvent(new CustomEvent('history-delay-delete-request', {
                     detail: {
@@ -9763,7 +9781,7 @@ class TurmaSelector {
                 if (!entry || event.target !== entry || !['Enter', ' '].includes(event.key)) return;
 
                 event.preventDefault();
-                <?php if ($ehAdminEntradaSaida) { ?>
+                <?php if ($podeExcluirAtraso) { ?>
                 entry.dispatchEvent(new MouseEvent('click', {bubbles: true}));
                 <?php } else { ?>
                 entry.querySelector('[data-delay-details]')?.click();
@@ -9803,7 +9821,7 @@ class TurmaSelector {
             document.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-delay-details]');
                 if (!button) return;
-                if (button.closest('[data-history-entry]') && <?= $ehAdminEntradaSaida ? 'true' : 'false' ?>) return;
+                if (button.closest('[data-history-entry]') && <?= $podeExcluirAtraso ? 'true' : 'false' ?>) return;
 
                 try {
                     const details = JSON.parse(button.dataset.delayDetails);

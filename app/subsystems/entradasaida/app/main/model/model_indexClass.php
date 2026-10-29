@@ -7,6 +7,7 @@ class MainModel extends connect
     private $ultimoErroSaidaEstagio = null;
     private $ultimoErroAtrasoQr = null;
     private $mensagemRestricao = '';
+    private $ultimoRegistroEntradaId = null;
 
     public function __construct()
     {
@@ -26,6 +27,11 @@ class MainModel extends connect
     public function obterMensagemRestricao()
     {
         return $this->mensagemRestricao;
+    }
+
+    public function obterUltimoRegistroEntradaId()
+    {
+        return $this->ultimoRegistroEntradaId;
     }
 
     private function usuarioSessaoValido($usuarioSessao)
@@ -246,6 +252,7 @@ class MainModel extends connect
             $stmt_registrar->bindValue(':usuario_email', $parametrosUsuario['usuario_email']);
 
             if ($stmt_registrar->execute()) {
+            $this->ultimoRegistroEntradaId = (int) $this->connect->lastInsertId();
             return 0; // Sucesso
             } else {
                 return 3; // Erro interno

@@ -32,7 +32,7 @@ if (!is_string($csrfToken) || !is_string($postedToken) || !hash_equals($csrfToke
 }
 
 $tipo = $_POST['tipo'] ?? '';
-if (!in_array($tipo, ['entrada', 'atraso', 'saida'], true)) {
+if (!in_array($tipo, ['entrada', 'atraso', 'permissao', 'saida'], true)) {
     responderErroComprovante('Tipo de comprovante inválido.', 422);
 }
 
@@ -98,7 +98,8 @@ class PDFComprovanteTermico extends FPDF
 
 try {
     $camposAtraso = [];
-    if ($tipo === 'atraso') {
+    $camposPermissao = [];
+    if (in_array($tipo, ['atraso', 'permissao'], true)) {
         $idRegistro = filter_var(
             $_POST['registro_id'] ?? null,
             FILTER_VALIDATE_INT,
@@ -117,6 +118,9 @@ try {
         $chegada = new DateTimeImmutable($dateTimeRegistro, new DateTimeZone('America/Sao_Paulo'));
         $aula = aulaAutorizada($chegada);
         $camposAtraso = [
+            ['Data e hora da chegada', $chegada->format('d/m/Y H:i')],
+        ];
+        $camposPermissao = [
             ['Data e hora da chegada', $chegada->format('d/m/Y H:i')],
             ['Autorizado a entrar para', $aula === null
                 ? 'Não há aula prevista neste horário'
@@ -139,6 +143,12 @@ try {
             ...$camposAtraso,
             ['Motivo', textoComprovante('motivo')],
             ['Justificativa do atraso', textoComprovante('justificativa')]
+        ],
+        'permissao' => [
+            ['Aluno', textoComprovante('aluno')],
+            ['Matrícula', textoComprovante('matricula')],
+            ['Turma', textoComprovante('turma')],
+            ...$camposPermissao
         ],
         'saida' => [
             ['Nome', textoComprovante('aluno')],
@@ -192,7 +202,12 @@ try {
     $pdf->Cell(61, $alturaCabecalho, 'Sistema Salaberga', 0, 1, 'L');
     $pdf->SetY(17);
 
-    $titulo = $tipo === 'saida' ? 'AUTORIZACAO DE SAIDA' : ($tipo === 'atraso' ? 'REGISTRO DE ATRASO' : 'AUTORIZACAO DE ENTRADA');
+    $titulo = match ($tipo) {
+        'saida' => 'AUTORIZACAO DE SAIDA',
+        'atraso' => 'COMPROVANTE DE ATRASO',
+        'permissao' => 'PERMISSAO PARA ENTRAR EM SALA',
+        default => 'AUTORIZACAO DE ENTRADA'
+    };
     $pdf->SetFont('Arial', 'B', 10);
     $pdf->MultiCell(70, 6, $titulo, 0, 'C');
     $pdf->Ln(3);
