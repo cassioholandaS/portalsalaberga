@@ -398,7 +398,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
 .mobile-menu,.sidebar-close,.sidebar-scrim{display:none}
 @media(max-width:760px){:root{--sidebar-width:0px}.sidebar{width:min(290px,84vw);transform:translateX(-102%);transition:transform .22s ease}.sidebar-open .sidebar{transform:translateX(0)}.sidebar-close{position:absolute;top:20px;right:14px;display:grid;width:34px;height:34px;place-items:center;border:1px solid #ffffff44;border-radius:7px;background:transparent;color:white}.brand{margin-right:38px}.mobile-menu{position:fixed;top:10px;left:12px;z-index:999;display:grid;width:38px;height:38px;place-items:center;border:0;border-radius:7px;background:var(--salaberga-dark);color:#fff}.sidebar-scrim{position:fixed;inset:0;z-index:998;display:none;border:0;background:#081f126b}.sidebar-open .sidebar-scrim{display:block}.main-content{margin-left:0;padding:62px 15px 24px}#ultimas-saidas{width:100%;margin-left:0;margin-right:0}.page-section [id$="Modal"]:not([id$="ModalContent"]){padding:12px}.page-section [id$="ModalContent"]{height:min(520px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);padding:24px}.app-modal-overlay{left:0;width:100vw}.delay-dialog{left:50vw;width:min(560px,calc(100vw - 1.25rem));max-width:calc(100vw - 1.25rem)}.delay-dialog-row{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}.nav-group[open]>.nav-item{animation:none!important}}
-.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:24px}.entry-confirm-actions button{min-height:42px;padding:0 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
+.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}.entry-confirm-actions button{width:100%;min-height:44px;padding:10px 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer;text-align:center}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
 @media print{@page{size:80mm auto;margin:0}html,body{width:80mm!important;min-width:80mm!important;margin:0!important;padding:0!important;background:#fff!important}body.printing-thermal-receipt>*:not(.thermal-receipt-active){display:none!important}body *{visibility:hidden!important}.thermal-receipt-active,.thermal-receipt-active *{visibility:visible!important}.thermal-receipt-active{position:absolute!important;top:0!important;left:0!important;display:block!important;width:72mm!important;margin:0!important;padding:3mm!important;background:#fff!important;color:#000!important;font:10pt/1.35 monospace!important;box-shadow:none!important}.thermal-receipt-active,.thermal-receipt-active *{font-family:monospace!important}.thermal-receipt-active h1,.thermal-receipt-active h2,.thermal-receipt-active p{margin:0!important;color:#000!important;font:inherit!important}.thermal-receipt-active h1{text-align:center!important;font-weight:bold!important}.thermal-receipt-active h2{margin-top:3mm!important;border-bottom:1px dashed #000!important;font-weight:bold!important}.thermal-receipt-active .thermal-center{text-align:center!important}.thermal-receipt-active .thermal-row{overflow-wrap:anywhere!important;margin-top:1mm!important}.thermal-receipt-active .thermal-rule{margin:3mm 0!important;border:0!important;border-top:1px dashed #000!important}.thermal-receipt-active .thermal-signature{margin-top:12mm!important;padding-top:2mm!important;border-top:1px solid #000!important;text-align:center!important}}
 
     * {
@@ -6349,9 +6349,9 @@ input[type="radio"] {
             <p id="entrada-confirmacao-descricao">Salve o atraso e escolha qual documento deseja imprimir. Os documentos são independentes e não duplicam o registro.</p>
             <p id="entrada-confirmacao-erro" class="entry-confirm-error" role="alert" hidden></p>
             <div class="entry-confirm-actions">
-                <button type="button" data-entry-action="cancel">Cancelar</button>
                 <button type="button" class="primary" data-entry-action="print-atraso"><i class="fas fa-print" aria-hidden="true"></i> Salvar e imprimir atraso</button>
                 <button type="button" data-entry-action="print-permissao"><i class="fas fa-door-open" aria-hidden="true"></i> Salvar e imprimir permissão</button>
+                <button type="button" data-entry-action="cancel">Cancelar</button>
             </div>
         </section>
     </div>
@@ -6630,7 +6630,15 @@ $(document).ready(function() {
             payload.set('entrada_ajax', '1');
             try {
                 const response = await fetch(form.action, {method: 'POST', body: payload, headers: {'X-Requested-With': 'XMLHttpRequest'}});
-                const result = await response.json();
+                const responseBody = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(responseBody);
+                } catch {
+                    throw new Error(responseBody.trim()
+                        ? `O servidor retornou uma resposta inválida (HTTP ${response.status}). Tente novamente ou avise o suporte.`
+                        : `O servidor não retornou uma resposta (HTTP ${response.status}). Verifique a conexão e tente novamente.`);
+                }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível salvar o registro.');
                 const hasReceipt = receiptData && result.tipo_registro !== 'estagio';
                 if (hasReceipt && (!Number.isInteger(Number(result.registro_id)) || Number(result.registro_id) < 1)) {
@@ -13445,6 +13453,11 @@ html[data-theme="lula"] .entryexit-footer a i {
     .floating-theme-toggle {
         bottom: 5rem;
     }
+}
+
+html[data-theme="dark"] .delay-history-entry-action:not(.delay-detail-button-secondary),
+html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-secondary) {
+    color: #fff !important;
 }
 </style>
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">

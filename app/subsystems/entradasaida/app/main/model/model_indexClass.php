@@ -252,7 +252,6 @@ class MainModel extends connect
             $stmt_registrar->bindValue(':usuario_email', $parametrosUsuario['usuario_email']);
 
             if ($stmt_registrar->execute()) {
-            $this->ultimoRegistroEntradaId = (int) $this->connect->lastInsertId();
             return 0; // Sucesso
             } else {
                 return 3; // Erro interno
@@ -366,6 +365,7 @@ class MainModel extends connect
             $stmt_registrar->bindValue(':usuario_email', $parametrosUsuario['usuario_email']);
 
             if ($stmt_registrar->execute()) {
+                $this->ultimoRegistroEntradaId = (int) $this->connect->lastInsertId();
                 return 0; // Sucesso
             } else {
                 return 3; // Erro interno
