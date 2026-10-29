@@ -2862,14 +2862,6 @@ CREATE TABLE `devolucao` (
   `data_devolucao` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Despejando dados para a tabela `devolucao`
---
-
-INSERT INTO `devolucao` (`id`, `id_emprestimo`, `data_devolucao`) VALUES
-(4, 1, '2025-06-10'),
-(5, 3, '2025-06-11');
-
 -- --------------------------------------------------------
 
 --
@@ -2884,23 +2876,6 @@ CREATE TABLE `emprestimo` (
   `data_devolucao_estipulada` date DEFAULT NULL,
   `status` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `emprestimo`
---
-
-INSERT INTO `emprestimo` (`id`, `id_aluno`, `id_catalogo`, `data_emprestimo`, `data_devolucao_estipulada`, `status`) VALUES
-(1, 54, 58, '2025-05-13', '2025-05-20', 0),
-(2, 76, 53, '2025-05-21', '0111-11-11', 1),
-(3, 64, 53, '2025-05-21', '0111-11-11', 0),
-(4, 50, 56, '0008-07-21', '1111-01-01', 1),
-(9, 52, 53, '2025-05-21', '1111-11-11', 1),
-(10, 52, 53, '2025-05-21', '0000-00-00', 1),
-(11, 198, 53, '2025-05-22', '2025-05-29', 1),
-(12, 193, 57, '2025-05-22', '2025-05-29', 1),
-(13, 198, 53, '2025-05-29', '2025-06-05', 1),
-(14, 50, 56, '2025-06-04', '2025-06-11', 1),
-(15, 49, 53, '2025-06-05', '2222-02-22', 1);
 
 -- --------------------------------------------------------
 
@@ -5035,6 +5010,19 @@ ALTER TABLE `catalogo`
   ADD CONSTRAINT `catalogo_ibfk_1` FOREIGN KEY (`id_categoria`) REFERENCES `categoria` (`id`),
   ADD CONSTRAINT `catalogo_ibfk_2` FOREIGN KEY (`id_genero`) REFERENCES `genero` (`id`),
   ADD CONSTRAINT `catalogo_ibfk_3` FOREIGN KEY (`id_subgenero`) REFERENCES `subgenero` (`id`);
+
+--
+-- Restrições para tabelas `devolucao`
+--
+ALTER TABLE `devolucao`
+  ADD CONSTRAINT `devolucao_ibfk_1` FOREIGN KEY (`id_emprestimo`) REFERENCES `emprestimo` (`id`);
+
+--
+-- Restrições para tabelas `emprestimo`
+--
+ALTER TABLE `emprestimo`
+  ADD CONSTRAINT `emprestimo_ibfk_1` FOREIGN KEY (`id_aluno`) REFERENCES `sistema_pdt`.`alunos` (`id_aluno`),
+  ADD CONSTRAINT `emprestimo_ibfk_2` FOREIGN KEY (`id_catalogo`) REFERENCES `catalogo` (`id`);
 
 --
 -- Restrições para tabelas `genero`
