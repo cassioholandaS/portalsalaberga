@@ -706,19 +706,31 @@ if (isset($_POST['entrada'])) {
     }
     $date_time = (new DateTimeImmutable())->format('Y-m-d H:i:s');
 
-    // Instancia o modelo e registra a entrada
-    $obj = new MainModel();
-    $result = $obj->registrarEntrada(
-        $nome_responsavel,
-        $nome_conducente,
-        $id_tipo_conducente,
-        $id_tipo_responsavel,
-        $date_time,
-        $id_motivo,
-        $justificativaAtraso,
-        $usuarioSessao,
-        $id_aluno
-    );
+    try {
+        $obj = new MainModel();
+        $result = $obj->registrarEntrada(
+            $nome_responsavel,
+            $nome_conducente,
+            $id_tipo_conducente,
+            $id_tipo_responsavel,
+            $date_time,
+            $id_motivo,
+            $justificativaAtraso,
+            $usuarioSessao,
+            $id_aluno
+        );
+    } catch (RuntimeException $e) {
+        error_log('Erro ao inicializar o registro de atraso: ' . $e->getMessage());
+        if ($respostaAssincrona) {
+            responderJson([
+                'success' => false,
+                'message' => 'Não foi possível conectar ao banco de dados. Verifique a configuração e tente novamente.'
+            ], 503);
+        }
+
+        header('Location: ../views/inicio.php?section=entrada&status=erro_interno');
+        exit();
+    }
 
     if ($respostaAssincrona) {
         $mensagensResultado = [

@@ -205,11 +205,12 @@ try {
     $titulo = match ($tipo) {
         'saida' => 'AUTORIZACAO DE SAIDA',
         'atraso' => 'COMPROVANTE DE ATRASO',
-        'permissao' => 'PERMISSAO PARA ENTRAR EM SALA',
+        'permissao' => 'PERMISSÃO PARA ENTRAR EM SALA',
         default => 'AUTORIZACAO DE ENTRADA'
     };
     $pdf->SetFont('Arial', 'B', 10);
-    $pdf->MultiCell(70, 6, $titulo, 0, 'C');
+    $pdf->SetX(3);
+    $pdf->MultiCell(70, 6, textoComprovantePdf($titulo), 0, 'C');
     $pdf->Ln(3);
 
     foreach ($campos as [$rotulo, $valor]) {
