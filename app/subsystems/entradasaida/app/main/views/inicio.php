@@ -11230,7 +11230,8 @@ function normalizeStudentSearch(value) {
         document.body.classList.remove('sidebar-open');
         menuToggle?.setAttribute('aria-expanded', 'false');
     };
-  const activate = (target, selectedItem) => {
+  const receptionMode = <?php echo $ehRecepcao ? 'true' : 'false'; ?>;
+  const activate = (target, selectedItem, addHistoryEntry = true) => {
     navItems.forEach(nav => nav.classList.remove('active'));
     sections.forEach(section => section.classList.remove('active'));
     document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos');
@@ -11245,8 +11246,15 @@ function normalizeStudentSearch(value) {
     if (selectedSection) selectedSection.classList.add('active');
         if (selectedSection) {
             const currentUrl = new URL(window.location.href);
+            const currentSection = currentUrl.searchParams.get('section');
             currentUrl.searchParams.set('section', target);
-            window.history.replaceState(window.history.state, '', currentUrl);
+            if (receptionMode && addHistoryEntry) {
+                if (currentSection !== target) {
+                    window.history.pushState(window.history.state, '', currentUrl);
+                }
+            } else {
+                window.history.replaceState(window.history.state, '', currentUrl);
+            }
         }
     document.dispatchEvent(new CustomEvent('section:activate:qr-reader'));
     closeMobileMenu();
@@ -11256,13 +11264,19 @@ function normalizeStudentSearch(value) {
     event.preventDefault();
     activate(item.dataset.sectionTarget, document.querySelector(`.nav-item[data-target="${item.dataset.sectionTarget}"]`));
   }));
+    if (receptionMode) {
+        window.addEventListener('popstate', () => {
+            const section = new URLSearchParams(window.location.search).get('section') || 'inicio';
+            activate(section, document.querySelector(`.nav-item[data-target="${section}"]`), false);
+        });
+    }
     menuToggle?.addEventListener('click', () => {
     const isOpen = document.body.classList.toggle('sidebar-open');
         menuToggle.setAttribute('aria-expanded', String(isOpen));
   });
     document.querySelector('.sidebar-scrim')?.addEventListener('click', closeMobileMenu);
     const initialSection = <?php echo json_encode($sectionInicial, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-    activate(initialSection, document.querySelector(`.nav-item[data-target="${initialSection}"]`));
+    activate(initialSection, document.querySelector(`.nav-item[data-target="${initialSection}"]`), false);
 })();
 </script>
 </main>
