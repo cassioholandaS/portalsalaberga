@@ -5427,6 +5427,14 @@ input[type="radio"] {
         overflow-y: visible;
     }
 
+    .reception-interface #consulta-ausencias .absence-table-wrap {
+        max-height: min(60dvh, calc(100dvh - 360px));
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .reception-interface #inicio {
         width: 100%;
         max-width: none;
