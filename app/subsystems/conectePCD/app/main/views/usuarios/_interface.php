@@ -180,22 +180,66 @@
     }
     .nav-item.active .ni { background:rgba(255,176,0,0.13); }
     .sidebar-footer { padding:12px 0; border-top:1px solid rgba(255,255,255,0.10); }
+    .sidebar-user-controls { display:flex; align-items:stretch; gap:8px; padding:0 12px 10px; }
+    .sidebar-profile {
+      display:flex; flex:1; min-width:0; align-items:center; gap:9px; padding:7px 10px;
+      border:1px solid rgba(255,255,255,.14); border-radius:11px;
+      background:rgba(255,255,255,.06); color:#fff; text-align:left; cursor:pointer;
+      transition:background .2s,border-color .2s;
+    }
+    .sidebar-profile:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.24); }
+    .sidebar-profile-copy { min-width:0; }
+    .sidebar-profile-name { overflow:hidden; font-size:12px; font-weight:700; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+    .sidebar-profile-role { margin-top:2px; color:rgba(255,255,255,.68); font-size:10px; line-height:1.2; }
+    .sidebar-profile-avatar {
+      display:grid; width:38px; height:38px; flex:0 0 38px; place-items:center;
+      overflow:hidden; border:3px solid #ffbd52; border-radius:50%;
+      background:#ffcf72; color:#064f2d; font-size:13px; font-weight:700;
+    }
+    .sidebar-profile-avatar img { width:100%; height:100%; object-fit:cover; }
+    .sidebar-bell {
+      position:relative; display:grid; align-self:center; width:44px; height:44px; flex:0 0 44px;
+      place-items:center; border:1px solid rgba(255,255,255,.12); border-radius:11px;
+      background:#f7faf6; color:#075b2d; cursor:pointer;
+      transition:transform .2s,background .2s;
+    }
+    .sidebar-bell:hover { transform:translateY(-1px); background:#fff; }
+    .sidebar-bell > i { font-size:16px; }
     .sidebar-logout { color:#ff927f; }
     .sidebar-logout .ni { color:inherit; }
     .sidebar-logout:hover { color:#ffad9e; background:rgba(255,255,255,0.08); }
+    #notif-dd {
+      position:fixed; top:auto; right:auto; bottom:5.25rem; left:266px;
+      width:min(320px, calc(100vw - 280px)); max-height:calc(100dvh - 7rem); overflow-y:auto;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:22px; padding:16px; z-index:10002;
+      box-shadow:0 16px 48px rgba(0,0,0,.35); display:none;
+    }
+    .notif-panel-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .notif-panel-title { color:var(--text); font-size:14px; font-weight:700; }
+    .notif-panel-close { padding:3px 0; border:0; background:transparent; color:var(--text-muted); font:inherit; font-size:13px; cursor:pointer; }
+    .notif-panel-close:hover { color:var(--text); }
+    #notif-list { display:grid; gap:8px; }
+    .notif-item {
+      padding:12px; border:1px solid rgba(31,174,90,.32); border-radius:17px;
+      background:rgba(31,174,90,.10); color:var(--text);
+    }
+    .notif-item-title { display:block; font-size:13px; font-weight:700; line-height:1.4; }
+    .notif-item-message { margin-top:3px; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+    .notif-item time { display:block; margin-top:8px; color:var(--text-muted); font-size:10px; }
+    #notif-list .empty { padding:18px 8px; font-size:12px; }
+    #notif-list .empty i { margin:0 0 6px; font-size:24px; }
+    @media (max-width:599px) {
+      #notif-dd {
+        left:50%;
+        width:min(320px, calc(100vw - 24px));
+        max-height:calc(100dvh - 2rem);
+        transform:translateX(-50%);
+      }
+    }
 
     /* MAIN */
     .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-
-    /* TOPBAR */
-    .topbar {
-      padding:13px 30px;
-      border-bottom:1px solid var(--border);
-      background:rgba(234,244,231,0.92);
-      backdrop-filter:blur(14px);
-      display:flex; align-items:center; justify-content:space-between;
-      position:sticky; top:0; z-index:20;
-    }
 
     /* CONTENT */
     .content { flex:1; overflow-y:auto; padding:26px 30px; }
@@ -775,7 +819,6 @@
         margin-left:auto;
       }
       .main { min-height:100vh; }
-      .topbar { padding:13px 16px; flex-wrap:wrap; gap:10px; }
       .content { padding:16px; overflow:visible; }
       #page-dashboard > div[style*="grid-template-columns:repeat(3,1fr)"] {
         grid-template-columns:1fr !important;
@@ -833,15 +876,6 @@
     .srch i { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.33); font-size:14px; }
     .srch input { padding-left:40px; }
 
-    /* NOTIF DROPDOWN */
-    #notif-dd {
-      position:absolute; top:60px; right:24px; width:290px;
-      background:var(--surface2); border:1px solid var(--border);
-      border-radius:14px; padding:14px; z-index:30;
-      box-shadow:0 16px 48px rgba(0,0,0,0.55);
-      display:none;
-    }
-
     /* PROGRESS */
     .pb { background:rgba(255,255,255,0.07); border-radius:9999px; overflow:hidden; }
     .pf { height:100%; border-radius:9999px; transition:width 0.7s ease; }
@@ -859,7 +893,6 @@
     .sidebar [style*="color:#fff"] { color:#fff !important; }
     .sidebar .nav-item.active { color:#ffb000 !important; }
     .sidebar .nav-item.active .ni { color:#ffb000 !important; }
-    .topbar [style*="color:rgba(255,255,255"] { color:#64766a !important; }
     .profile-banner .profile-copy { color:#fff !important; }
 
     /* Mobile layout: keep every workflow usable without horizontal page overflow. */
@@ -868,10 +901,11 @@
       body { display:block !important; }
       .main { width:100%; min-width:0; min-height:100vh; overflow:visible; }
       .content { width:100%; min-width:0; padding:78px 12px 28px !important; overflow:visible; }
-      .topbar { position:fixed !important; top:0; left:0; right:0; width:100%; min-height:64px; padding:10px 12px !important; align-items:center; background:rgba(234,244,231,.98); box-shadow:0 2px 12px rgba(7,91,45,.10); z-index:100; }
-      .topbar > div:last-child { max-width:calc(100% - 50px); }
-      .topbar > div:last-child > div:last-child { max-width:calc(100vw - 105px); overflow:hidden; }
-      .topbar > div:last-child > div:last-child > div:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .mobile-menu-btn {
+        position:fixed; top:12px; left:12px; z-index:1001;
+        width:42px; height:42px; border-radius:11px;
+        background:var(--surface2); box-shadow:0 4px 16px rgba(0,0,0,.14);
+      }
       .sidebar-brand { padding:22px 22px 15px; }
       .page { width:100%; min-width:0; }
       .card, .stat-card, .dashboard-panel { max-width:100%; min-width:0; }
@@ -975,7 +1009,6 @@
       .btn-p, .btn-g { min-height:42px; }
       .btn-p { white-space:normal; }
       .toast { left:12px; right:12px; bottom:12px; }
-      #notif-dd { position:fixed !important; top:74px !important; left:10px !important; right:10px !important; width:auto !important; max-width:none !important; max-height:70vh; overflow-y:auto; z-index:1000 !important; }
       .cal-cell { min-height:64px; padding:4px; }
       .cal-cell > * { max-width:100%; }
       .ev-chip { font-size:9px; }
@@ -983,9 +1016,7 @@
 
     @media (max-width: 420px) {
       .content { padding:78px 8px 28px !important; }
-      .topbar { padding-left:8px !important; padding-right:8px !important; }
       .sidebar { width: min(280px, 88vw); min-width: min(280px, 88vw); }
-      .topbar > div:last-child > div:last-child { display:none !important; }
       .profile-banner { padding:18px 14px !important; }
       .profile-banner > div:first-child { gap:12px; }
       .perfil-avatar-ring { width:68px !important; height:68px !important; font-size:25px !important; }
@@ -1049,18 +1080,6 @@
       /* Solicitações vazias não reservam uma faixa de cabeçalho desktop. */
       #page-usuarios > .card:first-child .table-scroll:has(tbody:empty) { display:none; }
 
-      /* Dropdown sempre cabe na viewport, inclusive quando o cabeçalho está comprimido. */
-      .topbar #notif-dd,
-      #notif-dd {
-        position:fixed !important;
-        inset:74px 10px auto 10px !important;
-        width:auto !important;
-        max-width:none !important;
-        min-width:0 !important;
-        max-height:calc(100dvh - 90px) !important;
-        overflow-y:auto !important;
-        transform:none !important;
-      }
     }
 
     .theme-toggle {
@@ -1114,7 +1133,6 @@
     html[data-theme="dark"] .main {
       color:var(--text);
     }
-    html[data-theme="dark"] .topbar { background:rgba(18,18,18,.94); }
     html[data-theme="dark"] .content { background:#121212; }
     html[data-theme="dark"] .card,
     html[data-theme="dark"] .modal-box,
@@ -1236,6 +1254,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
       <div class="sidebar-brand-title">Sistema <span>PCD</span></div>
       <div class="sidebar-brand-subtitle">Gestão de alunos e<br>acompanhamento escolar</div>
     </div>
+    <button type="button" class="sidebar-close-btn" onclick="fecharMenu()" aria-label="Fechar menu">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
   </div>
 
   <nav>
@@ -1298,59 +1319,49 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     <?php endif; ?>
   </nav>
   <div class="sidebar-footer">
+    <div class="sidebar-user-controls">
+      <button type="button" class="sidebar-profile" onclick="go('perfil')" title="Abrir perfil">
+        <span class="sidebar-profile-avatar" id="sidebar-avatar">
+          <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>">
+          <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+        </span>
+        <span class="sidebar-profile-copy">
+          <span class="sidebar-profile-name"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="sidebar-profile-role"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+        </span>
+      </button>
+      <button type="button" id="bell-btn" class="sidebar-bell" onclick="toggleDD()" aria-label="Abrir notificações" aria-controls="notif-dd" aria-expanded="false" title="Notificações">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
+      </button>
+    </div>
     <div class="nav-item sidebar-logout"
       onclick="window.location.href='../../../../main/views/subsystems.php'">
       <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
     </div>
   </div>
 </aside>
+<section id="notif-dd" aria-label="Notificações">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title">Notificações</span>
+    <button type="button" class="notif-panel-close" onclick="toggleDD(false)">Fechar</button>
+  </div>
+  <div id="notif-list">
+    <div class="empty" style="padding:20px 0">
+      <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
+      <span style="font-size:12px">Nenhuma notificação</span>
+    </div>
+  </div>
+</section>
 <button type="button" class="sidebar-collapse-toggle" aria-label="Ocultar menu lateral" aria-expanded="true" title="Ocultar menu lateral">
   <i class="bi bi-chevron-left" aria-hidden="true"></i>
 </button>
 
 <!-- ======================== MAIN ======================== -->
 <div class="main">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="mobile-menu-btn" onclick="abrirMenu()" aria-label="Abrir menu">
-        <i class="bi bi-list" style="font-size:20px"></i>
-      </button>
-      <div>
-        <div style="font-size:17px;font-weight:700" id="pg-title">Dashboard</div>
-        <div style="font-size:11.5px;color:var(--text-muted)" id="pg-sub">Visão geral do sistema</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;position:relative">
-      <!-- Bell -->
-      <button id="bell-btn" onclick="toggleDD()" style="width:37px;height:37px;border-radius:10px;background:#f7faf6;border:1px solid rgba(7,91,45,0.14);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:background 0.2s,border-color 0.2s" onmouseenter="this.style.background='#eaf4e7';this.style.borderColor='rgba(0,166,81,0.28)'" onmouseleave="this.style.background='#f7faf6';this.style.borderColor='rgba(7,91,45,0.14)'">
-        <i class="bi bi-bell-fill" style="font-size:14px;color:#557064"></i>
-        <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
-      </button>
-      <!-- Notif dropdown -->
-      <div id="notif-dd">
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:rgba(255,255,255,0.6)"><i class="bi bi-bell me-1"></i> Notificações</div>
-        <div id="notif-list">
-          <div class="empty" style="padding:20px 0">
-            <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
-            <span style="font-size:12px">Nenhuma notificação</span>
-          </div>
-        </div>
-      </div>
-      <!-- User -->
-      <div onclick="go('perfil')" title="Abrir perfil" style="display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);cursor:pointer">
-        <div class="av" id="topbar-avatar" style="width:28px;height:28px;font-size:12px;background-size:cover;background-position:center">
-          <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-          <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:600;line-height:1.1"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-          <div style="font-size:10px;color:var(--text-muted)"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <button type="button" class="mobile-menu-btn" onclick="abrirMenu()" aria-label="Abrir menu">
+    <i class="bi bi-list" style="font-size:20px"></i>
+  </button>
 
   <!-- CONTENT -->
   <div class="content">
@@ -2183,7 +2194,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-relatorios-json-18">
+<script src="js/app.js?v=20261109-sidebar-notifications-21">
 
 </script>
 </body>
