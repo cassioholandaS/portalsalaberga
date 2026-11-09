@@ -2036,8 +2036,8 @@ function handleLaudoUpload() {
   }
 
 let planosEstado = {
-  pei: { etapa: 'alunos', aluno: null, disciplina: null, registro: null, token: 0 },
-  paee: { etapa: 'alunos', aluno: null, disciplina: null, registros: [], registro: null, token: 0 }
+  pei: { etapa: 'alunos', aluno: null, disciplina: null, disciplinas: [], registro: null, novaDisciplina: false, token: 0 },
+  paee: { etapa: 'alunos', aluno: null, disciplina: null, disciplinas: [], registro: null, novaDisciplina: false, token: 0 }
 };
 
 function escaparPlano(valor) {
@@ -2046,7 +2046,7 @@ function escaparPlano(valor) {
 
 function abrirModuloPlano(modulo, alunoId = null) {
   const estado = planosEstado[modulo];
-  estado.etapa = 'alunos'; estado.aluno = null; estado.disciplina = null; estado.registros = []; estado.registro = null; estado.token += 1;
+  estado.etapa = 'alunos'; estado.aluno = null; estado.disciplina = null; estado.disciplinas = []; estado.registro = null; estado.novaDisciplina = false; estado.token += 1;
   document.getElementById(`plano-${modulo}-voltar`)?.style.setProperty('display', 'none');
   if (alunoId != null && Number(alunoId) > 0) {
     selecionarAlunoPlano(modulo, Number(alunoId));
@@ -2072,78 +2072,103 @@ function carregarAlunosPlano(modulo, token) {
 }
 
 function selecionarAlunoPlano(modulo, alunoId) {
-  const estado = planosEstado[modulo]; estado.aluno = { id: alunoId }; estado.disciplina = null; estado.registro = null; estado.etapa = modulo === 'paee' ? 'documentos' : 'disciplinas'; estado.token += 1;
+  const estado = planosEstado[modulo]; estado.aluno = { id: alunoId }; estado.disciplina = null; estado.registro = null; estado.novaDisciplina = false; estado.etapa = 'disciplinas'; estado.token += 1;
   const token = estado.token;
   const alvo = document.getElementById(`plano-${modulo}-conteudo`);
   document.getElementById(`plano-${modulo}-voltar`)?.style.setProperty('display', window.usuarioTipo === 'apoio' ? 'none' : 'inline-flex');
-  if (modulo === 'paee') {
-    carregarPaeesDoAluno(estado, token, alvo);
-    return;
-  }
-  estado.disciplina = null;
   alvo.innerHTML = '<div class="empty" style="padding:30px 0"><i class="bi bi-hourglass-split"></i><span>Carregando disciplinas...</span></div>';
   fetch(`controllers/recurso_planos.php?action=disciplinas&aluno_id=${Number(alunoId)}`, { cache: 'no-store' })
-    .then(r => r.json()).then(data => {
+    .then(r => r.json())
+    .then(data => {
       if (estado.token !== token) return;
       if (!data.success) throw new Error(data.message || 'Falha ao consultar disciplinas.');
       estado.aluno = data.aluno;
+      estado.disciplinas = data.disciplinas;
       document.getElementById(`plano-${modulo}-contexto`).textContent = `${data.aluno.nome} · selecione uma disciplina`;
-      const gestao = window.usuarioTipo !== 'apoio' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><input class="inp" id="nova-disciplina-${modulo}" placeholder="Nova disciplina"><button class="btn-p" type="button" onclick="cadastrarDisciplinaPlano('${modulo}')"><i class="bi bi-plus-lg"></i> Cadastrar e associar</button></div>` : '';
+      const gestao = window.usuarioTipo !== 'apoio' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="btn-p" type="button" onclick="cadastrarDisciplinaPlano('${modulo}')"><i class="bi bi-plus-lg"></i> Cadastrar e associar</button></div>` : '';
       const vazio = '<div class="empty" style="padding:26px 0"><i class="bi bi-journal-x"></i><span>Este aluno não possui disciplinas associadas.</span></div>';
-      alvo.innerHTML = gestao + (data.disciplinas.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">${data.disciplinas.map(d => `<button type="button" class="card" style="padding:16px;text-align:left;cursor:pointer" onclick="selecionarDisciplinaPlano('${modulo}',${Number(d.id)})"><div style="font-weight:700">${escaparPlano(d.nome)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:7px">${modulo === 'pei' ? (Number(d.tem_pei) ? 'PEI cadastrado' : 'PEI ainda não cadastrado') : (Number(d.tem_paee) ? 'PAEE cadastrado' : 'PAEE ainda não cadastrado')}</div></button>`).join('')}</div>` : vazio);
+      const cards = data.disciplinas.length ? `<div class="plan-discipline-grid">${data.disciplinas.map(d => {
+        const cadastrado = Number(modulo === 'pei' ? d.tem_pei : d.tem_paee) === 1;
+        const documento = modulo.toUpperCase();
+        const inicial = Array.from(String(d.nome || 'D'))[0] || 'D';
+        return `<div class="student-profile-block plan-discipline-card" role="button" tabindex="0" onclick="selecionarDisciplinaPlano('${modulo}',${Number(d.id)})" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();selecionarDisciplinaPlano('${modulo}',${Number(d.id)})}">
+          <div class="student-profile-block__top">
+            <div class="student-profile-block__identity">
+              <span class="plan-discipline-card__avatar" aria-hidden="true">${escaparPlano(inicial)}</span>
+              <span class="student-profile-block__name">${escaparPlano(d.nome)}</span>
+            </div>
+            ${['master', 'aee'].includes(window.usuarioTipo) ? `<button type="button" class="plan-discipline-card__delete" aria-label="Remover ${escaparPlano(d.nome)} deste aluno" title="Remover disciplina" onclick="event.stopPropagation();excluirDisciplinaPlano('${modulo}',${Number(data.aluno.id)},${Number(d.id)},decodeURIComponent('${encodeURIComponent(String(d.nome)).replace(/'/g, '%27')}'))" onkeydown="event.stopPropagation()"><i class="bi bi-trash3" aria-hidden="true"></i></button>` : '<i class="bi bi-chevron-right student-profile-block__arrow" aria-hidden="true"></i>'}
+          </div>
+          <div class="plan-discipline-card__status">
+            <span class="student-profile-block__label">Status do ${documento}</span>
+            <span class="plan-discipline-card__badge${cadastrado ? ' is-complete' : ''}">${cadastrado ? `${documento} cadastrado` : 'Pendente'}</span>
+          </div>
+          <div class="student-profile-block__details">
+            <div><span class="student-profile-block__label">Aluno</span><strong>${escaparPlano(data.aluno.nome)}</strong></div>
+            <div><span class="student-profile-block__label">Documento</span><strong>${documento}</strong></div>
+          </div>
+        </div>`;
+      }).join('')}</div>` : vazio;
+      alvo.innerHTML = gestao + cards;
     }).catch(error => { alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`; });
 }
 
-function carregarPaeesDoAluno(estado, token, alvo) {
-  alvo.innerHTML = '<div class="empty" style="padding:30px 0"><i class="bi bi-hourglass-split"></i><span>Carregando documentos PAEE...</span></div>';
-  return fetch(`controllers/recurso_planos.php?action=paees_aluno&aluno_id=${Number(estado.aluno.id)}`)
-    .then(r => r.json()).then(documentos => {
-    if (estado.token !== token) return;
-    if (!documentos.success) throw new Error(documentos.message || 'Falha ao consultar os documentos PAEE.');
-    estado.aluno = documentos.aluno;
-    estado.registros = documentos.registros;
-    document.getElementById('plano-paee-contexto').textContent = `${estado.aluno.nome} · documentos PAEE`;
-    const novo = ['master', 'aee'].includes(window.usuarioTipo)
-      ? `<div style="margin-bottom:16px"><input class="inp" id="novo-documento-paee" placeholder="Nome do documento PAEE"><button class="btn-p" type="button" style="margin-top:8px" onclick="cadastrarDocumentoPaee()"><i class="bi bi-plus-lg"></i> Cadastrar PAEE</button></div>`
-      : '';
-    const lista = estado.registros.length
-      ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">${estado.registros.map(item => `<button type="button" class="card" style="padding:16px;text-align:left;cursor:pointer" onclick="abrirDocumentoPaee(${Number(item.id)})"><div style="font-weight:700">${escaparPlano(item.nome_documento || 'PAEE')}</div><div style="font-size:11px;color:var(--text-muted);margin-top:7px">${item.data_elaboracao || item.data_atendimento ? `${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} · ${escaparPlano(item.responsavel_preenchimento || item.profissional_responsavel || 'Sem responsável informado')}` : 'Documento não preenchido'}</div></button>`).join('')}</div>`
-      : '';
-    alvo.innerHTML = novo + lista;
-  }).catch(error => {
-    alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`;
-    throw error;
+function excluirDisciplinaPlano(modulo, alunoId, disciplinaId, nomeDisciplina) {
+  openConfirm(`Remover "${nomeDisciplina}" deste aluno? O documento e o histórico serão preservados.`, function() {
+    fetch('controllers/recurso_planos.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'desassociar_disciplina', aluno_id: alunoId, disciplina_id: disciplinaId })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) throw new Error(data.message || 'Não foi possível remover a disciplina.');
+        toast(data.message, 'bi-trash3', 'success');
+        selecionarAlunoPlano(modulo, alunoId);
+      })
+      .catch(error => toast(error.message, 'bi-x-circle', 'danger'));
   });
 }
 
-function cadastrarDocumentoPaee() {
-  const estado = planosEstado.paee;
-  const nome = document.getElementById('novo-documento-paee')?.value.trim() || '';
-  if (!nome) return toast('Informe o nome do documento PAEE.', 'bi-exclamation-triangle', 'amber');
-  fetch('controllers/recurso_planos.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'cadastrar_paee', aluno_id: estado.aluno.id, nome_documento: nome })
-  }).then(r => r.json()).then(data => {
-    if (!data.success) throw new Error(data.message || 'Não foi possível cadastrar o documento PAEE.');
-    toast(data.message, 'bi-check-circle', 'success');
-    carregarPaeesDoAluno(estado, estado.token, document.getElementById('plano-paee-conteudo'));
-  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
-}
-
-function abrirDocumentoPaee(id) {
-  abrirHistoricoPlano('paee', id);
-}
-
 function cadastrarDisciplinaPlano(modulo) {
-  const estado = planosEstado[modulo]; const input = document.getElementById(`nova-disciplina-${modulo}`); const nome = input?.value.trim();
-  if (!nome || !estado.aluno) return toast('Informe o nome da disciplina.', 'bi-exclamation-circle', 'amber');
-  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'cadastrar_disciplina', aluno_id:estado.aluno.id, nome }) }).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); toast(data.message, 'bi-check-circle', 'success'); selecionarAlunoPlano(modulo, estado.aluno.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  const estado = planosEstado[modulo];
+  if (!estado.aluno || !['pei', 'paee'].includes(modulo)) return;
+  estado.disciplina = null;
+  estado.registro = null;
+  estado.novaDisciplina = true;
+  estado.etapa = 'documento';
+  document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · nova disciplina`;
+  editarPlano(modulo, 0);
 }
 
 function selecionarDisciplinaPlano(modulo, disciplinaId) {
-  const estado = planosEstado[modulo]; estado.disciplina = { id: disciplinaId }; estado.registro = null; estado.etapa = 'documento'; estado.token += 1; const token = estado.token; const alvo = document.getElementById(`plano-${modulo}-conteudo`);
-  fetch(`controllers/recurso_planos.php?action=historico&modulo=${modulo}&aluno_id=${estado.aluno.id}&disciplina_id=${disciplinaId}`, { cache: 'no-store' }).then(r=>r.json()).then(data => { if (estado.token !== token) return; if (!data.success) throw new Error(data.message); const historico = data.registros || []; const recente = historico[0]; estado.registro = recente || null; document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · ${recente?.disciplina_nome || 'Disciplina selecionada'}`; alvo.innerHTML = renderDocumentoPlano(modulo, recente, historico); }).catch(error => { alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`; });
+  const estado = planosEstado[modulo];
+  const disciplina = estado.disciplinas.find(item => Number(item.id) === Number(disciplinaId));
+  estado.disciplina = { id: Number(disciplinaId), nome: disciplina?.nome || '' };
+  estado.registro = null; estado.novaDisciplina = false; estado.etapa = 'documento'; estado.token += 1; const token = estado.token; const alvo = document.getElementById(`plano-${modulo}-conteudo`);
+  fetch(`controllers/recurso_planos.php?action=historico&modulo=${modulo}&aluno_id=${estado.aluno.id}&disciplina_id=${disciplinaId}`, { cache: 'no-store' }).then(r=>r.json()).then(data => {
+    if (estado.token !== token) return;
+    if (!data.success) throw new Error(data.message);
+    const historico = data.registros || [];
+    const recente = historico[0];
+    estado.registro = recente || null;
+    document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · ${recente?.disciplina_nome || 'Disciplina selecionada'}`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    const conteudoModal = document.getElementById('plan-document-modal-content');
+    if (!recente && window.usuarioTipo !== 'apoio') editarPlano(modulo, 0);
+    else if (modulo === 'paee' && recente && !recente.data_elaboracao && window.usuarioTipo !== 'apoio') editarPlano(modulo, Number(recente.id));
+    else {
+      conteudoModal.innerHTML = recente
+        ? renderDocumentoPlano(modulo, recente, historico)
+        : '<div class="empty" style="padding:24px 0"><i class="bi bi-file-earmark-text"></i><span>Este documento ainda não foi cadastrado.</span></div>';
+      openM('plan-document-modal');
+    }
+  }).catch(error => {
+    const destino = document.getElementById('plan-document-modal-content');
+    destino.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    openM('plan-document-modal');
+  });
 }
 
 function renderDocumentoPlano(modulo, registro, historico) {
@@ -2151,13 +2176,13 @@ function renderDocumentoPlano(modulo, registro, historico) {
   const rascunhoPaee = modulo === 'paee' && registro && !registro.data_elaboracao;
   const campos = modulo === 'pei'
     ? [['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']]
-    : [['nome_documento','Matéria escolar'],['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']];
+    : [['nome_documento','Nome do documento'],['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']];
   const form = rascunhoPaee
     ? '<div class="empty" style="padding:20px 0"><i class="bi bi-file-earmark-text"></i><span>Este documento PAEE ainda não foi preenchido.</span></div>'
     : registro
       ? campos.map(([campo, label]) => `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" style="min-height:42px;white-space:pre-wrap">${escaparPlano(registro[campo] || '—')}</div></div>`).join('')
       : '<div class="empty" style="padding:20px 0"><i class="bi bi-file-earmark-text"></i><span>Este plano ainda não foi cadastrado.</span></div>';
-  const historicoHtml = historico.length > 1 ? `<div style="margin-top:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">Documentos anteriores</div>${historico.slice(1).map(item => `<button type="button" class="btn-g" style="margin:0 6px 6px 0" onclick="abrirHistoricoPlano('${modulo}',${Number(item.id)})">${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} #${Number(item.id)}</button>`).join('')}</div>` : '';
+  const historicoHtml = modulo === 'pei' && historico.length > 1 ? `<div style="margin-top:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">Documentos anteriores</div>${historico.slice(1).map(item => `<button type="button" class="btn-g" style="margin:0 6px 6px 0" onclick="abrirHistoricoPlano('${modulo}',${Number(item.id)})">${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} #${Number(item.id)}</button>`).join('')}</div>` : '';
   const estado = planosEstado[modulo];
   const contexto = modulo === 'paee'
     ? 'Documento PAEE'
@@ -2170,25 +2195,63 @@ function editarPlano(modulo, id) {
   const estado = planosEstado[modulo]; const registro = id ? estado.registro : null;
   const campos = modulo === 'pei'
     ? [['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']]
-    : [['nome_documento','Matéria escolar','text'],['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']];
-  const camposHtml = campos.map(([campo, label, tipo]) => `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(registro?.[campo] || '')}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(registro?.[campo] || '')}">`}</div>`).join('');
-  document.getElementById(`plano-${modulo}-conteudo`).innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">${registro ? 'Editar documento' : 'Novo documento'} · ${escaparPlano(estado.aluno.nome)}</div>${camposHtml}<button type="button" class="btn-p" onclick="salvarPlanoModulo('${modulo}',${id})"><i class="bi bi-save2"></i> Salvar</button>`;
+    : [['nome_documento','Nome do documento','text'],['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']];
+  if (estado.novaDisciplina) campos.unshift(['nome_disciplina',modulo === 'pei' ? 'Nome da disciplina' : 'Nome do documento','text']);
+  const camposHtml = campos.map(([campo, label, tipo]) => {
+    if (campo === 'data_elaboracao') {
+      const data = registro?.data_elaboracao || window.pcdDataHoje;
+      return `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(formatDateBR(data))}</div></div>`;
+    }
+    if (modulo === 'paee' && campo === 'nome_documento') {
+      if (estado.novaDisciplina) return '';
+      const materia = estado.disciplina?.nome || registro?.disciplina_nome || registro?.nome_documento || 'Nome do documento';
+      return `<div style="margin-bottom:12px"><label class="lbl">Nome do documento</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(materia)}</div></div>`;
+    }
+    return `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(registro?.[campo] || '')}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(registro?.[campo] || '')}">`}</div>`;
+  }).join('');
+  const conteudo = `<div class="plan-document-modal__form"><div style="font-size:14px;font-weight:700;margin-bottom:14px">${registro ? 'Editar documento' : 'Novo documento'} · ${escaparPlano(estado.aluno.nome)}</div>${camposHtml}<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button type="button" class="btn-g" onclick="closeM('plan-document-modal')">Cancelar</button><button type="button" class="btn-p" onclick="salvarPlanoModulo('${modulo}',${id})"><i class="bi bi-save2"></i> Salvar</button></div></div>`;
+  document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+  document.getElementById('plan-document-modal-content').innerHTML = conteudo;
+  openM('plan-document-modal');
+  const primeiroCampo = estado.novaDisciplina ? 'nome_disciplina' : 'responsavel_preenchimento';
+  setTimeout(() => document.querySelector(`#plan-document-modal-content [data-campo="${primeiroCampo}"]`)?.focus(), 50);
 }
 
 function salvarPlanoModulo(modulo, id) {
   const estado = planosEstado[modulo]; const payload = { action:'salvar', modulo, id, aluno_id:estado.aluno.id, disciplina_id:estado.disciplina?.id || 0 };
-  if (modulo === 'paee') {
-    const nome = document.querySelector('#page-paee-conteudo [data-campo="nome_documento"]')?.value.trim();
-    const data = document.querySelector('#page-paee-conteudo [data-campo="data_elaboracao"]')?.value;
-    const responsavel = document.querySelector('#page-paee-conteudo [data-campo="responsavel_preenchimento"]')?.value.trim();
-    if (!nome || !data || !responsavel) return toast('Informe a matéria escolar, a data de elaboração e o responsável pelo preenchimento.', 'bi-exclamation-triangle', 'amber');
+  const nomeDisciplina = document.querySelector('#plan-document-modal-content [data-campo="nome_disciplina"]')?.value.trim();
+  const responsavel = document.querySelector('#plan-document-modal-content [data-campo="responsavel_preenchimento"]')?.value.trim();
+  if (estado.novaDisciplina && (!nomeDisciplina || nomeDisciplina.length > 150)) {
+    return toast(`Informe um nome válido para ${modulo === 'pei' ? 'a disciplina' : 'o documento'}.`, 'bi-exclamation-triangle', 'amber');
   }
-  document.querySelectorAll(`#plano-${modulo}-conteudo .plano-campo`).forEach(campo => { payload[campo.dataset.campo] = campo.value; });
-  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); toast(data.message, 'bi-check-circle', 'success'); if (modulo === 'paee') carregarPaeesDoAluno(estado, estado.token, document.getElementById('plano-paee-conteudo')).then(() => { if (data.id) abrirDocumentoPaee(data.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger')); else selecionarDisciplinaPlano(modulo, estado.disciplina.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  if (!responsavel) {
+    return toast('Informe o responsável pelo preenchimento.', 'bi-exclamation-triangle', 'amber');
+  }
+  const formulario = '#plan-document-modal-content';
+  document.querySelectorAll(`${formulario} .plano-campo`).forEach(campo => { payload[campo.dataset.campo] = campo.value; });
+  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }).then(r=>r.json()).then(data => {
+    if (!data.success) throw new Error(data.message);
+    toast(data.message, 'bi-check-circle', 'success');
+    estado.novaDisciplina = false;
+    closeM('plan-document-modal');
+    selecionarAlunoPlano(modulo, estado.aluno.id);
+  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
 }
 
 function abrirHistoricoPlano(modulo, id) {
-  fetch(`controllers/recurso_planos.php?action=abrir&modulo=${modulo}&id=${Number(id)}`).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); const estado = planosEstado[modulo]; estado.aluno = { id: Number(data.registro.aluno_id), nome: data.registro.aluno_nome }; estado.disciplina = data.registro.disciplina_id ? { id: Number(data.registro.disciplina_id), nome: data.registro.disciplina_nome } : null; estado.registro = data.registro; estado.etapa = 'documento'; document.getElementById(`plano-${modulo}-contexto`).textContent = modulo === 'paee' ? `${estado.aluno.nome} · documento PAEE` : `${estado.aluno.nome} · ${data.registro.disciplina_nome || 'Disciplina selecionada'}`; document.getElementById(`plano-${modulo}-conteudo`).innerHTML = renderDocumentoPlano(modulo, data.registro, [data.registro]); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  fetch(`controllers/recurso_planos.php?action=abrir&modulo=${modulo}&id=${Number(id)}`).then(r=>r.json()).then(data => {
+    if (!data.success) throw new Error(data.message);
+    const estado = planosEstado[modulo];
+    estado.aluno = { id: Number(data.registro.aluno_id), nome: data.registro.aluno_nome };
+    estado.disciplina = data.registro.disciplina_id ? { id: Number(data.registro.disciplina_id), nome: data.registro.disciplina_nome } : null;
+    estado.registro = data.registro;
+    estado.novaDisciplina = false;
+    estado.etapa = 'documento';
+    document.getElementById(`plano-${modulo}-contexto`).textContent = modulo === 'paee' ? `${estado.aluno.nome} · documento PAEE` : `${estado.aluno.nome} · ${data.registro.disciplina_nome || 'Disciplina selecionada'}`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    document.getElementById('plan-document-modal-content').innerHTML = renderDocumentoPlano(modulo, data.registro, [data.registro]);
+    openM('plan-document-modal');
+  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
 }
 
 function planoVoltar(modulo) {

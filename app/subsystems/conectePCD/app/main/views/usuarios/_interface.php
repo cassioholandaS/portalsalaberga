@@ -292,6 +292,24 @@
       .student-profile-block__label { color:var(--text-muted); font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
       .student-profile-block__details strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font-size:12px; }
       .student-profile-block__empty-value { color:var(--text-muted); font-size:12px; }
+      .plan-discipline-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,300px)); justify-content:start; gap:14px; }
+      .plan-discipline-card { width:100%; min-width:0; color:var(--text); font:inherit; text-align:left; }
+      .plan-discipline-card__delete {
+        display:flex; width:34px; height:34px; flex:0 0 34px; align-items:center;
+        justify-content:center; border:1px solid rgba(198,40,40,.18); border-radius:10px;
+        background:rgba(198,40,40,.06); color:#c62828; cursor:pointer;
+        transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+      }
+      .plan-discipline-card__delete:hover,
+      .plan-discipline-card__delete:focus-visible {
+        transform:translateY(-1px); border-color:rgba(198,40,40,.4);
+        background:rgba(198,40,40,.12); outline:none;
+      }
+      .plan-discipline-card__delete i { font-size:15px; }
+      .plan-discipline-card__avatar { display:flex; width:42px; height:42px; flex:0 0 42px; align-items:center; justify-content:center; border-radius:50%; background:linear-gradient(135deg,var(--c1),var(--c3)); color:#fff; font-size:15px; font-weight:700; }
+      .plan-discipline-card__status { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:13px; border-bottom:1px solid var(--border); }
+      .plan-discipline-card__badge { flex-shrink:0; padding:4px 10px; border:1px solid rgba(211,154,0,.32); border-radius:999px; background:rgba(211,154,0,.1); color:#9a6b00; font-size:10px; font-weight:700; }
+      .plan-discipline-card__badge.is-complete { border-color:rgba(0,166,81,.3); background:rgba(0,166,81,.08); color:var(--c1); }
       .document-summary-block { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.02); }
       .document-summary-block:hover { border-color:rgba(0,166,81,.35); }
       .apoio-quesito-trigger { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; padding:14px 16px; border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,.02); color:var(--text); text-align:left; cursor:pointer; font-family:inherit; }
@@ -732,6 +750,24 @@
       border-radius:20px; padding:26px; width:100%; max-width:450px; margin:16px;
       animation:mslide 0.22s cubic-bezier(.4,0,.2,1);
     }
+    #confirm-modal { padding-left:258px; }
+    body.sidebar-collapsed #confirm-modal { padding-left:0; }
+    .plan-document-modal {
+      z-index:10000; padding-left:258px; background:rgba(5,20,12,.58);
+    }
+    body.sidebar-collapsed .plan-document-modal { padding-left:0; }
+    .plan-document-modal .modal-box {
+      width:min(820px, calc(100vw - 32px)); max-width:820px;
+      max-height:min(820px, calc(100dvh - 48px)); overflow-y:auto;
+      padding:22px; box-shadow:0 28px 90px rgba(0,0,0,.34);
+    }
+    .plan-document-modal__header {
+      position:sticky; top:-22px; z-index:2; display:flex; align-items:center;
+      justify-content:space-between; gap:12px; margin:-22px -22px 18px;
+      padding:16px 22px; background:var(--surface2); border-bottom:1px solid var(--border);
+    }
+    .plan-document-modal__title { font-size:15px; font-weight:700; }
+    .plan-document-modal__form textarea.inp { min-height:76px; }
     @keyframes mslide { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
 
     /* TOAST */
@@ -1165,6 +1201,11 @@
     html[data-theme="dark"] .evolucao-grafico-box,
     html[data-theme="dark"] .multi-select-menu,
     html[data-theme="dark"] .apoio-quesito-leitura-item { background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
+    html[data-theme="dark"] .plan-discipline-card__badge { color:#f3c969; }
+    html[data-theme="dark"] .plan-discipline-card__badge.is-complete { color:#76d89e; }
+    html[data-theme="dark"] .plan-discipline-card__delete { border-color:rgba(248,113,113,.2); background:rgba(248,113,113,.08); color:#fca5a5; }
+    html[data-theme="dark"] .plan-discipline-card__delete:hover,
+    html[data-theme="dark"] .plan-discipline-card__delete:focus-visible { border-color:rgba(248,113,113,.42); background:rgba(248,113,113,.16); }
     html[data-theme="dark"] .btn-g { background:#262626; border-color:rgba(255,255,255,.08); color:#e5e7eb; }
     html[data-theme="dark"] .btn-g:hover { background:#333; color:#fff; }
     html[data-theme="dark"] .inp,
@@ -1251,6 +1292,7 @@
     html[data-theme="dark"] .theme-toggle:hover { background:rgba(255,255,255,.08); }
     html[data-theme="dark"] .toast { right:88px; background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
     @media (max-width:768px) {
+      #confirm-modal.modal-bg { padding:10px; }
       .entryexit-footer {
         left:0; min-height:4.25rem; flex-direction:column; gap:.2rem;
         padding:.55rem .75rem; font-size:.68rem;
@@ -1258,6 +1300,7 @@
       .entryexit-footer__developers { gap:.25rem .85rem; }
       .theme-toggle { right:1rem; bottom:5rem; }
       html[data-theme="dark"] .toast { right:12px; bottom:76px; }
+      .plan-document-modal { z-index:10000 !important; padding-left:0; }
     }
   </style>
 </head>
@@ -1277,6 +1320,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 ?>
 <script>
   window.usuarioTipo = <?php echo json_encode($tipoUsuario ?? 'responsavel'); ?>;
+  window.pcdDataHoje = <?php echo json_encode(date('Y-m-d')); ?>;
 </script>
 <div class="overlay" onclick="fecharMenu()"></div>
 
@@ -2218,6 +2262,16 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <span id="toast-tx">Operação realizada!</span>
 </div>
 
+<div class="modal-bg plan-document-modal" id="plan-document-modal" onclick="if(event.target===this)closeM('plan-document-modal')">
+  <section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="plan-document-modal-title">
+    <div class="plan-document-modal__header">
+      <div class="plan-document-modal__title" id="plan-document-modal-title">Plano</div>
+      <button type="button" class="btn-g" onclick="closeM('plan-document-modal')" aria-label="Fechar formulário"><i class="bi bi-x-lg"></i> Fechar</button>
+    </div>
+    <div id="plan-document-modal-content"></div>
+  </section>
+</div>
+
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
   <span>Desenvolvido por</span>
   <div class="entryexit-footer__developers">
@@ -2244,7 +2298,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-sidebar-notifications-21">
+<script src="js/app.js?v=20261109-paee-discipline-flow-32">
 
 </script>
 </body>
