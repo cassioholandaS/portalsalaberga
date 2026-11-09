@@ -242,7 +242,27 @@
     .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 
     /* CONTENT */
-    .content { flex:1; overflow-y:auto; padding:26px 30px; }
+    .content { flex:1; overflow-y:auto; padding:26px 30px 5rem; }
+    .entryexit-footer {
+      position:fixed; z-index:80; right:0; bottom:0; left:258px;
+      display:flex; min-height:3.5rem; align-items:center; justify-content:center;
+      gap:.75rem; padding:.65rem 1rem; background:#fff; color:var(--text-muted);
+      box-shadow:0 -4px 18px rgba(0,0,0,.1); font-size:.75rem;
+    }
+    .entryexit-footer::before {
+      position:absolute; inset:0 0 auto; height:4px;
+      background:linear-gradient(90deg,#006b35,#f6c400 48%,#ed8500 70%,#006b35);
+      content:"";
+    }
+    .entryexit-footer__developers { display:flex; flex-wrap:wrap; justify-content:center; gap:.4rem 1rem; }
+    .entryexit-footer a {
+      display:inline-flex; align-items:center; gap:.35rem; color:var(--text);
+      font-weight:600; text-decoration:none; transition:color .2s ease,transform .2s ease;
+    }
+    .entryexit-footer a:hover,
+    .entryexit-footer a:focus-visible { transform:translateY(-3px); color:var(--c2); }
+    .entryexit-footer a i { color:var(--c2); }
+    body.sidebar-collapsed .entryexit-footer { left:0; }
 
     /* PAGES */
     .page { display:none; animation: pgIn 0.28s ease; }
@@ -900,7 +920,7 @@
       html, body { width:100%; min-width:0; height:auto !important; min-height:100%; overflow-x:hidden !important; }
       body { display:block !important; }
       .main { width:100%; min-width:0; min-height:100vh; overflow:visible; }
-      .content { width:100%; min-width:0; padding:78px 12px 28px !important; overflow:visible; }
+      .content { width:100%; min-width:0; padding:78px 12px 7rem !important; overflow:visible; }
       .mobile-menu-btn {
         position:fixed; top:12px; left:12px; z-index:1001;
         width:42px; height:42px; border-radius:11px;
@@ -1015,7 +1035,7 @@
     }
 
     @media (max-width: 420px) {
-      .content { padding:78px 8px 28px !important; }
+      .content { padding:78px 8px 7rem !important; }
       .sidebar { width: min(280px, 88vw); min-width: min(280px, 88vw); }
       .profile-banner { padding:18px 14px !important; }
       .profile-banner > div:first-child { gap:12px; }
@@ -1085,7 +1105,7 @@
     .theme-toggle {
       position:fixed;
       right:1.5rem;
-      bottom:1.5rem;
+      bottom:4.25rem;
       z-index:1100;
       display:inline-flex;
       align-items:center;
@@ -1218,11 +1238,23 @@
       border:0;
       box-shadow:5px 0 15px rgba(0,0,0,.36);
     }
+    html[data-theme="dark"] .entryexit-footer {
+      background:#171717; color:#d1d5db; box-shadow:0 -4px 18px rgba(0,0,0,.35);
+    }
+    html[data-theme="dark"] .entryexit-footer a { color:#f3f4f6; }
+    html[data-theme="dark"] .entryexit-footer a:hover,
+    html[data-theme="dark"] .entryexit-footer a:focus-visible,
+    html[data-theme="dark"] .entryexit-footer a i { color:#76d89e; }
     html[data-theme="dark"] .theme-toggle { border-color:rgba(255,255,255,.08); background:rgba(255,255,255,.05); color:#f3f4f6; }
     html[data-theme="dark"] .theme-toggle:hover { background:rgba(255,255,255,.08); }
     html[data-theme="dark"] .toast { right:88px; background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
     @media (max-width:768px) {
-      .theme-toggle { right:1rem; bottom:1rem; }
+      .entryexit-footer {
+        left:0; min-height:4.25rem; flex-direction:column; gap:.2rem;
+        padding:.55rem .75rem; font-size:.68rem;
+      }
+      .entryexit-footer__developers { gap:.25rem .85rem; }
+      .theme-toggle { right:1rem; bottom:5rem; }
       html[data-theme="dark"] .toast { right:12px; bottom:76px; }
     }
   </style>
@@ -2189,6 +2221,28 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="bi bi-check-circle-fill" id="toast-ic" style="font-size:16px;color:var(--c3);flex-shrink:0"></i>
   <span id="toast-tx">Operação realizada!</span>
 </div>
+
+<footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
+  <span>Desenvolvido por</span>
+  <div class="entryexit-footer__developers">
+    <a href="https://www.instagram.com/_kauanlmx/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Kauan Cristian">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Kauan Cristian</span>
+    </a>
+    <a href="https://www.instagram.com/cassioholanda_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Cassio Holanda">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Cassio Holanda</span>
+    </a>
+    <a href="https://www.instagram.com/abraaolyncoln_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Abraão Lyncoln">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Abraão Lyncoln</span>
+    </a>
+    <a href="https://www.instagram.com/arma_ndofilho/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Armando Filho">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Armando Filho</span>
+    </a>
+  </div>
+</footer>
 
 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Ativar modo escuro" aria-pressed="false" title="Ativar modo escuro">
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
