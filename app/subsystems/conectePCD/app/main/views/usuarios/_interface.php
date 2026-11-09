@@ -705,11 +705,13 @@
       padding:52px 20px; color:var(--text-muted); text-align:center; gap:4px;
     }
     .evolucao-relatorio-grid { display:grid; grid-template-columns:260px minmax(0,1fr); gap:18px; align-items:start; }
+    .evolucao-filtros-coluna { display:flex; flex-direction:column; gap:12px; }
     .evolucao-filtros { display:grid; gap:12px; }
-    .evolucao-grafico-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; align-items:stretch; }
-    .evolucao-grafico-box { width:100%; max-width:900px; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
+    .evolucao-grafico-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; align-items:stretch; min-width:0; }
+    .evolucao-grafico-layout > div:first-child { min-width:0; }
+    .evolucao-grafico-box { display:flex; flex-direction:column; width:100%; height:440px; min-width:0; max-width:none; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
     .evolucao-grafico-titulo { color:#59675e; font-size:19px; font-weight:500; text-align:center; margin-bottom:4px; }
-    .evolucao-grafico-box svg { width:100%; height:auto; aspect-ratio:760 / 320; display:block; }
+    .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
     .evolucao-grafico-eixo { color:#718077; font-size:10px; text-align:center; margin-top:2px; }
     .evolucao-grafico-legenda {
       padding:12px 14px 10px;
@@ -738,7 +740,7 @@
       line-height:1.5;
       color:var(--text);
     }
-    .perfil-aluno-relatorio { height:calc(100vh - 156px); max-height:calc(100vh - 156px); overflow-y:auto; scrollbar-gutter:stable; }
+    .perfil-aluno-relatorio { height:auto; max-height:none; overflow-y:visible; scrollbar-gutter:auto; }
     .perfil-aluno-relatorio > .tab-row { position:sticky; top:0; z-index:12; background:#f7faf6 !important; box-shadow:0 2px 8px rgba(7,91,45,.08); }
 
     @media (max-width: 768px) {
@@ -1555,19 +1557,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
     <!-- ============= RELATÓRIOS ============= -->
     <div class="page" id="page-relatorios">
-      <div class="card" style="padding:20px;margin-bottom:18px;border-left:4px solid var(--gold)">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-          <div>
-            <div style="font-size:17px;font-weight:700"><i class="bi bi-graph-up-arrow" style="color:var(--gold);margin-right:7px"></i>Relatórios de evolução</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:5px">Acompanhe avaliações, presenças e faltas registradas para cada aluno.</div>
-          </div>
-          <button type="button" class="btn-p" onclick="gerarRelatorioEvolucao()" title="Gerar relatório dos filtros atuais">
-            <i class="bi bi-file-earmark-pdf"></i> Gerar relatório
-          </button>
-        </div>
-      </div>
       <div class="evolucao-relatorio-grid">
-      <div class="card evolucao-filtros" style="padding:18px;margin-bottom:18px">
+      <div class="evolucao-filtros-coluna">
+        <div class="card evolucao-filtros" style="padding:18px">
           <?php if ($tipoUsuario === 'apoio'): ?>
           <div><label class="lbl">Aluno acompanhado</label><div id="evolucao-aluno-nome-filtro" class="inp" style="background:#f7faf6">Carregando aluno...</div><input id="evolucao-aluno" type="hidden"></div>
           <?php else: ?>
@@ -1590,6 +1582,10 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
           </div>
           <div><label class="lbl" for="evolucao-inicio">De</label><input id="evolucao-inicio" type="date" class="inp"></div>
           <div><label class="lbl" for="evolucao-fim">Até</label><input id="evolucao-fim" type="date" class="inp"></div>
+        </div>
+        <button type="button" class="btn-p" onclick="gerarRelatorioEvolucao()" title="Gerar relatório dos filtros atuais" style="width:100%;justify-content:center">
+          <i class="bi bi-file-earmark-pdf"></i> Gerar relatório
+        </button>
       </div>
       <div class="card" style="padding:20px">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">

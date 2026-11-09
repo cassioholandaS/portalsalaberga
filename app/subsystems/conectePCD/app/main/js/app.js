@@ -42,6 +42,9 @@ function carregarAlunos() {
 let curSid = null, relatorios = {}, laudos = {};
 let evolucaoRegistros = [];
 let evolucaoFrequencias = [];
+let evolucaoGraficoRegistrosVisiveis = [];
+let evolucaoGraficoResizeObserver = null;
+let evolucaoGraficoResizeKey = '';
 let evolucaoPagina = 1;
 const evolucaoItensPorPagina = 5;
 let calDate = new Date();
@@ -331,8 +334,24 @@ function renderRelatorioEvolucao() {
   if (metaEl) metaEl.textContent = aluno ? `Matrícula ${aluno.matricula || '—'} · Turma ${aluno.turma || '—'} · ${aluno.curso || '—'}` : '';
   const resumo = document.getElementById('evolucao-resumo');
   if (resumo) resumo.textContent = `${registros.length} ${registros.length === 1 ? 'avaliação' : 'avaliações'} · ${faltas.length} ${faltas.length === 1 ? 'falta' : 'faltas'}`;
+  evolucaoGraficoRegistrosVisiveis = registros;
   desenharGraficoEvolucao(registros);
+  observarRedimensionamentoGrafico();
   renderTabelaEvolucao(registros, frequencias);
+}
+
+function observarRedimensionamentoGrafico() {
+  const svg = document.getElementById('evolucao-grafico');
+  if (!svg || evolucaoGraficoResizeObserver || typeof ResizeObserver === 'undefined') return;
+
+  evolucaoGraficoResizeObserver = new ResizeObserver(([entry]) => {
+    const { width, height } = entry.contentRect;
+    const chave = `${Math.round(width)}x${Math.round(height)}`;
+    if (width <= 0 || height <= 0 || chave === evolucaoGraficoResizeKey) return;
+    evolucaoGraficoResizeKey = chave;
+    desenharGraficoEvolucao(evolucaoGraficoRegistrosVisiveis);
+  });
+  evolucaoGraficoResizeObserver.observe(svg);
 }
 
 function desenharGraficoEvolucao(registros) {
@@ -340,6 +359,11 @@ function desenharGraficoEvolucao(registros) {
   const legenda = document.getElementById('evolucao-legenda');
   const tendenciaEl = document.getElementById('evolucao-tendencia');
   if (!svg || !legenda || !tendenciaEl) return;
+  const H = 320;
+  const dimensoesSvg = svg.getBoundingClientRect();
+  const escalaSvg = dimensoesSvg.height > 0 ? dimensoesSvg.height / H : 1;
+  const W = dimensoesSvg.width > 0 ? dimensoesSvg.width / escalaSvg : 760;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const niveis = { triste: 0, neutro: 1, feliz: 2 };
   const rotulos = { triste: 'Ruim', neutro: 'Neutro', feliz: 'Bom' };
   const quesitos = [...new Map(registros.map(item => [String(item.quesito_id), item.quesito])).entries()]
@@ -349,11 +373,11 @@ function desenharGraficoEvolucao(registros) {
   const mapaCores = gerarMapaCoresQuesitos(quesitosParaCores);
   legenda.innerHTML = quesitos.map(([id, titulo]) => `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;font-size:12px;line-height:1.2"><span style="display:inline-block;width:26px;height:3px;border-radius:2px;background:${obterCorQuesito(id, titulo, mapaCores)}; margin-left:4px;"></span><span style="padding-left:2px">${escapeEvolucao(titulo)}</span></div>`).join('') || '<span style="font-size:11px;color:var(--text-muted)">Sem dados para o filtro.</span>';
   if (!registros.length) {
-    svg.innerHTML = '<text x="350" y="140" text-anchor="middle" fill="#7b8b81" font-size="13">Sem dados para o filtro selecionado</text>';
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#7b8b81" font-size="13">Sem dados para o filtro selecionado</text>`;
     tendenciaEl.textContent = 'Nenhuma tendência disponível.';
     return;
   }
-  const W = 760, H = 320, left = 64, right = 18, top = 20, bottom = 46, plotW = W - left - right, plotH = H - top - bottom;
+  const left = 64, right = 18, top = 20, bottom = 46, plotW = W - left - right, plotH = H - top - bottom;
   const chaveEvento = item => `${item.data}|${item.data_hora_registro || ''}|${item.periodo}`;
   const eventos = [...new Map(registros.map(item => [chaveEvento(item), { data: item.data, hora: item.data_hora_registro, periodo: item.periodo, chave: chaveEvento(item) }])).values()]
     .sort((a, b) => String(a.data).localeCompare(String(b.data)) || String(a.hora).localeCompare(String(b.hora)) || String(a.periodo).localeCompare(String(b.periodo)));
