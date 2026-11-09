@@ -59,9 +59,10 @@ ALTER TABLE `devolucao` DROP FOREIGN KEY IF EXISTS `devolucao_ibfk_1`;
 ALTER TABLE `devolucao` ADD CONSTRAINT `devolucao_ibfk_1`
   FOREIGN KEY (`id_emprestimo`) REFERENCES `emprestimo` (`id`);
 
+-- O aluno pertence a outro banco e, portanto, nao pode ter FOREIGN KEY entre bancos.
+-- A existencia do aluno e validada pela aplicacao antes da gravacao do emprestimo.
 ALTER TABLE `emprestimo` DROP FOREIGN KEY IF EXISTS `emprestimo_ibfk_1`;
-ALTER TABLE `emprestimo` ADD CONSTRAINT `emprestimo_ibfk_1`
-  FOREIGN KEY (`id_aluno`) REFERENCES `u750204740_sysPDT`.`alunos` (`id_aluno`);
+ALTER TABLE `emprestimo` ADD KEY IF NOT EXISTS `idx_emprestimo_id_aluno` (`id_aluno`);
 
 ALTER TABLE `emprestimo` DROP FOREIGN KEY IF EXISTS `emprestimo_ibfk_2`;
 ALTER TABLE `emprestimo` ADD CONSTRAINT `emprestimo_ibfk_2`

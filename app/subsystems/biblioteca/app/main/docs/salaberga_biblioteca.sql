@@ -5021,7 +5021,7 @@ ALTER TABLE `devolucao`
 -- Restrições para tabelas `emprestimo`
 --
 ALTER TABLE `emprestimo`
-  ADD CONSTRAINT `emprestimo_ibfk_1` FOREIGN KEY (`id_aluno`) REFERENCES `sistema_pdt`.`alunos` (`id_aluno`),
+  ADD KEY `idx_emprestimo_id_aluno` (`id_aluno`),
   ADD CONSTRAINT `emprestimo_ibfk_2` FOREIGN KEY (`id_catalogo`) REFERENCES `catalogo` (`id`);
 
 --

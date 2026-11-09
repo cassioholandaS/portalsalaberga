@@ -347,7 +347,8 @@ class select_model extends connect
     }
     public function id_aluno_selecionado($id_aluno_selecionado) {
         if ($id_aluno_selecionado) {
-            $stmt = $this->connect_biblioteca->prepare("
+            try {
+                $stmt = $this->connect_biblioteca->prepare("
                 SELECT 
                     aluno.id_aluno,
                     aluno.nome,
@@ -390,6 +391,9 @@ class select_model extends connect
                     'ano_letivo' => $info['ano_letivo'] ?? null,
                     'sala_turma' => $info['sala_turma'] ?? null,
                 ];
+            }
+            } catch (PDOException $e) {
+                error_log('Erro ao consultar aluno no PDT: ' . $e->getMessage());
             }
         }
         return null;
@@ -693,10 +697,12 @@ class select_model extends connect
     }
     public function select_aluno()
     {
-
-        $sql_aluno = $this->connect_biblioteca->query('SELECT id_aluno, nome FROM ' . $this->connect_alunos . '.alunos');
-        $alunos = $sql_aluno->fetchAll(PDO::FETCH_ASSOC);
-
-        return $alunos;
+        try {
+            $sql_aluno = $this->connect_biblioteca->query('SELECT id_aluno, nome FROM ' . $this->connect_alunos . '.alunos');
+            return $sql_aluno->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('Erro ao listar alunos do PDT: ' . $e->getMessage());
+            return [];
+        }
     }
 }

@@ -1,5 +1,5 @@
 <?php
-require_once('../../models/select_model.php');
+require_once(__DIR__ . '/../models/select_model.php');
 $select_model = new select_model();
 
 if (isset($_POST['aluno'])) {

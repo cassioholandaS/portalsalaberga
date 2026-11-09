@@ -1,6 +1,6 @@
 <?php
-require_once('../../models/select_model.php');
-require_once('../../config/connect.php');
+require_once(__DIR__ . '/../../models/select_model.php');
+require_once(__DIR__ . '/../../config/connect.php');
 
 class Relatorio_geral_turma extends connect {
     protected $id_turma;
@@ -22,7 +22,8 @@ class Relatorio_geral_turma extends connect {
         $this->mes = isset($_GET['mes']) ? $_GET['mes'] : date('n');
         
         if (!$this->id_turma) {
-            throw new Exception("ID da turma não fornecido");
+            echo "Turma não selecionada.";
+            exit;
         }
 
         $this->loadTurmaData();
@@ -35,7 +36,8 @@ class Relatorio_geral_turma extends connect {
         $this->nome_turma = $select_model->get_turma_nome($this->id_turma);
         
         if (!$this->nome_turma) {
-            throw new Exception("Turma não encontrada");
+            echo "Turma não encontrada.";
+            exit;
         }
 
         $this->nome_turma = $this->formatarNomeTurma($this->nome_turma);

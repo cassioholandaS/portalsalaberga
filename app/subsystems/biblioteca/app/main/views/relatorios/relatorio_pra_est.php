@@ -1,6 +1,6 @@
 <?php
-require_once('../../assets/fpdf/fpdf.php');
-require_once('../../config/connect.php');
+require_once(__DIR__ . '/../../assets/fpdf/fpdf.php');
+require_once(__DIR__ . '/../../config/connect.php');
 require_once __DIR__ . '/_layout_pdf.php';
 if (isset($_GET['estante']) && isset($_GET['prateleira'])) {
     $estante = $_GET['estante'];

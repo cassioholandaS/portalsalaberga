@@ -8,6 +8,7 @@ class connect
     {
         $this->connect_database();
     }
+
     function connect_database()
     {
         try {
@@ -16,7 +17,7 @@ class connect
             $user = 'root';
             $password = '';
 
-            $this->connect_alunos = 'sistema_pdt'; // Altere para o schema de alunos externo no mesmo servidor
+            $this->connect_alunos = 'sistema_pdt';
             $this->connect_biblioteca = new PDO(
                 'mysql:host=' . $host . ';dbname=' . $database . ';charset=utf8mb4',
                 $user,
@@ -27,7 +28,6 @@ class connect
                     PDO::ATTR_EMULATE_PREPARES => false,
                 ]
             );
-
         } catch (PDOException $e) {
             try {
                 $host = 'localhost';

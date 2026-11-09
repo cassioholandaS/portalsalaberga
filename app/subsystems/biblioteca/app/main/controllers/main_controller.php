@@ -1,5 +1,5 @@
 <?php
-require_once('../models/main_model.php');
+require_once(__DIR__ . '/../models/main_model.php');
  
 //verificar tipo de relatório
 if (isset($_POST['relatorio'])) {

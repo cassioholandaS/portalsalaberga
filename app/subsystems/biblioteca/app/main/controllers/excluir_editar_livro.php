@@ -1,6 +1,6 @@
 <?php
 
-require_once('../models/main_model.php');
+require_once(__DIR__ . '/../models/main_model.php');
 
 /*controller para excluir livro*/
 if (isset($_POST['excluir_livro']) && !empty($_POST['excluir_livro'])) {

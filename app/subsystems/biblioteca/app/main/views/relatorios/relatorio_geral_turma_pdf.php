@@ -1,7 +1,7 @@
 <?php
-require_once('../../models/select_model.php');
-require_once('../../assets/fpdf/fpdf.php');
-require_once('../../config/connect.php');
+require_once(__DIR__ . '/../../models/select_model.php');
+require_once(__DIR__ . '/../../assets/fpdf/fpdf.php');
+require_once(__DIR__ . '/../../config/connect.php');
 require_once __DIR__ . '/_layout_pdf.php';
 
 class Relatorio_geral_turma_pdf extends connect
@@ -51,7 +51,7 @@ class Relatorio_geral_turma_pdf extends connect
             $livros_por_aluno = $stmt_livros_por_aluno->fetchAll(PDO::FETCH_ASSOC);
 
             // Criar o gráfico usando GD Library
-            if (!empty($livros_por_aluno)) {
+            if (!empty($livros_por_aluno) && function_exists('imagecreatetruecolor')) {
                 $width = 600; // Largura do gráfico
                 $height = 400; // Altura do gráfico
                 $image = imagecreatetruecolor($width, $height);
@@ -213,7 +213,7 @@ class Relatorio_geral_turma_pdf extends connect
                 $pdf->AddPage();
                 aplicarCabecalhoRelatorioBiblioteca($pdf, 'RELATÓRIO GERAL DE TURMA');
                 $pdf->SetFont('Arial', '', 12);
-                $pdf->Cell(0, 10, utf8_decode('Nenhum dado disponível para o período selecionado.'), 0, 1);
+                $pdf->Cell(0, 10, utf8_decode('Nenhum dado disponível para o período ou a geração de gráfico não está disponível no servidor.'), 0, 1);
                 $pdf->Output('I', 'relatorio_turma.pdf');
             }
         } catch (Exception $e) {

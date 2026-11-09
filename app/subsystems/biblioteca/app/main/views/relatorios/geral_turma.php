@@ -107,7 +107,7 @@
           <select id="turma" name="turma" class="w-full px-3 py-2 sm:px-4 sm:py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors duration-300 text-xs sm:text-sm md:text-base" required>
             <option value="" selected disabled>Selecione a turma</option>
             <?php
-            require_once('../../models/select_model.php');
+            require_once(__DIR__ . '/../../models/select_model.php');
             $select_model = new select_model();
             $turmas = $select_model->select_turmas();
             if ($turmas) {

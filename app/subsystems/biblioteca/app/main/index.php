@@ -226,7 +226,7 @@ $renderEmbeddedPage = static function ($embeddedPage, $embeddedDirectory, $pageS
                 break;
             case 'views/cadastrar_genero.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 ?>
 <!DOCTYPE html>
@@ -360,7 +360,7 @@ $select_model = new select_model();
                 break;
             case 'views/cadastrar_livro.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 $categorias = $select_model->select_categoria();
 ?>
@@ -1054,7 +1054,7 @@ $categorias = $select_model->select_categoria();
                 break;
             case 'views/cadastrar_subgenero.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 ?>
 <!DOCTYPE html>
@@ -1908,7 +1908,7 @@ $currentDate = date('j') . ' de ' . $months[intval(date('n')) - 1] . ' de ' . da
                 break;
             case 'views/consultar_livro.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select = new select_model();
 $livros = $select->select_nome_livro();
 ?>
@@ -2264,7 +2264,7 @@ $livros = $select->select_nome_livro();
                 break;
             case 'views/editar_autor.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 ?>
 <!DOCTYPE html>
@@ -2576,7 +2576,7 @@ $select_model = new select_model();
                 break;
             case 'views/editar_categoria.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 $categorias = $select_model->select_categoria();
 ?>
@@ -2894,7 +2894,7 @@ $categorias = $select_model->select_categoria();
                 break;
             case 'views/editar_genero.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 $generos = $select_model->select_genero();
 ?>
@@ -3212,7 +3212,7 @@ $generos = $select_model->select_genero();
                 break;
             case 'views/editar_livro.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 $livros = $select_model->select_nome_livro();
 $categorias = $select_model->select_categoria();
@@ -3686,7 +3686,7 @@ $categorias = $select_model->select_categoria();
                 break;
             case 'views/editar_subgenero.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 $subgeneros = $select_model->select_subgenero($genero = ''); // Passa uma string vazia para buscar todos os subgêneros
 ?>
@@ -4503,7 +4503,7 @@ $dados_aluno = $select_model->select_aluno();
                 break;
             case 'views/excluir_livro.php':?>
 <?php
-require_once('../models/select_model.php');
+require_once(__DIR__ . '/models/select_model.php');
 $select_model = new select_model();
 ?>
 <!DOCTYPE html>
