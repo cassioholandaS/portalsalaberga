@@ -840,8 +840,22 @@
       line-height:1.5;
       color:var(--text);
     }
-    .perfil-aluno-relatorio { height:auto; max-height:none; overflow-y:visible; scrollbar-gutter:auto; }
-    .perfil-aluno-relatorio > .tab-row { position:sticky; top:0; z-index:12; background:#f7faf6 !important; box-shadow:0 2px 8px rgba(7,91,45,.08); }
+    .perfil-aluno-grid { align-items:stretch; }
+    .perfil-aluno-sidebar { min-width:0; }
+    .perfil-aluno-relatorio { display:flex; flex-direction:column; min-height:0; max-height:none; overflow:hidden; scrollbar-gutter:auto; }
+    .perfil-aluno-relatorio > .tab-row { flex:0 0 auto; position:sticky; top:0; z-index:12; background:#f7faf6 !important; box-shadow:0 2px 8px rgba(7,91,45,.08); }
+    .perfil-aluno-relatorio > .perfil-tab-content {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      overscroll-behavior-y:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(7,91,45,.28) transparent;
+    }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar { width:8px; }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar-thumb { background:rgba(7,91,45,.22); border-radius:8px; }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar-track { background:transparent; }
+    .perfil-document-history { max-height:none; overflow:visible; padding-right:0; }
 
     @media (max-width: 768px) {
       html, body { height:auto; overflow:auto; }
@@ -889,7 +903,7 @@
         grid-template-columns:1fr !important;
       }
       .dashboard-secondary-grid { grid-template-columns:1fr !important; }
-      #page-aluno > div[style*="display:grid;grid-template-columns:270px 1fr;gap:18px"] {
+      #page-aluno > .perfil-aluno-grid {
         grid-template-columns:1fr !important;
       }
       [style*="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"],
@@ -913,7 +927,9 @@
       .evolucao-grafico-layout { grid-template-columns:1fr; gap:14px; }
       .evolucao-grafico-box { max-width:none; }
       .evolucao-grafico-titulo { font-size:16px; }
-      .perfil-aluno-relatorio { height:auto; max-height:none; overflow:visible; }
+      .perfil-aluno-relatorio { display:block; height:auto !important; max-height:none; overflow:visible; }
+      .perfil-aluno-relatorio > .perfil-tab-content { overflow:visible; }
+      .perfil-document-history { max-height:none; overflow:visible; }
       .perfil-aluno-relatorio > .tab-row { top:64px; }
       .modal-box { margin:12px; padding:20px; }
       .avaliacao-periodos { grid-template-columns:1fr; }
@@ -2042,9 +2058,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <input type="file" id="input-foto-aluno" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
       <?php endif; ?>
-      <div style="display:grid;grid-template-columns:270px 1fr;gap:18px">
+      <div class="perfil-aluno-grid" style="display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px">
         <!-- Informaçoes -->
-        <div>
+        <div class="perfil-aluno-sidebar" id="perfil-aluno-sidebar">
           <div class="card" style="padding:22px;text-align:center;margin-bottom:12px">
             <div class="av" id="a-av" style="width:70px;height:70px;font-size:26px;margin:0 auto 14px;box-shadow:0 0 0 3px rgba(255,215,0,0.28),0 0 0 6px rgba(255,215,0,0.08);background-size:cover;background-position:center">?</div>
             <div style="font-size:17px;font-weight:700;margin-bottom:5px" id="a-nome">—</div>
@@ -2087,7 +2103,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         </div>
 
         <!-- Conteúdo dos acompanhantes -->
-        <div class="card perfil-aluno-relatorio" style="overflow-x:hidden">
+        <div class="card perfil-aluno-relatorio" id="perfil-aluno-documentos">
           <div class="tab-row" style="display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);flex-wrap:nowrap">
             <?php if (in_array($tipoUsuario, ['master', 'aee', 'apoio'], true)): ?><button class="tab-btn active" id="tb-apoio" onclick="swTab('apoio',this)"><i class="bi bi-clipboard2-pulse"></i> Quesitos do aluno</button><?php endif; ?>
             <button class="tab-btn" id="tb-pei" onclick="swTab('pei',this)"><i class="bi bi-journal-text"></i> PEI</button>
@@ -2095,7 +2111,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <button class="tab-btn" id="tb-lau" onclick="swTab('lau',this)"><i class="bi bi-file-earmark-medical"></i> Laudo</button>
           </div>
           <!-- Registro de apoio -->
-          <div id="tc-apoio" style="padding:18px">
+          <div id="tc-apoio" class="perfil-tab-content" style="padding:18px">
             <?php if (in_array($tipoUsuario, ['master', 'aee', 'apoio'], true)): ?>
             <div id="apoio-config-quesitos" style="margin-bottom:16px">
               <div style="padding:14px;border:1px solid var(--border);border-radius:10px;background:rgba(0,166,81,.04)">
@@ -2107,19 +2123,19 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
           </div>
 
           <!-- PEI -->
-          <div id="tc-pei" style="padding:18px;display:none">
+          <div id="tc-pei" class="perfil-tab-content" style="padding:18px;display:none">
             <div id="pei-titulo" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">PEI - Plano Educacional Individualizado</div>
-            <div id="pei-history" style="margin-top:24px"></div>
+            <div id="pei-history" class="perfil-document-history" style="margin-top:24px"></div>
           </div>
 
           <!-- PAEE -->
-          <div id="tc-paee" style="padding:18px;display:none">
+          <div id="tc-paee" class="perfil-tab-content" style="padding:18px;display:none">
             <div id="paee-titulo" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">PAEE - Plano de Atendimento Educacional Especializado</div>
-            <div id="paee-history" style="margin-top:24px"></div>
+            <div id="paee-history" class="perfil-document-history" style="margin-top:24px"></div>
           </div>
 
           <!-- Laudo -->
-          <div id="tc-lau" style="padding:18px;display:none">
+          <div id="tc-lau" class="perfil-tab-content" style="padding:18px;display:none">
             <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">Laudo externo</div>
             <?php if ($tipoUsuario !== 'apoio'): ?><div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px">
               <label class="lbl">Selecionar arquivo PDF</label>
@@ -2298,7 +2314,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-paee-discipline-flow-32">
+<script src="js/app.js?v=20261109-paee-discipline-flow-33">
 
 </script>
 </body>

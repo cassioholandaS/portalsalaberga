@@ -1270,6 +1270,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== PERFIL =====
+  let perfilAlunoResizeObserver = null;
+  function sincronizarAlturaPainelPerfil() {
+    const sidebar = document.getElementById('perfil-aluno-sidebar');
+    const painel = document.getElementById('perfil-aluno-documentos');
+    if (!sidebar || !painel) return;
+    if (window.innerWidth <= 768) {
+      painel.style.height = '';
+      return;
+    }
+    const altura = sidebar.getBoundingClientRect().height;
+    if (altura > 0) painel.style.height = `${altura}px`;
+  }
+
+  window.addEventListener('resize', sincronizarAlturaPainelPerfil);
+
   function openProfile(id) {
     const s = students.find(x=>x.id===id); if(!s) return;
     curSid = id;
@@ -1298,6 +1313,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPAEE(id);
     renderLaudos(id);
     if (ehGestorAvaliacao) carregarAssociacaoQuesitos(id);
+    requestAnimationFrame(sincronizarAlturaPainelPerfil);
+    if (perfilAlunoResizeObserver) perfilAlunoResizeObserver.disconnect();
+    if ('ResizeObserver' in window) {
+      perfilAlunoResizeObserver = new ResizeObserver(sincronizarAlturaPainelPerfil);
+      perfilAlunoResizeObserver.observe(document.getElementById('perfil-aluno-sidebar'));
+    }
   }
 
   function aplicarModoSomenteLeitura() {
