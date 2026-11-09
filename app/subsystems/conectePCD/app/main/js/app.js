@@ -271,10 +271,19 @@ function carregarRelatoriosEvolucao() {
   const alunoSelect = document.getElementById('evolucao-aluno');
   if (!alunoSelect) return;
   fetch('controllers/listar_evolucao.php')
-    .then(response => response.json())
+    .then(async response => {
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data || data.success === false) {
+        throw new Error(data?.message || `Não foi possível carregar os relatórios (HTTP ${response.status}).`);
+      }
+      return data;
+    })
     .then(data => {
       evolucaoRegistros = Array.isArray(data) ? data : Array.isArray(data.avaliacoes) ? data.avaliacoes : [];
       evolucaoFrequencias = Array.isArray(data.frequencias) ? data.frequencias : [];
+      (Array.isArray(data.avisos) ? data.avisos : []).forEach(aviso => {
+        toast(aviso, 'bi-exclamation-triangle', 'amber');
+      });
       const alunosVisiveis = Array.isArray(students) ? students : [];
       if (alunoSelect.tagName === 'SELECT') {
         alunoSelect.innerHTML = alunosVisiveis.length
@@ -1006,7 +1015,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     fetch('controllers/listar_evolucao.php')
-      .then(response => response.json())
+      .then(async response => {
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload || payload.success === false) {
+          throw new Error(payload?.message || `Não foi possível carregar a evolução (HTTP ${response.status}).`);
+        }
+        return payload;
+      })
       .then(payload => {
         const registros = Array.isArray(payload) ? payload : Array.isArray(payload.avaliacoes) ? payload.avaliacoes : [];
         if (!Array.isArray(registros) || !registros.length) {
