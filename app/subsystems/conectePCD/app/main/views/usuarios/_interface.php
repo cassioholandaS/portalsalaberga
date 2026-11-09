@@ -2183,7 +2183,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-relatorios-json-17">
+<script src="js/app.js?v=20261109-relatorios-json-18">
 
 </script>
 </body>
