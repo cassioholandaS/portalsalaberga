@@ -1336,6 +1336,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 ?>
 <script>
   window.usuarioTipo = <?php echo json_encode($tipoUsuario ?? 'responsavel'); ?>;
+  window.usuarioNome = <?php echo json_encode($nomeUsuario, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
   window.pcdDataHoje = <?php echo json_encode(date('Y-m-d')); ?>;
 </script>
 <div class="overlay" onclick="fecharMenu()"></div>
@@ -2139,7 +2140,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">Laudo externo</div>
             <?php if ($tipoUsuario !== 'apoio'): ?><div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px">
               <label class="lbl">Selecionar arquivo PDF</label>
-              <input type="file" id="lau-file" accept="application/pdf" class="inp" />
+              <input type="file" id="lau-file" accept=".pdf,application/pdf" class="inp" />
               <button onclick="handleLaudoUpload()" class="btn-p" style="width:100%;justify-content:center;font-size:13px;margin-top:12px">
                 <i class="bi bi-upload"></i> Enviar arquivo
               </button>
@@ -2314,7 +2315,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-paee-discipline-flow-33">
+<script src="js/app.js?v=20261109-laudo-upload-1">
 
 </script>
 </body>

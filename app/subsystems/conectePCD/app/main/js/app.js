@@ -1993,7 +1993,7 @@ function handleLaudoUpload() {
       toast('Selecione um arquivo PDF para enviar.','bi-file-earmark-pdf','amber');
       return;
     }
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isPdf = /\.pdf$/i.test(file.name);
     if (!isPdf) {
       toast('Apenas arquivos PDF são aceitos.','bi-file-earmark-pdf','amber');
       return;
@@ -2035,17 +2035,19 @@ function handleLaudoUpload() {
         }
         list.innerHTML = docs.map(doc => {
           const url = doc.url || `uploads/laudos/${encodeURIComponent(doc.arquivo || '')}`;
+          const arquivo = escapeEvolucao(doc.arquivo || 'Laudo PDF');
+          const urlSegura = escapeEvolucao(url);
           return `
             <div class="doc-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
               <div style="display:flex;gap:10px;align-items:center">
                 <i class="bi bi-file-earmark-pdf" style="font-size:18px;color:var(--peach)"></i>
                 <div>
-                  <div style="font-size:13px;font-weight:600">${doc.arquivo || 'Laudo PDF'}</div>
+                  <div style="font-size:13px;font-weight:600">${arquivo}</div>
                   <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Salvo no servidor</div>
                 </div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
-                <a href="${url}" target="_blank" class="btn-g" style="padding:6px 12px;font-size:12px">Abrir PDF</a>
+                <a href="${urlSegura}" target="_blank" rel="noopener noreferrer" class="btn-g" style="padding:6px 12px;font-size:12px">Abrir PDF</a>
                 ${String(window.usuarioTipo || '').trim().toLowerCase() !== 'apoio' ? `<button onclick="deleteLaudo(${doc.id})" class="btn-g" style="padding:6px 12px;font-size:12px;background:rgba(255,0,0,0.06);border-color:rgba(255,0,0,0.12)">Excluir</button>` : ''}
               </div>
             </div>`;
@@ -2228,13 +2230,18 @@ function editarPlano(modulo, id) {
       const materia = estado.disciplina?.nome || registro?.disciplina_nome || registro?.nome_documento || 'Nome do documento';
       return `<div style="margin-bottom:12px"><label class="lbl">Nome do documento</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(materia)}</div></div>`;
     }
-    return `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(registro?.[campo] || '')}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(registro?.[campo] || '')}">`}</div>`;
+    if (campo === 'responsavel_preenchimento') {
+      const responsavel = window.usuarioNome || registro?.[campo] || '';
+      return `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(responsavel || '—')}</div><input type="hidden" class="plano-campo" data-campo="${campo}" value="${escaparPlano(responsavel)}"></div>`;
+    }
+    const valor = registro?.[campo] || '';
+    return `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(valor)}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(valor)}">`}</div>`;
   }).join('');
   const conteudo = `<div class="plan-document-modal__form"><div style="font-size:14px;font-weight:700;margin-bottom:14px">${registro ? 'Editar documento' : 'Novo documento'} · ${escaparPlano(estado.aluno.nome)}</div>${camposHtml}<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button type="button" class="btn-g" onclick="closeM('plan-document-modal')">Cancelar</button><button type="button" class="btn-p" onclick="salvarPlanoModulo('${modulo}',${id})"><i class="bi bi-save2"></i> Salvar</button></div></div>`;
   document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
   document.getElementById('plan-document-modal-content').innerHTML = conteudo;
   openM('plan-document-modal');
-  const primeiroCampo = estado.novaDisciplina ? 'nome_disciplina' : 'responsavel_preenchimento';
+  const primeiroCampo = estado.novaDisciplina ? 'nome_disciplina' : 'objetivos_pedagogicos';
   setTimeout(() => document.querySelector(`#plan-document-modal-content [data-campo="${primeiroCampo}"]`)?.focus(), 50);
 }
 
