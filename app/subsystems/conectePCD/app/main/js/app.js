@@ -50,24 +50,6 @@ const evolucaoItensPorPagina = 5;
 let calDate = new Date();
 let notifCount = 0;
 
-const pageMeta = {
-  dashboard: ['Dashboard','Visão geral do sistema'],
-  perfis:    window.usuarioTipo === 'apoio'
-    ? ['Perfil do Aluno','Aluno vinculado ao seu acompanhamento']
-    : ['Perfis de Alunos','Gerencie todos os alunos PCD cadastrados'],
-  agenda:    ['Agenda','Organize seus eventos e compromissos'],
-  cadastrar: ['Cadastrar Aluno','Adicionar novo aluno ao sistema'],
-  aluno:     ['Perfil do Aluno','Informações detalhadas e documentos'],
-  usuarios:  ['Gerenciar Usuários','Controle os acessos e cadastros do sistema'],
-  quesitos:  ['Quesitos avaliação','Configure os critérios observados por condição'],
-  condicoes: ['Condições gerais','Gerencie as condições disponíveis nos cadastros'],
-  relatorios:['Relatórios de evolução','Acompanhe o progresso dos quesitos avaliados'],
-  avaliacao: ['Avaliação','Registre e acompanhe as avaliações do aluno'],
-  perfil:    ['Perfil','Gerencie suas informações e foto de perfil']
-  ,paee:     ['PAEE','Documentos do Plano de Atendimento Educacional Especializado']
-  ,pei:      ['PEI','Planos Educacionais Individualizados']
-};
-
 function abrirMenu() {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.querySelector('.overlay');
@@ -206,10 +188,7 @@ function go(page, sid) {
     if (botaoGrupo) alternarGrupoMenu(botaoGrupo);
   }
   if (nav) { nav.classList.add('active'); if(nav.querySelector('.ni')) nav.querySelector('.ni').style.color = 'var(--gold)'; }
-  const [t,s] = pageMeta[page] || ['',''];
-  document.getElementById('pg-title').textContent = t;
-  document.getElementById('pg-sub').textContent = s;
-  document.getElementById('notif-dd').style.display = 'none';
+  toggleDD(false);
   if (window.innerWidth <= 768) fecharMenu();
   if (page === 'dashboard') refreshDash();
   if (page === 'perfis')    { filtered = [...students]; renderTable(filtered); if(document.getElementById('srch-inp')) document.getElementById('srch-inp').value=''; if(document.getElementById('fil-turma')) document.getElementById('fil-turma').value=''; if(document.getElementById('fil-diag')) document.getElementById('fil-diag').value=''; }
@@ -2753,7 +2732,7 @@ function handleAlunoSaveResponse(data, nome) {
 
   function atualizarAvataresPerfil(foto) {
     const inicial = (document.getElementById('perfil-nome')?.textContent || 'U').trim().charAt(0).toUpperCase();
-    ['topbar-avatar', 'perfil-avatar'].forEach(id => {
+    ['sidebar-avatar', 'perfil-avatar'].forEach(id => {
       const avatar = document.getElementById(id);
       if (!avatar) return;
       avatar.innerHTML = foto ? `<img src="${escaparUsuario(foto)}?v=${Date.now()}" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : inicial;
@@ -2974,16 +2953,48 @@ function handleAlunoSaveResponse(data, nome) {
     const li=document.getElementById('notif-list');
     const em=li.querySelector('.empty'); if(em) em.remove();
     const div=document.createElement('div');
-    div.style.cssText='display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:12px;margin-bottom:4px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.12)';
-    div.innerHTML=`<i class="bi bi-bell-fill" style="color:var(--c3);font-size:12px;flex-shrink:0"></i><span>${msg}</span>`;
+    div.className='notif-item';
+    const titulo=document.createElement('strong');
+    titulo.className='notif-item-title';
+    titulo.textContent='Atualização do sistema';
+    const mensagem=document.createElement('div');
+    mensagem.className='notif-item-message';
+    mensagem.textContent=msg;
+    const data=document.createElement('time');
+    data.dateTime=new Date().toISOString();
+    data.textContent=new Intl.DateTimeFormat('pt-BR', {
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+    }).format(new Date());
+    div.append(titulo, mensagem, data);
     li.prepend(div);
   }
 
-  function toggleDD() {
+  function toggleDD(forceOpen) {
     const dd=document.getElementById('notif-dd');
-    const open=dd.style.display==='block';
-    dd.style.display=open?'none':'block';
-    if(!open){notifCount=0;document.getElementById('notif-badge').style.display='none';}
+    const button=document.getElementById('bell-btn');
+    const currentlyOpen=dd.style.display==='block';
+    const open=typeof forceOpen === 'boolean' ? forceOpen : !currentlyOpen;
+    if(open && button) {
+      const desktopPanel=window.innerWidth >= 600;
+      const width=desktopPanel
+        ? Math.min(320, window.innerWidth - 280)
+        : Math.min(320, window.innerWidth - 24);
+      const left=desktopPanel ? 266 : Math.max(12, (window.innerWidth - width) / 2);
+      dd.style.left=`${left}px`;
+      dd.style.width=`${width}px`;
+      dd.style.bottom='5.25rem';
+      dd.style.maxHeight=desktopPanel
+        ? `${Math.max(120, window.innerHeight - 112)}px`
+        : `${Math.max(120, window.innerHeight - 32)}px`;
+      dd.style.transform=desktopPanel ? 'none' : 'translateX(0)';
+    }
+    dd.style.display=open?'block':'none';
+    button?.setAttribute('aria-expanded', String(open));
+    if(open) {
+      notifCount=0;
+      document.getElementById('notif-badge').style.display='none';
+    }
   }
 
   // ===== GLOBAL CLICKS =====
@@ -3014,7 +3025,7 @@ function handleAlunoSaveResponse(data, nome) {
   document.addEventListener('click', e => {
     const dd=document.getElementById('notif-dd');
     const btn=document.getElementById('bell-btn');
-    if(!dd.contains(e.target)&&!btn.contains(e.target)) dd.style.display='none';
+    if(!dd.contains(e.target)&&!btn.contains(e.target)) toggleDD(false);
     const modal = e.target.closest('.modal-bg');
     if (modal && e.target === modal) modal.classList.remove('open');
     const seletor = document.getElementById('diag-multiselect');
@@ -3026,7 +3037,7 @@ function handleAlunoSaveResponse(data, nome) {
   document.addEventListener('keydown', e => {
     if(e.key==='Escape'){
       document.querySelectorAll('.modal-bg.open').forEach(modal => modal.classList.remove('open'));
-      document.getElementById('notif-dd').style.display='none';
+      toggleDD(false);
     }
   });
 

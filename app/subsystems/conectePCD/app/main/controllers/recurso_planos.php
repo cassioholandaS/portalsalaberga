@@ -272,6 +272,20 @@ try {
 
     respostaPlano(['success' => false, 'message' => 'Operação inválida.'], 422);
 } catch (Throwable $e) {
-    error_log('recurso_planos: ' . $e->getMessage());
+    error_log(sprintf(
+        'recurso_planos action=%s modulo=%s: %s',
+        $action,
+        $modulo,
+        $e->getMessage()
+    ));
+    if ($e instanceof PDOException) {
+        $codigoMysql = (int) ($e->errorInfo[1] ?? 0);
+        if (in_array($e->getCode(), ['42S02', '42S22'], true) || in_array($codigoMysql, [1054, 1146], true)) {
+            respostaPlano([
+                'success' => false,
+                'message' => 'O banco do PCD precisa ser atualizado. Execute docs/atualizar_banco_pcd.sql no banco do sistema e tente novamente.',
+            ], 503);
+        }
+    }
     respostaPlano(['success' => false, 'message' => 'Falha interna ao processar a solicitação.'], 500);
 }
