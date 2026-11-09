@@ -1,9 +1,9 @@
 <?php
 
-	session_start();
-
-	if (!isset($_SESSION['id_usuario'])) {
-
+	require_once("../config/security.php");
+	iniciarSessaoSegura();
+	exigirAutenticacao(false);
+	if (normalizarTipoUsuario($_SESSION['tipo'] ?? '') !== 'professor') {
 		header("Location: ../index.php");
 		exit;
 	}
@@ -26,8 +26,7 @@
 	}
 
 	$modelTurma = new TurmasModel();
-	$csrfToken = bin2hex(random_bytes(32));
-	$_SESSION['csrf_token'] = $csrfToken;
+	$csrfToken = $_SESSION['csrf_token'];
 
 	// Keep all classes visible as cards; retain the current teacher's class IDs for PDT access.
 	$turmas = $modelTurma->listarTurmas($_SESSION['id_usuario']);
@@ -60,6 +59,7 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -241,8 +241,8 @@
 			}
 		}
 	</style>
-	<link rel="stylesheet" href="../assets/css/system-pdt.css?v=39">
-	<script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
+	<link rel="stylesheet" href="../assets/css/system-pdt.css?v=48">
+	<script src="../assets/js/system-pdt-ui.js?v=7" defer></script>
 </head>
 <body class="pdt-interface">
 
@@ -460,41 +460,41 @@
 				<div class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start mb-8">
 					<div class="space-y-6 xl:col-span-3">
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<div class="card-dashboard">
+							<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
 								<div class="flex items-center justify-between">
 									<div>
-										<p class="text-gray-500 text-sm mb-2">Alunos</p>
-										<h2 id="contadorAlunos" class="text-4xl font-bold text-gray-800">0</h2>
+										<p class="pdt-stat-label text-gray-500 text-sm mb-2">Alunos</p>
+										<h2 id="contadorAlunos" class="pdt-stat-value text-4xl font-bold text-gray-800">0</h2>
 										<span class="text-gray-400 text-sm">Total de alunos</span>
 									</div>
-									<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+									<div class="pdt-stat-icon w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
 										<i class="bi bi-people-fill"></i>
 									</div>
 								</div>
 							</div>
-							<div class="card-dashboard">
+							<div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
 								<div class="flex items-center justify-between">
 									<div>
-										<p class="text-gray-500 text-sm mb-2">Ocorrências</p>
-										<h2 id="contadorOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
+										<p class="pdt-stat-label text-gray-500 text-sm mb-2">Ocorrências</p>
+										<h2 id="contadorOcorrencias" class="pdt-stat-value text-4xl font-bold text-gray-800">0</h2>
 										<span class="text-gray-400 text-sm">Este mês</span>
 									</div>
-									<div class="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl">
+									<div class="pdt-stat-icon w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-2xl">
 										<i class="bi bi-exclamation-circle-fill"></i>
 									</div>
 								</div>
 							</div>
-							<div class="card-dashboard">
+							<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
 								<div class="flex items-center justify-between">
 									<div>
-										<p class="text-gray-500 text-sm mb-2">Frequência Média</p>
-										<div class="flex items-center space-x-0 text-4xl font-bold text-gray-800">
+										<p class="pdt-stat-label text-gray-500 text-sm mb-2">Frequência Média</p>
+										<div class="pdt-stat-value flex items-center space-x-0 text-4xl font-bold text-gray-800">
 											<h2 id="contadorFrequencia" class="">0</h2>
 											<span>%</span>
 										</div>
 										<span class="text-gray-400 text-sm">Este mês</span>
 									</div>
-									<div class="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
+									<div class="pdt-stat-icon w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center text-2xl">
 										<i class="bi bi-person-check-fill"></i>
 									</div>
 								</div>
@@ -897,40 +897,40 @@
 				</div>
 				<div class="mb-4 text-sm text-gray-500">Resumo do período: <span id="profRelResumoPeriodo">último mês</span></div>
 				<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Turmas</p>
-						<h2 id="profRelTotalTurmas" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Total de turmas</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Turmas</p><span class="pdt-stat-icon"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelTotalTurmas" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Total de turmas</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Alunos</p>
-						<h2 id="profRelTotalAlunos" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Total de alunos</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Alunos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelTotalAlunos" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Total de alunos</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Ocorrências</p>
-						<h2 id="profRelTotalOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Este mês</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Ocorrências</p><span class="pdt-stat-icon"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelTotalOcorrencias" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Este mês</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Frequência média</p>
-						<h2 id="profRelMediaFrequencia" class="text-4xl font-bold text-gray-800">0%</h2>
-						<span class="text-gray-400 text-sm">Este mês</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Frequência média</p><span class="pdt-stat-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelMediaFrequencia" class="pdt-stat-value">0%</h2>
+						<span class="pdt-stat-caption">Este mês</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Acompanhamentos</p>
-						<h2 id="profRelTotalAcompanhamentos" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Criados no período</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Acompanhamentos</p><span class="pdt-stat-icon"><i class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelTotalAcompanhamentos" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Criados no período</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Em aberto</p>
-						<h2 id="profRelAcompanhamentosAbertos" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Do período selecionado</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Em aberto</p><span class="pdt-stat-icon"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span></div>
+						<h2 id="profRelAcompanhamentosAbertos" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Do período selecionado</span>
 					</div>
-					<div class="card-dashboard">
-						<p class="text-gray-500 text-sm mb-2">Conselhos</p>
-						<h2 id="profRelTotalConselhos" class="text-4xl font-bold text-gray-800">0</h2>
-						<span class="text-gray-400 text-sm">Registrados no período</span>
+					<div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+						<div class="pdt-stat-heading"><p class="pdt-stat-label">Conselhos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div>
+						<h2 id="profRelTotalConselhos" class="pdt-stat-value">0</h2>
+						<span class="pdt-stat-caption">Registrados no período</span>
 					</div>
 				</div>
 				<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">

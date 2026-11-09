@@ -34,6 +34,53 @@ if (isset($_SESSION['id_usuario'])) {
     }
 }
 
+require_once('./models/usuario_model.php');
+try {
+    $totalUsuarios = (new usuario_model())->contar_usuarios();
+} catch (RuntimeException $e) {
+    error_log('Não foi possível verificar a configuração inicial do PDT: ' . $e->getMessage());
+    http_response_code(503);
+    echo '<!DOCTYPE html><html lang="pt-br"><meta charset="UTF-8"><title>Sistema temporariamente indisponível</title>';
+    echo '<body><main><h1>Sistema temporariamente indisponível</h1><p>Não foi possível acessar o banco de dados. Avise o gestor do sistema.</p></main></body></html>';
+    exit;
+}
+$erroAtual = is_string($_GET['erro'] ?? null) ? $_GET['erro'] : '';
+$mensagensErroLogin = [
+    'usuario_nao_encontrado' => 'E-mail ou senha inválidos. Confira os dados e tente novamente.',
+    'senha_incorreta' => 'E-mail ou senha inválidos. Confira os dados e tente novamente.',
+    'campos_vazios' => 'Preencha todos os campos obrigatórios.',
+    'csrf_invalido' => 'Sua sessão expirou. Atualize a página e tente novamente.',
+    'tipo_invalido' => 'Perfil de acesso inválido. Solicite ajuda ao gestor.',
+    'erro_servidor' => 'Não foi possível concluir o acesso. Tente novamente.'
+];
+$mensagensErroCadastro = [
+    'campos_vazios' => 'Preencha todos os campos obrigatórios.',
+    'email_invalido' => 'Informe um endereço de e-mail válido.',
+    'senha_fraca' => 'A senha deve ter pelo menos 6 caracteres.',
+    'tipo_invalido' => 'Este tipo de conta não pode ser criado neste fluxo.',
+    'csrf_invalido' => 'Sua sessão expirou. Atualize a página e tente novamente.',
+    'email_existente' => 'Já existe uma conta com este e-mail.',
+    'matricula_existente' => 'Já existe uma conta com esta matrícula.',
+    'erro_servidor' => 'Não foi possível criar a conta. Tente novamente.'
+];
+$formCadastroAtivo = ($_GET['form'] ?? '') === 'primeiro_acesso';
+$mensagemErroLogin = '';
+$mensagemErroCadastro = '';
+if ($formCadastroAtivo) {
+    $mensagemErroCadastro = $mensagensErroCadastro[$erroAtual] ?? '';
+} else {
+    $mensagemErroLogin = $mensagensErroLogin[$erroAtual] ?? '';
+    if ($mensagemErroLogin === '' && ($_GET['login'] ?? '') === 'erro') {
+        $mensagemErroLogin = 'Dados de login incorretos. Verifique suas credenciais e tente novamente.';
+    }
+}
+$mensagensSucessoLogin = [
+    'usuario_cadastrado' => 'Conta criada com sucesso. Faça login para continuar.',
+    'logout' => 'Você saiu do sistema com segurança.'
+];
+$statusSucessoLogin = is_string($_GET['sucesso'] ?? null) ? $_GET['sucesso'] : '';
+$mensagemSucessoLogin = $mensagensSucessoLogin[$statusSucessoLogin] ?? '';
+
 ?>
 
 <!DOCTYPE html>
@@ -69,8 +116,8 @@ if (isset($_SESSION['id_usuario'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="./assets/css/system-pdt.css?v=35">
-    <script src="./assets/js/system-pdt-ui.js?v=2" defer></script>
+    <link rel="stylesheet" href="./assets/css/system-pdt.css?v=48">
+    <script src="./assets/js/system-pdt-ui.js?v=7" defer></script>
 
     <script>
         tailwind.config = {
@@ -667,10 +714,16 @@ if (isset($_SESSION['id_usuario'])) {
                     </div>
 
                     <!-- Error Message -->  
-                    <?php if (isset($_GET['login']) && $_GET['login'] == 'erro'): ?>
-                        <div class="error-message flex items-center text-sm sm:text-base">
+                    <?php if ($mensagemErroLogin !== ''): ?>
+                        <div class="error-message flex items-center text-sm sm:text-base" role="alert">
                             <i class="fas fa-exclamation-triangle mr-2 sm:mr-3"></i>
-                            <span>Dados de login incorretos. Verifique suas credenciais e tente novamente.</span>
+                            <span><?= htmlspecialchars($mensagemErroLogin, ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($mensagemSucessoLogin !== ''): ?>
+                        <div class="flex items-center rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+                            <i class="fas fa-check-circle mr-2 sm:mr-3" aria-hidden="true"></i>
+                            <span><?= htmlspecialchars($mensagemSucessoLogin, ENT_QUOTES, 'UTF-8') ?></span>
                         </div>
                     <?php endif; ?>
 
@@ -694,6 +747,12 @@ if (isset($_SESSION['id_usuario'])) {
                       action="./controllers/usuario_controller.php?action=primeiro_acesso" 
                       method="POST" 
                       class="space-y-4 sm:space-y-6 hidden">
+                    <?php if ($mensagemErroCadastro !== ''): ?>
+                        <div class="error-message flex items-center text-sm sm:text-base" role="alert">
+                            <i class="fas fa-exclamation-triangle mr-2 sm:mr-3" aria-hidden="true"></i>
+                            <span><?= htmlspecialchars($mensagemErroCadastro, ENT_QUOTES, 'UTF-8') ?></span>
+                        </div>
+                    <?php endif; ?>
                     
                     <!-- Nome Input -->
                     <div class="input-group">
@@ -775,9 +834,11 @@ if (isset($_SESSION['id_usuario'])) {
                                     required 
                                     class="w-full px-4 py-3 sm:py-4 pl-10 sm:pl-12 pr-10 sm:pr-12 rounded-xl text-ghibli-forest focus:shadow-ghibli-soft transition-all duration-300 peer text-sm sm:text-base appearance-none bg-white">
                                 <option value="" disabled selected hidden></option>
-                                <option value="gestor">Gestor</option>
-                                <option value="coordenador">Coordenador</option>
-                                <option value="professor">Professor</option>
+                                <?php if ($totalUsuarios === 0): ?>
+                                    <option value="gestor">Gestor principal</option>
+                                <?php else: ?>
+                                    <option value="professor">Professor</option>
+                                <?php endif; ?>
                             </select>
                             <label for="primeiroAcessoTipo" 
                                    class="absolute left-10 mx-10 sm:left-12 top-3 sm:top-4 transition-all duration-300 peer-focus:text-ghibli-coral peer-focus:text-xs sm:peer-focus:text-sm peer-focus:-translate-y--1 peer-focus:font-semibold peer-[:not(:placeholder-shown)]:text-xs sm:peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]: peer-[:not(:placeholder-shown)]:text-ghibli-coral peer-[:not(:placeholder-shown)]:font-semibold text-sm sm:text-base">
@@ -880,6 +941,9 @@ if (isset($_SESSION['id_usuario'])) {
             // Event listeners para os botões de opção
             loginOption.addEventListener('click', () => toggleMode(false));
             primeiroAcessoOption.addEventListener('click', () => toggleMode(true));
+            if (new URLSearchParams(window.location.search).get('form') === 'primeiro_acesso') {
+                toggleMode(true);
+            }
 
             // Enhanced password visibility toggle
             togglePassword.addEventListener('click', function() {

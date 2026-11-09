@@ -1,8 +1,9 @@
 <?php
 
-    session_start();
-
-    if (!isset($_SESSION['id_usuario'])) {
+    require_once('../config/security.php');
+    iniciarSessaoSegura();
+    exigirAutenticacao(false);
+    if (normalizarTipoUsuario($_SESSION['tipo'] ?? '') !== 'gestor') {
         header("Location: ../index.php");
         exit;
     }
@@ -49,6 +50,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 
     <style>
@@ -248,8 +250,8 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=35">
-    <script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
+    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=48">
+    <script src="../assets/js/system-pdt-ui.js?v=7" defer></script>
 </head>
 <body class="pdt-interface">
 
@@ -346,25 +348,25 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                    <div class="card-dashboard">
-                        <p class="text-gray-500 text-sm mb-2">Turmas</p>
-                        <h2 id="contadorAlunos" class="text-4xl font-bold text-gray-800">0</h2>
-                        <span class="text-gray-400 text-sm">Cadastradas</span>
+                    <div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-gray-500 text-sm">Turmas</p><span class="pdt-stat-icon"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span></div>
+                        <h2 id="contadorAlunos" class="pdt-stat-value text-4xl font-bold text-gray-800">0</h2>
+                        <span class="pdt-stat-caption text-gray-400 text-sm">Cadastradas</span>
                     </div>
-                    <div class="card-dashboard">
-                        <p class="text-gray-500 text-sm mb-2">Alunos</p>
-                        <h2 id="gestorTotalAlunos" class="text-4xl font-bold text-gray-800">0</h2>
-                        <span class="text-gray-400 text-sm">Matriculados nas turmas</span>
+                    <div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-gray-500 text-sm">Alunos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div>
+                        <h2 id="gestorTotalAlunos" class="pdt-stat-value text-4xl font-bold text-gray-800">0</h2>
+                        <span class="pdt-stat-caption text-gray-400 text-sm">Matriculados nas turmas</span>
                     </div>
-                    <div class="card-dashboard">
-                        <p class="text-gray-500 text-sm mb-2">Ocorrências</p>
-                        <h2 id="gestorTotalOcorrencias" class="text-4xl font-bold text-gray-800">0</h2>
-                        <span class="text-gray-400 text-sm">No período selecionado</span>
+                    <div class="card-dashboard pdt-stat-card pdt-stat-card--gold">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-gray-500 text-sm">Ocorrências</p><span class="pdt-stat-icon"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span></div>
+                        <h2 id="gestorTotalOcorrencias" class="pdt-stat-value text-4xl font-bold text-gray-800">0</h2>
+                        <span class="pdt-stat-caption text-gray-400 text-sm">No período selecionado</span>
                     </div>
-                    <div class="card-dashboard">
-                        <p class="text-gray-500 text-sm mb-2">Frequência média</p>
-                        <h2 id="gestorMediaFrequencia" class="text-4xl font-bold text-gray-800">0%</h2>
-                        <span class="text-gray-400 text-sm">No período selecionado</span>
+                    <div class="card-dashboard pdt-stat-card pdt-stat-card--green">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-gray-500 text-sm">Frequência média</p><span class="pdt-stat-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span></div>
+                        <h2 id="gestorMediaFrequencia" class="pdt-stat-value text-4xl font-bold text-gray-800">0%</h2>
+                        <span class="pdt-stat-caption text-gray-400 text-sm">No período selecionado</span>
                     </div>
                 </div>
                 <div class="grid gap-6 xl:grid-cols-2">
@@ -674,13 +676,13 @@
                 </div>
                 <div class="mb-4 text-sm text-gray-500">Período: <span id="periodoResumoGestor">Este mês</span></div>
                 <div class="mb-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Turmas</p><strong id="relatorioTurmasGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Alunos</p><strong id="relatorioAlunosGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Ocorrências no período</p><strong id="relatorioOcorrenciasGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Frequência média</p><strong id="relatorioFrequenciaGestor" class="mt-2 block text-3xl text-gray-800">0%</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Acompanhamentos</p><strong id="relatorioAcompanhamentosGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Acompanhamentos em aberto</p><strong id="relatorioAbertosGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
-                    <article class="card-dashboard"><p class="text-sm text-gray-500">Conselhos</p><strong id="relatorioConselhosGestor" class="mt-2 block text-3xl text-gray-800">0</strong></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--gold"><div class="pdt-stat-heading"><p class="pdt-stat-label">Turmas</p><span class="pdt-stat-icon"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span></div><strong id="relatorioTurmasGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">Cadastradas</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--green"><div class="pdt-stat-heading"><p class="pdt-stat-label">Alunos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div><strong id="relatorioAlunosGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">Matriculados nas turmas</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--gold"><div class="pdt-stat-heading"><p class="pdt-stat-label">Ocorrências no período</p><span class="pdt-stat-icon"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span></div><strong id="relatorioOcorrenciasGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">No período selecionado</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--green"><div class="pdt-stat-heading"><p class="pdt-stat-label">Frequência média</p><span class="pdt-stat-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span></div><strong id="relatorioFrequenciaGestor" class="pdt-stat-value">0%</strong><span class="pdt-stat-caption">No período selecionado</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--green"><div class="pdt-stat-heading"><p class="pdt-stat-label">Acompanhamentos</p><span class="pdt-stat-icon"><i class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></i></span></div><strong id="relatorioAcompanhamentosGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">No período selecionado</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--gold"><div class="pdt-stat-heading"><p class="pdt-stat-label">Acompanhamentos em aberto</p><span class="pdt-stat-icon"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span></div><strong id="relatorioAbertosGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">Aguardando retorno</span></article>
+                    <article class="card-dashboard pdt-stat-card pdt-stat-card--green"><div class="pdt-stat-heading"><p class="pdt-stat-label">Conselhos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div><strong id="relatorioConselhosGestor" class="pdt-stat-value">0</strong><span class="pdt-stat-caption">Registrados no período</span></article>
                 </div>
                 <article class="rounded-2xl border border-gray-200 bg-white p-6">
                     <h2 class="mb-4 text-xl font-bold text-gray-800">Ocorrências por tipo</h2>

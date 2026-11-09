@@ -10,7 +10,7 @@ USE sistema_pdt;
 
 -- ============================================================
 -- TABELA: USUÁRIOS
--- Descrição: Cadastro de usuários (gestor, coordenador, professor, pdt)
+-- Descrição: Cadastro de usuários (gestor, coordenador e professor; PDT é uma atribuição do professor)
 -- ============================================================
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,16 +22,6 @@ CREATE TABLE usuarios (
     atribuicao ENUM('pdt') DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- CONTAS EXCLUSIVAS DE DESENVOLVIMENTO LOCAL.
--- Senha inicial das três contas: 123456. Remova ou altere este bloco antes de usar o SQL em produção.
--- Os hashes abaixo usam o formato gerado por password_hash(..., PASSWORD_DEFAULT) no PHP.
-INSERT INTO usuarios (nome, matricula, email, senha, tipo)
-VALUES
-    ('Otávio', 'PDT-LOCAL-OTAVIO', 'otavio.ce@gmail.com', '$2y$10$JxY1kq4JbrdhnCfQkoXC2ualO0haU0qo6cSRUzmGPig5FDAhwYtby', 'gestor'),
-    ('Kauan', 'PDT-LOCAL-KAUAN', 'kauan@gmail.com', '$2y$10$ZYdOdUPLsjemZkCDsPDq9eBN7EgG3Q/QkWuk2Zs8.F4iKTmS53JZ6', 'coordenador'),
-    ('Cassio', 'PDT-LOCAL-CASSIO', 'cassio@gmail.com', '$2y$10$leCO0Bv3hUk/GCgHW6kRQe9zhYweJpaL2Veb0pEOqfijRFSd/gYcC', 'professor')
-ON DUPLICATE KEY UPDATE id = id;
 
 -- ============================================================
 -- TABELA: NOTIFICAÇÕES

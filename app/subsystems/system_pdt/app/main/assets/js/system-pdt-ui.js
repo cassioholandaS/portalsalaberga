@@ -4,7 +4,7 @@
     const themes = ['light', 'dark'];
     const html = document.documentElement;
 
-    let theme = 'light';
+    let theme = 'dark';
     try {
         const storedTheme = localStorage.getItem(storageKey);
         if (themes.includes(storedTheme)) theme = storedTheme;
@@ -19,7 +19,10 @@
         const button = document.querySelector('.pdt-theme-toggle');
         if (button) {
             const isDark = theme === 'dark';
-            button.innerHTML = `<i class="bi ${isDark ? 'bi-sun-fill' : 'bi-moon-fill'}" aria-hidden="true"></i>`;
+            const icon = document.createElement('i');
+            icon.className = `bi ${isDark ? 'bi-brightness-high' : 'bi-moon-stars'}`;
+            icon.setAttribute('aria-hidden', 'true');
+            button.replaceChildren(icon);
             button.setAttribute('aria-label', `Tema atual: ${isDark ? 'Escuro' : 'Claro'}. Mudar para ${isDark ? 'Claro' : 'Escuro'}.`);
             button.title = `Mudar para ${isDark ? 'Claro' : 'Escuro'}`;
         }
@@ -33,6 +36,7 @@
         const themeButton = document.createElement('button');
         themeButton.type = 'button';
         themeButton.className = 'pdt-theme-toggle';
+        themeButton.setAttribute('aria-label', 'Alternar tema');
         themeButton.addEventListener('click', () => {
             const nextTheme = theme === 'light' ? 'dark' : 'light';
             applyTheme(nextTheme);
@@ -52,8 +56,54 @@
         document.body.appendChild(footer);
 
         const sidebar = document.querySelector('.pdt-sidebar') || document.querySelector('aside.sidebar-panel');
-        const header = document.querySelector('.pdt-topbar');
         if (!sidebar) return;
+
+        const iconBySection = {
+            'sec-inicio': 'bi-house-fill',
+            'sec-dashboard': 'bi-house-fill',
+            'sec-turmas': 'bi-journal-bookmark-fill',
+            'sec-notas': 'bi-journal-check',
+            'sec-pedagogico': 'bi-clipboard2-pulse-fill',
+            'sec-calendario': 'bi-calendar-event-fill',
+            'sec-ocorrencias': 'bi-exclamation-triangle-fill',
+            'sec-relatorios': 'bi-bar-chart-fill',
+            'sec-notificacoes': 'bi-bell-fill'
+        };
+        const groupBySection = section => {
+            if (/relatorios/.test(section)) return 'RELATÓRIOS';
+            if (/pedagogico|calendario|ocorrencias|notificacoes/.test(section)) return 'ACOMPANHAMENTO';
+            return 'GERENCIAMENTO';
+        };
+
+        document.querySelectorAll(
+            '.pdt-sidebar nav button[data-section], #menuPdtMobile nav button[data-section], .pdt-mobile-nav button[data-section]'
+        ).forEach(button => {
+            const icon = button.querySelector('i');
+            const section = (button.dataset.section || '').replace(/-gestor$/, '');
+            if (icon) {
+                icon.classList.add('ni');
+                if (iconBySection[section]) icon.className = `bi ${iconBySection[section]} ni`;
+            }
+        });
+        sidebar.querySelectorAll('nav').forEach(nav => {
+            let currentGroup = '';
+            Array.from(nav.querySelectorAll('button[data-section]')).forEach(button => {
+                const section = (button.dataset.section || '').replace(/-gestor$/, '');
+                const group = groupBySection(section);
+                if (group === currentGroup) return;
+                currentGroup = group;
+                const label = document.createElement('div');
+                label.className = 'pdt-nav-group-label';
+                label.setAttribute('role', 'heading');
+                label.setAttribute('aria-level', '2');
+                label.textContent = group;
+                nav.insertBefore(label, button);
+            });
+        });
+
+        const mainOffset = document.querySelector('.pdt-main-offset');
+        mainOffset?.querySelector('.pdt-topbar')?.remove();
+
         const desktopSidebarQuery = window.matchMedia('(min-width: 1024px)');
 
         let collapseButton = document.querySelector('.pdt-sidebar-collapse-toggle');

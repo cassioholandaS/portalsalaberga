@@ -24,7 +24,7 @@
 
             if (!validarCsrfToken($csrfToken)) {
                 http_response_code(403);
-                header("Location: ../index.php?erro=csrf_invalido");
+                header("Location: ../index.php?erro=csrf_invalido&form=primeiro_acesso");
                 exit;
             }
 
@@ -39,31 +39,29 @@
                 empty($senha) ||
                 empty($tipo)
             ) {
-                header("Location: ../index.php?erro=campos_vazios");
+                header("Location: ../index.php?erro=campos_vazios&form=primeiro_acesso");
                 exit;
             }
 
             // validar email
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                header("Location: ../index.php?erro=email_invalido");
-                exit;
-            }
-
-            // validar senha
-            if (strlen($senha) < 6) {
-                header("Location: ../index.php?erro=senha_fraca");
-                exit;
-            }
-
-            // validar tipo
-            $tiposPermitidos = ['gestor', 'coordenador', 'professor'];
-
-            if (!in_array($tipo, $tiposPermitidos)) {
-                header("Location: ../index.php?erro=tipo_invalido");
+                header("Location: ../index.php?erro=email_invalido&form=primeiro_acesso");
                 exit;
             }
 
             $usuario = new usuario_model();
+            $tipoPermitido = $usuario->contar_usuarios() === 0 ? 'gestor' : 'professor';
+
+            // validar senha
+            if (strlen($senha) < 6) {
+                header("Location: ../index.php?erro=senha_fraca&form=primeiro_acesso");
+                exit;
+            }
+
+            if ($tipo !== $tipoPermitido) {
+                header("Location: ../index.php?erro=tipo_invalido&form=primeiro_acesso");
+                exit;
+            }
 
             $result = $usuario->cadastrar(
                 $nome,
@@ -80,15 +78,15 @@
                     exit;
 
                 case 2:
-                    header("Location: ../index.php?erro=email_existente");
+                    header("Location: ../index.php?erro=email_existente&form=primeiro_acesso");
                     exit;
 
                 case 3:
-                    header("Location: ../index.php?erro=matricula_existente");
+                    header("Location: ../index.php?erro=matricula_existente&form=primeiro_acesso");
                     exit;
 
                 default:
-                    header("Location: ../index.php?erro=erro_servidor");
+                    header("Location: ../index.php?erro=erro_servidor&form=primeiro_acesso");
                     exit;
             }
         }

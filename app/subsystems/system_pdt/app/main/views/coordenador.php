@@ -24,6 +24,7 @@ $csrfToken = $_SESSION['csrf_token'] ?? gerarCsrfToken();
     <title>Coordenador | Sistema PDT</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -32,8 +33,8 @@ $csrfToken = $_SESSION['csrf_token'] ?? gerarCsrfToken();
             transition: opacity .25s ease;
         }
     </style>
-    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=35">
-    <script src="../assets/js/system-pdt-ui.js?v=2" defer></script>
+    <link rel="stylesheet" href="../assets/css/system-pdt.css?v=48">
+    <script src="../assets/js/system-pdt-ui.js?v=7" defer></script>
 </head>
 <body class="pdt-interface min-h-screen">
 <div class="flex min-h-screen">
@@ -97,25 +98,25 @@ $csrfToken = $_SESSION['csrf_token'] ?? gerarCsrfToken();
                     <button id="btnAtualizarDashboard" class="rounded-full border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200 hover:bg-slate-800 transition">Atualizar</button>
                 </div>
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6">
-                    <div class="rounded-3xl border border-slate-800 bg-slate-950 p-5">
-                        <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Turmas</p>
-                        <h4 id="dashTotalTurmas" class="mt-4 text-4xl font-bold text-white">0</h4>
-                        <p class="text-slate-400 mt-2 text-sm">Turmas cadastradas no sistema.</p>
+                    <div class="pdt-stat-card pdt-stat-card--gold rounded-3xl border border-slate-800 bg-slate-950 p-5">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-sm uppercase tracking-[0.24em] text-slate-500">Turmas</p><span class="pdt-stat-icon"><i class="bi bi-journal-bookmark-fill" aria-hidden="true"></i></span></div>
+                        <h4 id="dashTotalTurmas" class="pdt-stat-value mt-4 text-4xl font-bold text-white">0</h4>
+                        <p class="pdt-stat-caption text-slate-400 mt-2 text-sm">Turmas cadastradas no sistema.</p>
                     </div>
-                    <div class="rounded-3xl border border-slate-800 bg-slate-950 p-5">
-                        <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Alunos</p>
-                        <h4 id="dashTotalAlunos" class="mt-4 text-4xl font-bold text-white">0</h4>
-                        <p class="text-slate-400 mt-2 text-sm">Alunos ativos registrados.</p>
+                    <div class="pdt-stat-card pdt-stat-card--green rounded-3xl border border-slate-800 bg-slate-950 p-5">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-sm uppercase tracking-[0.24em] text-slate-500">Alunos</p><span class="pdt-stat-icon"><i class="bi bi-people-fill" aria-hidden="true"></i></span></div>
+                        <h4 id="dashTotalAlunos" class="pdt-stat-value mt-4 text-4xl font-bold text-white">0</h4>
+                        <p class="pdt-stat-caption text-slate-400 mt-2 text-sm">Alunos ativos registrados.</p>
                     </div>
-                    <div class="rounded-3xl border border-slate-800 bg-slate-950 p-5">
-                        <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Ocorrências</p>
-                        <h4 id="dashOcorrenciasMes" class="mt-4 text-4xl font-bold text-white">0</h4>
-                        <p class="text-slate-400 mt-2 text-sm">Ocorrências no último mês.</p>
+                    <div class="pdt-stat-card pdt-stat-card--gold rounded-3xl border border-slate-800 bg-slate-950 p-5">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-sm uppercase tracking-[0.24em] text-slate-500">Ocorrências</p><span class="pdt-stat-icon"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></span></div>
+                        <h4 id="dashOcorrenciasMes" class="pdt-stat-value mt-4 text-4xl font-bold text-white">0</h4>
+                        <p class="pdt-stat-caption text-slate-400 mt-2 text-sm">Ocorrências no último mês.</p>
                     </div>
-                    <div class="rounded-3xl border border-slate-800 bg-slate-950 p-5">
-                        <p class="text-sm uppercase tracking-[0.24em] text-slate-500">Frequência</p>
-                        <h4 id="dashMediaFrequencia" class="mt-4 text-4xl font-bold text-white">0%</h4>
-                        <p class="text-slate-400 mt-2 text-sm">Média de presença mensal.</p>
+                    <div class="pdt-stat-card pdt-stat-card--green rounded-3xl border border-slate-800 bg-slate-950 p-5">
+                        <div class="pdt-stat-heading"><p class="pdt-stat-label text-sm uppercase tracking-[0.24em] text-slate-500">Frequência</p><span class="pdt-stat-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></span></div>
+                        <h4 id="dashMediaFrequencia" class="pdt-stat-value mt-4 text-4xl font-bold text-white">0%</h4>
+                        <p class="pdt-stat-caption text-slate-400 mt-2 text-sm">Média de presença mensal.</p>
                     </div>
                 </div>
                 <div class="grid gap-4 lg:grid-cols-2">
