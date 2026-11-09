@@ -24,7 +24,7 @@ class connect
 
         if ($emProducao && (!$host || !$database || !$user || $password === false || $password === '')) {
             error_log('Conexão recusada: configure DB_HOST, DB_NAME, DB_USER e DB_PASSWORD em produção.');
-            die('Erro! O sistema não possui conexão com o banco de dados.');
+            throw new RuntimeException('Configuração de conexão com o banco de dados incompleta.');
         }
 
         $host = $host ?: 'localhost';
@@ -40,7 +40,7 @@ class connect
             ]);
         } catch (PDOException $e) {
             error_log('Erro ao conectar ao banco de dados: ' . $e->getMessage());
-            die('Erro! O sistema não possui conexão com o banco de dados.');
+            throw new RuntimeException('Não foi possível conectar ao banco de dados.', 0, $e);
         }
     }
 

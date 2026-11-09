@@ -35,6 +35,7 @@ if (!$acessoLocalTemporario) {
 $ehRecepcao = $session->usuarioAtualEhRecepcao();
 $tiposUsuario = $_SESSION['tipos_usuario_permitidos'] ?? [];
 $ehAdminEntradaSaida = is_array($tiposUsuario) && in_array('Admin_entrada_saida', $tiposUsuario, true);
+$podeExcluirAtraso = $ehAdminEntradaSaida || $ehRecepcao;
 $sectionRetorno = $ehAdminEntradaSaida ? 'entrada' : 'inicio';
 $permiteTemaPt = strtolower(trim((string) ($_SESSION['email'] ?? ''))) === 'otavio.ce@gmail.com';
 $select = new select_model();
@@ -58,7 +59,7 @@ $validacaoAtrasosDisponivel = $select->suportaValidacaoAtrasos();
 $sectionInicial = $_GET['section'] ?? ($ehRecepcao ? 'inicio' : 'entrada');
 $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'cadastro'];
 if ($ehRecepcao) {
-    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos'];
+    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'ultimas-saidas'];
 }
 if ($ehAdminEntradaSaida) {
     $sectionsPermitidas = array_values(array_diff($sectionsPermitidas, ['inicio']));
@@ -359,14 +360,14 @@ $detalhesAtraso = static function ($registro) {
     };
     window.printEntryReceipt = (data, printWindow) => imprimirComprovante('entrada', data, printWindow, true);
     window.printExitReceipt = (data, printWindow) => imprimirComprovante('saida', data, printWindow, true);
-    window.printDelayReceipt = (data, registroId) => imprimirComprovante('atraso', {
-        aluno: data.Aluno,
-        matricula: data['Matrícula'],
-        turma: data.Turma,
-        motivo: data.Motivo,
-        justificativa: data['Justificativa do atraso'],
+    window.printDelayReceipt = (data, registroId, tipo = 'atraso', printWindow = null) => imprimirComprovante(tipo, {
+        aluno: data.Aluno ?? data.aluno,
+        matricula: data['Matrícula'] ?? data.matricula,
+        turma: data.Turma ?? data.turma,
+        motivo: data.Motivo ?? data.motivo,
+        justificativa: data['Justificativa do atraso'] ?? data.justificativa ?? data.observacao,
         registro_id: registroId
-    });
+    }, printWindow);
 })();
 </script>
 <script>tailwind={config:{theme:{extend:{colors:{'ceara-green':'#008C45','ceara-light-green':'#3CB371','ceara-olive':'#8CA03E','ceara-orange':'#FFA500',primary:'#4CAF50',secondary:'#FFB74D',danger:'#dc3545',admin:'#0dcaf0',grey:'#6c757d',info:'#4169E1'}},fontFamily:{inter:['Inter','sans-serif']}}}};</script>
@@ -397,7 +398,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
 .mobile-menu,.sidebar-close,.sidebar-scrim{display:none}
 @media(max-width:760px){:root{--sidebar-width:0px}.sidebar{width:min(290px,84vw);transform:translateX(-102%);transition:transform .22s ease}.sidebar-open .sidebar{transform:translateX(0)}.sidebar-close{position:absolute;top:20px;right:14px;display:grid;width:34px;height:34px;place-items:center;border:1px solid #ffffff44;border-radius:7px;background:transparent;color:white}.brand{margin-right:38px}.mobile-menu{position:fixed;top:10px;left:12px;z-index:999;display:grid;width:38px;height:38px;place-items:center;border:0;border-radius:7px;background:var(--salaberga-dark);color:#fff}.sidebar-scrim{position:fixed;inset:0;z-index:998;display:none;border:0;background:#081f126b}.sidebar-open .sidebar-scrim{display:block}.main-content{margin-left:0;padding:62px 15px 24px}#ultimas-saidas{width:100%;margin-left:0;margin-right:0}.page-section [id$="Modal"]:not([id$="ModalContent"]){padding:12px}.page-section [id$="ModalContent"]{height:min(520px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);padding:24px}.app-modal-overlay{left:0;width:100vw}.delay-dialog{left:50vw;width:min(560px,calc(100vw - 1.25rem));max-width:calc(100vw - 1.25rem)}.delay-dialog-row{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}.nav-group[open]>.nav-item{animation:none!important}}
-.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.entry-confirm-actions button{min-height:42px;padding:0 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
+.entry-confirm-overlay{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:20px;background:rgba(8,24,15,.58)}.entry-confirm-overlay[hidden]{display:none}.entry-confirm-card{width:min(100%,440px);padding:25px;border:1px solid #e5ebe7;border-radius:12px;background:#fff;box-shadow:0 20px 60px #07181040}.entry-confirm-card h2{margin:0 0 8px;color:#14251c;font-size:21px}.entry-confirm-card p{margin:0;color:#64736a;font-size:14px;line-height:1.5}.entry-confirm-error{margin-top:12px!important;color:#b42318!important}.entry-confirm-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px}.entry-confirm-actions button{width:100%;min-height:44px;padding:10px 16px;border:1px solid #dce5df;border-radius:8px;background:#fff;color:#24352b;font:600 14px 'Inter',sans-serif;cursor:pointer;text-align:center}.entry-confirm-actions button.primary{border-color:#008c45;background:#008c45;color:#fff}.entry-confirm-actions button:disabled{cursor:wait;opacity:.6}.entry-field-error{display:block;margin-top:5px;color:#b42318;font-size:12px}.entry-invalid{border-color:#dc2626!important;box-shadow:0 0 0 1px #dc2626!important}.entry-select-invalid{border-color:#dc2626!important}.entry-feedback{margin:0 0 14px;padding:11px 14px;border:1px solid #a6d7b7;border-radius:8px;background:#f0fbf3;color:#146c36;font-size:14px}.thermal-receipt{display:none}
 @media print{@page{size:80mm auto;margin:0}html,body{width:80mm!important;min-width:80mm!important;margin:0!important;padding:0!important;background:#fff!important}body.printing-thermal-receipt>*:not(.thermal-receipt-active){display:none!important}body *{visibility:hidden!important}.thermal-receipt-active,.thermal-receipt-active *{visibility:visible!important}.thermal-receipt-active{position:absolute!important;top:0!important;left:0!important;display:block!important;width:72mm!important;margin:0!important;padding:3mm!important;background:#fff!important;color:#000!important;font:10pt/1.35 monospace!important;box-shadow:none!important}.thermal-receipt-active,.thermal-receipt-active *{font-family:monospace!important}.thermal-receipt-active h1,.thermal-receipt-active h2,.thermal-receipt-active p{margin:0!important;color:#000!important;font:inherit!important}.thermal-receipt-active h1{text-align:center!important;font-weight:bold!important}.thermal-receipt-active h2{margin-top:3mm!important;border-bottom:1px dashed #000!important;font-weight:bold!important}.thermal-receipt-active .thermal-center{text-align:center!important}.thermal-receipt-active .thermal-row{overflow-wrap:anywhere!important;margin-top:1mm!important}.thermal-receipt-active .thermal-rule{margin:3mm 0!important;border:0!important;border-top:1px dashed #000!important}.thermal-receipt-active .thermal-signature{margin-top:12mm!important;padding-top:2mm!important;border-top:1px solid #000!important;text-align:center!important}}
 
     * {
@@ -4474,6 +4475,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
     
  .delay-history-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}.delay-history-table{border:1px solid #e7ece8;border-radius:8px;overflow:hidden}.delay-history-table th{position:sticky;top:0;z-index:1}.delay-history-table tbody tr:nth-child(even){background:#fafcf9}.delay-history-table tbody tr:hover{background:#f1f7f1}.delay-status{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.delay-status-pendente{background:#fff4d6;color:#8b5a00}.delay-status-aprovada{background:#e4f5e9;color:#176b38}.delay-status-recusada{background:#fde8e7;color:#9b2c25}.delay-dialog{position:fixed;top:50%;left:calc(var(--sidebar-width,0px) / 2 + 50vw);transform:translate(-50%,-50%);width:min(560px,calc(100vw - var(--sidebar-width,0px) - 2rem));max-width:calc(100vw - var(--sidebar-width,0px) - 2rem);max-height:var(--modal-max-height);padding:0;border:0;border-radius:18px;background:#fff;box-shadow:var(--modal-shadow);overflow:hidden}.delay-dialog-header{align-items:center}.delay-dialog-heading{min-width:0}.delay-dialog-heading p{margin:5px 0 0;color:#64736a;font-size:13px;line-height:1.45}.delay-dialog-content{max-height:min(52dvh,420px);overflow-y:auto;scrollbar-gutter:stable}.delay-validation-summary{margin-bottom:16px;padding:14px 16px;border:1px solid #ffdf83;border-radius:8px;background:#fffbed}.delay-validation-summary-label{margin:0 0 5px;color:#9a4b08;font-size:11px;font-weight:700;text-transform:uppercase}.delay-validation-summary-name{margin:0;color:#17251c;font-size:16px;font-weight:700}.delay-validation-summary-meta{margin:4px 0 0;color:#47574c;font-size:13px}.delay-justification-label,.delay-form-label{display:block;margin:0 0 7px;color:#26372c;font-size:13px;font-weight:700}.delay-justification{width:100%;min-height:74px;resize:vertical;padding:10px 12px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#17251c;font:400 14px/1.5 'Inter',sans-serif}.delay-extra-details{margin-top:14px;border-top:1px solid #e7ece8}.delay-extra-details summary{padding:12px 0 4px;color:#08723a;font-size:12px;font-weight:700;cursor:pointer}.delay-extra-details .delay-dialog-row{padding:8px 0}.delay-validation-form{display:grid;gap:14px}.delay-form-field{display:grid;gap:6px}.delay-form-control{width:100%;min-height:42px;padding:9px 12px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#17251c;font:400 14px 'Inter',sans-serif}.delay-form-control:focus,.delay-justification:focus{outline:2px solid #008c4530;border-color:#008c45}.delay-form-control:disabled{background:#f2f5f2;color:#43534a;opacity:1}.delay-validation-submit{display:flex;min-height:46px;align-items:center;justify-content:center;gap:9px;border:0;border-radius:7px;background:#008c45;color:#fff;font:700 14px 'Inter',sans-serif;cursor:pointer}.delay-validation-submit:hover{background:#06753e}
 .delay-dialog[open]{position:fixed;top:50%;left:calc(var(--sidebar-width,0px) / 2 + 50vw);transform:translate(-50%,-50%);width:min(560px,calc(100vw - var(--sidebar-width,0px) - 2rem));max-width:calc(100vw - var(--sidebar-width,0px) - 2rem);max-height:var(--modal-max-height);overflow-y:auto;border:1px solid rgba(15,23,42,.08);border-radius:18px;background:#fff;box-shadow:var(--modal-shadow)}.delay-dialog::backdrop{background:var(--modal-overlay)}.delay-dialog-header{padding:1.2rem 1.25rem;background:#fff;border-bottom:1px solid rgba(15,23,42,.08)}.delay-dialog-heading{display:flex;align-items:flex-start;gap:10px}.delay-dialog-heading::before{content:'\f058';flex:none;margin-top:2px;color:#008c45;font-family:'Font Awesome 6 Free';font-size:17px;font-weight:900}.delay-dialog-heading h2{font-size:19px}.delay-dialog-heading p{line-height:1.45}.delay-dialog-content{max-height:none;overflow:visible;padding:1.2rem 1.25rem}.delay-validation-summary{padding:12px 15px}.delay-justification{min-height:88px}.delay-demo-note{margin:0 0 17px;color:#64736a;font-size:12px;line-height:1.5}.delay-validation-form{gap:12px;padding:14px 20px 18px}.delay-form-control{min-height:40px}.delay-validation-form[hidden],.delay-form-field[hidden]{display:none}.delay-detail-button{display:inline-flex;min-height:32px;align-items:center;justify-content:center;gap:7px;padding:0 11px;border:1px solid #008c45;border-radius:6px;background:#008c45;color:#fff;font:600 12px 'Inter',sans-serif;text-decoration:none;cursor:pointer}.delay-detail-button:hover{background:#06753e;text-decoration:none}.delay-detail-button-secondary{border-color:#d5e3d9;background:#f2f8f3;color:#08723a}.delay-detail-button-secondary:hover{background:#e4f1e7}.delay-decision-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.delay-decision-option{display:flex;min-height:48px;align-items:center;justify-content:center;gap:8px;padding:9px 10px;border:1px solid #cbd5ce;border-radius:7px;background:#fff;color:#43534a;font:600 13px 'Inter',sans-serif;cursor:pointer}.delay-decision-option-approve{border-color:#b5ddc2;color:#176b38}.delay-decision-option-approve:hover,.delay-decision-option-approve[aria-pressed="true"]{border-color:#008c45;background:#e7f5eb;color:#08723a;box-shadow:inset 0 0 0 1px #008c45}.delay-decision-option-reject{border-color:#f0c4c1;color:#9b2c25}.delay-decision-option-reject:hover,.delay-decision-option-reject[aria-pressed="true"]{border-color:#c9362b;background:#fff0ef;color:#a62f26;box-shadow:inset 0 0 0 1px #c9362b}.delay-validation-submit.is-rejection{background:#c9362b}.delay-validation-submit.is-rejection:hover{background:#a62f26}.delay-validation-submit:disabled{opacity:.55;cursor:not-allowed}
+.delay-justification-display{white-space:pre-wrap;overflow-wrap:anywhere}
 .delay-history-filters{display:grid;grid-template-columns:minmax(180px,1.5fr) repeat(4,minmax(130px,1fr)) auto;align-items:end;gap:10px;margin:18px 0 20px;padding:14px;border:1px solid #e3eae5;border-radius:8px;background:#f8faf8}.delay-history-filter{display:grid;gap:6px;color:#53615a;font-size:11px;font-weight:700}.delay-history-filter input,.delay-history-filter select{width:100%;height:39px;padding:0 10px;border:1px solid #d5ded8;border-radius:6px;background:#fff;color:#26352c;font:400 13px 'Inter',sans-serif}.delay-history-filter input:focus,.delay-history-filter select:focus{outline:2px solid #008c4555;border-color:#008c45}.delay-history-reset{height:39px;padding:0 13px;border:1px solid #d5ded8;border-radius:6px;background:#fff;color:#43534a;font:600 12px 'Inter',sans-serif;cursor:pointer}.delay-history-reset:hover{background:#edf5ef}.delay-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.delay-history-card{overflow:hidden;border:1px solid #e1e8e3;border-radius:8px;background:#fff}.delay-history-card-header{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #e7ece8;background:#f7faf7}.delay-history-card-header h3{margin:0;color:#183c27;font-size:15px;font-weight:700}.delay-history-count{display:grid;min-width:27px;height:25px;place-items:center;padding:0 7px;border-radius:14px;background:#e5f3e9;color:#176b38;font-size:11px;font-weight:700}.delay-history-list{max-height:330px;overflow-y:auto;padding:0 14px}.delay-history-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px 12px;padding:12px 1px;border-bottom:1px solid #edf0ee}.delay-history-entry:last-child{border-bottom:0}.delay-history-entry[hidden],.delay-history-card[hidden]{display:none}.delay-history-entry-name{overflow:hidden;color:#26352c;font-size:13px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.delay-history-entry-meta{display:flex;align-items:center;gap:8px;color:#64736a;font-size:11px;white-space:nowrap}.delay-history-entry-action{grid-column:1/-1;justify-self:start}.delay-history-empty{padding:22px 14px;color:#64736a;text-align:center;font-size:13px}.delay-history-no-results{margin:14px 0 0;padding:20px;border:1px dashed #cbd8cf;border-radius:8px;color:#64736a;text-align:center;font-size:13px}.delay-history-no-results[hidden]{display:none}
 @media(max-width:1100px){.delay-history-filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.delay-history-filters{grid-template-columns:repeat(2,minmax(0,1fr));padding:11px}.delay-history-filter:first-child{grid-column:1/-1}.delay-history-grid{grid-template-columns:1fr}.delay-history-entry{grid-template-columns:minmax(0,1fr)}.delay-history-entry-meta{flex-wrap:wrap}}
@@ -5425,6 +5427,14 @@ input[type="radio"] {
         overflow-y: visible;
     }
 
+    .reception-interface #consulta-ausencias .absence-table-wrap {
+        max-height: min(60dvh, calc(100dvh - 360px));
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .reception-interface #inicio {
         width: 100%;
         max-width: none;
@@ -5525,6 +5535,12 @@ input[type="radio"] {
         --reception-card-color: #008c45;
         --reception-card-border: #c7e3d1;
         --reception-card-tint: #edf8f0;
+    }
+
+    .reception-card-latest-exits {
+        --reception-card-color: #0891b2;
+        --reception-card-border: #c5e8ef;
+        --reception-card-tint: #ecfbff;
     }
 
     .reception-interface .menu-card h3 {
@@ -6039,6 +6055,7 @@ input[type="radio"] {
             <button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída antecipada</button>
             <button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button>
             <button class="nav-item" type="button" data-target="consulta-ausencias"><i class="fas fa-user-xmark"></i>Ausências registradas</button>
+            <button class="nav-item" type="button" data-target="ultimas-saidas"><i class="fas fa-clock"></i>Últimas saídas</button>
         </div>
         <?php } else { ?>
         <details class="nav-group" data-sidebar-group="registros"><summary class="nav-label">Registros</summary><button class="nav-item" type="button" data-target="entrada"><i class="fas fa-arrow-right-to-bracket"></i>Registro de Atraso</button><button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída Antecipada</button><button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button><button class="nav-item" type="button" data-target="cadastro"><i class="fas fa-user-plus"></i>Cadastrar aluno</button><button class="nav-item" type="button" data-target="restricoes"><i class="fas fa-ban"></i>Restrições</button></details>
@@ -6160,6 +6177,16 @@ input[type="radio"] {
           <div>
             <h3 class="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Ausências registradas</h3>
             <p class="text-sm text-gray-500">Consulte os alunos ausentes para estágio</p>
+          </div>
+        </a>
+
+        <a href="#" data-section-target="ultimas-saidas" class="menu-card reception-card-latest-exits p-6 flex items-center gap-4 group">
+          <div class="menu-icon">
+            <i class="fas fa-history text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Últimas saídas</h3>
+            <p class="text-sm text-gray-500">Acompanhe as últimas saídas registradas</p>
           </div>
         </a>
         <?php } ?>
@@ -6328,11 +6355,12 @@ input[type="radio"] {
     <div id="entrada-confirmacao" class="entry-confirm-overlay" hidden>
         <section class="entry-confirm-card" role="dialog" aria-modal="true" aria-labelledby="entrada-confirmacao-titulo" aria-describedby="entrada-confirmacao-descricao" tabindex="-1">
             <h2 id="entrada-confirmacao-titulo">Salvar registro de atraso?</h2>
-            <p id="entrada-confirmacao-descricao">Imprimir comprovante salva o atraso e abre a impressão. Cancelar fecha sem salvar.</p>
+            <p id="entrada-confirmacao-descricao">Salve o atraso e escolha qual documento deseja imprimir. Os documentos são independentes e não duplicam o registro.</p>
             <p id="entrada-confirmacao-erro" class="entry-confirm-error" role="alert" hidden></p>
             <div class="entry-confirm-actions">
+                <button type="button" class="primary" data-entry-action="print-atraso"><i class="fas fa-print" aria-hidden="true"></i> Salvar e imprimir atraso</button>
+                <button type="button" data-entry-action="print-permissao"><i class="fas fa-door-open" aria-hidden="true"></i> Salvar e imprimir permissão</button>
                 <button type="button" data-entry-action="cancel">Cancelar</button>
-                <button type="button" class="primary" data-entry-action="print"><i class="fas fa-print" aria-hidden="true"></i> Imprimir comprovante</button>
             </div>
         </section>
     </div>
@@ -6600,24 +6628,45 @@ $(document).ready(function() {
             document.querySelectorAll('#entrada-options-container .select-option').forEach(option => option.classList.remove('selected'));
         }
 
-        async function saveEntry(printReceipt = false) {
+        async function saveEntry(tipoComprovante = null) {
             if (savingEntry) return;
             savingEntry = true;
             confirmationModal.setSaving(true);
             confirmationModal.error.hidden = true;
-            const receiptData = printReceipt ? captureReceiptData() : null;
-            const printWindow = printReceipt ? window.prepareThermalReceiptWindow() : null;
+            const receiptData = tipoComprovante ? captureReceiptData() : null;
+            const printWindow = tipoComprovante ? window.prepareThermalReceiptWindow() : null;
             const payload = new FormData(form);
             payload.set('entrada_ajax', '1');
             try {
                 const response = await fetch(form.action, {method: 'POST', body: payload, headers: {'X-Requested-With': 'XMLHttpRequest'}});
-                const result = await response.json();
+                const responseBody = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(responseBody);
+                } catch {
+                    throw new Error(responseBody.trim()
+                        ? `O servidor retornou uma resposta inválida (HTTP ${response.status}). Tente novamente ou avise o suporte.`
+                        : `O servidor não retornou uma resposta (HTTP ${response.status}). Verifique a conexão e tente novamente.`);
+                }
                 if (!response.ok || !result.success) throw new Error(result.message || 'Não foi possível salvar o registro.');
+                const hasReceipt = receiptData && result.tipo_registro !== 'estagio';
+                if (hasReceipt && (!Number.isInteger(Number(result.registro_id)) || Number(result.registro_id) < 1)) {
+                    confirmationModal.close();
+                    showToast(result.message);
+                    resetEntryForm();
+                    window.cancelThermalReceiptWindow(printWindow);
+                    document.dispatchEvent(new CustomEvent('manual-delay-recorded'));
+                    window.alert('O atraso foi salvo, mas não foi possível identificar o registro para gerar o PDF.');
+                    return;
+                }
                 confirmationModal.close();
                 showToast(result.message);
                 resetEntryForm();
-                if (receiptData && result.tipo_registro !== 'estagio') window.printEntryReceipt(receiptData, printWindow);
-                else window.cancelThermalReceiptWindow(printWindow);
+                if (hasReceipt) {
+                    window.printDelayReceipt(receiptData, result.registro_id, tipoComprovante, printWindow);
+                } else {
+                    window.cancelThermalReceiptWindow(printWindow);
+                }
                 if (result.tipo_registro === 'estagio') {
                     document.dispatchEvent(new CustomEvent('stage-exit-recorded'));
                 } else {
@@ -6667,7 +6716,8 @@ $(document).ready(function() {
             if (validateEntryForm()) confirmationModal.open();
         });
         confirmationModal.buttons.find(button => button.dataset.entryAction === 'cancel').addEventListener('click', () => confirmationModal.close());
-        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print').addEventListener('click', () => saveEntry(true));
+        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print-atraso').addEventListener('click', () => saveEntry('atraso'));
+        confirmationModal.buttons.find(button => button.dataset.entryAction === 'print-permissao').addEventListener('click', () => saveEntry('permissao'));
 })();
 </script>
 
@@ -9593,6 +9643,8 @@ class TurmaSelector {
                                         <time><?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time>
                                             <?php $statusAtraso = $registroAtraso['status_justificativa'] ?? 'pendente'; $acaoAtraso = $statusAtraso === 'pendente' && $validacaoAtrasosDisponivel ? 'Validar' : 'Detalhes'; ?>
                                             <button type="button" class="delay-detail-button <?= $acaoAtraso === 'Detalhes' ? 'delay-detail-button-secondary' : '' ?>" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $validacaoAtrasosDisponivel && $statusAtraso === 'pendente' ? '1' : '0' ?>"><?= $acaoAtraso === 'Validar' ? '<i class="fas fa-check" aria-hidden="true"></i>' : '<i class="fas fa-eye" aria-hidden="true"></i>' ?><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
+                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button>
+                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -9622,8 +9674,8 @@ class TurmaSelector {
                             <?php if ($historicoPorTurma[$idTurma]) { ?>
                                 <?php foreach ($historicoPorTurma[$idTurma] as $registroAtraso) { ?>
                                     <?php $jsonDetalhes = json_encode($detalhesAtraso($registroAtraso), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_INVALID_UTF8_SUBSTITUTE); $statusHistorico = $registroAtraso['status_justificativa'] ?? 'pendente'; ?>
-                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $ehAdminEntradaSaida ? 'button' : 'group' ?>" aria-label="<?= $ehAdminEntradaSaida ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
-                                        <div class="delay-history-entry-name-group"><div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Imprimir registro de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir registro de atraso"><i class="fas fa-print" aria-hidden="true"></i></button></div>
+                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
+                                        <div class="delay-history-entry-name-group"><div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button></div>
                                         <div class="delay-history-entry-meta"><time datetime="<?= date('Y-m-d\TH:i:s', strtotime($registroAtraso['date_time'])) ?>"><?= date('d/m/Y', strtotime($registroAtraso['date_time'])) ?> às <?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time><span class="delay-status delay-status-<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(['pendente' => 'Pendente', 'aprovada' => 'Aprovada', 'recusada' => 'Recusada'][$statusHistorico] ?? 'Pendente', ENT_QUOTES, 'UTF-8') ?></span></div>
                                         <div class="delay-history-entry-actions">
                                             <?php $podeValidarHistorico = $validacaoAtrasosDisponivel && $statusHistorico === 'pendente'; ?>
@@ -9730,7 +9782,7 @@ class TurmaSelector {
                     if (!details || typeof details !== 'object' || Array.isArray(details)) {
                         throw new Error('Os dados deste registro de atraso estão em um formato inválido.');
                     }
-                    window.printDelayReceipt(details, button.dataset.recordId);
+                    window.printDelayReceipt(details, button.dataset.recordId, button.dataset.receiptType || 'atraso');
                 } catch (error) {
                     console.error('Não foi possível imprimir este registro de atraso.', error);
                     window.alert('Não foi possível preparar a impressão deste registro de atraso.');
@@ -9739,9 +9791,8 @@ class TurmaSelector {
 
             document.addEventListener('click', (event) => {
                 const entry = event.target.closest('[data-history-entry]');
-                if (!entry) return;
-                <?php if ($ehAdminEntradaSaida) { ?>
-                if (event.target.closest('[data-delay-print]')) return;
+                if (!entry || event.target.closest('button, a, input, select, textarea, summary')) return;
+                <?php if ($podeExcluirAtraso) { ?>
                 document.dispatchEvent(new CustomEvent('history-delay-delete-request', {
                     detail: {
                         id_registro_entrada: entry.dataset.historyRecordId,
@@ -9753,7 +9804,6 @@ class TurmaSelector {
                     }
                 }));
                 <?php } else { ?>
-                if (event.target.closest('button, a, input, select, textarea, summary')) return;
                 entry.querySelector('[data-delay-details]')?.click();
                 <?php } ?>
             });
@@ -9763,7 +9813,7 @@ class TurmaSelector {
                 if (!entry || event.target !== entry || !['Enter', ' '].includes(event.key)) return;
 
                 event.preventDefault();
-                <?php if ($ehAdminEntradaSaida) { ?>
+                <?php if ($podeExcluirAtraso) { ?>
                 entry.dispatchEvent(new MouseEvent('click', {bubbles: true}));
                 <?php } else { ?>
                 entry.querySelector('[data-delay-details]')?.click();
@@ -9803,7 +9853,7 @@ class TurmaSelector {
             document.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-delay-details]');
                 if (!button) return;
-                if (button.closest('[data-history-entry]') && <?= $ehAdminEntradaSaida ? 'true' : 'false' ?>) return;
+                if (button.closest('[data-history-entry]') && <?= $podeExcluirAtraso ? 'true' : 'false' ?>) return;
 
                 try {
                     const details = JSON.parse(button.dataset.delayDetails);
@@ -9833,23 +9883,35 @@ class TurmaSelector {
                     const justificationLabel = document.createElement('label');
                     justificationLabel.className = 'delay-justification-label';
                     justificationLabel.textContent = 'Justificativa do atraso';
-                    const justification = document.createElement('textarea');
-                    justification.className = 'delay-justification';
-                    justification.name = 'justificativa_atraso';
-                    justification.setAttribute('form', 'delay-validation-form');
-                    justification.maxLength = 2000;
-                    const fixedManualJustification = Boolean(
-                        details['Justificativa do atraso']
-                        && details['Justificativa do atraso'] !== 'Não informada'
-                    );
-                    justification.readOnly = !showValidationForm || fixedManualJustification;
-                    justification.required = showValidationForm;
-                    justification.placeholder = showValidationForm ? 'Informe a justificativa do atraso' : '';
-                    justification.value = details['Justificativa do atraso'] === 'Não informada'
+                    const justificationValue = details['Justificativa do atraso'] === 'Não informada'
                         ? ''
                         : details['Justificativa do atraso'] || '';
-                    justification.addEventListener('input', () => updateDecision(decisionInput.value));
-                    dialogContent.append(justificationLabel, justification);
+                    const fixedManualJustification = Boolean(justificationValue);
+                    dialogContent.appendChild(justificationLabel);
+                    if (showValidationForm && !fixedManualJustification) {
+                        const justification = document.createElement('textarea');
+                        justification.className = 'delay-justification';
+                        justification.name = 'justificativa_atraso';
+                        justification.setAttribute('form', 'delay-validation-form');
+                        justification.maxLength = 2000;
+                        justification.required = true;
+                        justification.placeholder = 'Informe a justificativa do atraso';
+                        justification.addEventListener('input', () => updateDecision(decisionInput.value));
+                        dialogContent.appendChild(justification);
+                    } else {
+                        const justificationDisplay = document.createElement('div');
+                        justificationDisplay.className = 'delay-justification delay-justification-display';
+                        justificationDisplay.textContent = justificationValue || 'Não informada';
+                        dialogContent.appendChild(justificationDisplay);
+                        if (showValidationForm) {
+                            const justification = document.createElement('input');
+                            justification.type = 'hidden';
+                            justification.name = 'justificativa_atraso';
+                            justification.value = justificationValue;
+                            justification.setAttribute('form', 'delay-validation-form');
+                            dialogContent.appendChild(justification);
+                        }
+                    }
 
                     const extraDetails = document.createElement('details');
                     extraDetails.className = 'delay-extra-details';
@@ -11176,7 +11238,8 @@ function normalizeStudentSearch(value) {
         document.body.classList.remove('sidebar-open');
         menuToggle?.setAttribute('aria-expanded', 'false');
     };
-  const activate = (target, selectedItem) => {
+  const receptionMode = <?php echo $ehRecepcao ? 'true' : 'false'; ?>;
+  const activate = (target, selectedItem, addHistoryEntry = true) => {
     navItems.forEach(nav => nav.classList.remove('active'));
     sections.forEach(section => section.classList.remove('active'));
     document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos');
@@ -11191,8 +11254,15 @@ function normalizeStudentSearch(value) {
     if (selectedSection) selectedSection.classList.add('active');
         if (selectedSection) {
             const currentUrl = new URL(window.location.href);
+            const currentSection = currentUrl.searchParams.get('section');
             currentUrl.searchParams.set('section', target);
-            window.history.replaceState(window.history.state, '', currentUrl);
+            if (receptionMode && addHistoryEntry) {
+                if (currentSection !== target) {
+                    window.history.pushState(window.history.state, '', currentUrl);
+                }
+            } else {
+                window.history.replaceState(window.history.state, '', currentUrl);
+            }
         }
     document.dispatchEvent(new CustomEvent('section:activate:qr-reader'));
     closeMobileMenu();
@@ -11202,13 +11272,19 @@ function normalizeStudentSearch(value) {
     event.preventDefault();
     activate(item.dataset.sectionTarget, document.querySelector(`.nav-item[data-target="${item.dataset.sectionTarget}"]`));
   }));
+    if (receptionMode) {
+        window.addEventListener('popstate', () => {
+            const section = new URLSearchParams(window.location.search).get('section') || 'inicio';
+            activate(section, document.querySelector(`.nav-item[data-target="${section}"]`), false);
+        });
+    }
     menuToggle?.addEventListener('click', () => {
     const isOpen = document.body.classList.toggle('sidebar-open');
         menuToggle.setAttribute('aria-expanded', String(isOpen));
   });
     document.querySelector('.sidebar-scrim')?.addEventListener('click', closeMobileMenu);
     const initialSection = <?php echo json_encode($sectionInicial, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-    activate(initialSection, document.querySelector(`.nav-item[data-target="${initialSection}"]`));
+    activate(initialSection, document.querySelector(`.nav-item[data-target="${initialSection}"]`), false);
 })();
 </script>
 </main>
@@ -13410,6 +13486,11 @@ html[data-theme="lula"] .entryexit-footer a i {
     .floating-theme-toggle {
         bottom: 5rem;
     }
+}
+
+html[data-theme="dark"] .delay-history-entry-action:not(.delay-detail-button-secondary),
+html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-secondary) {
+    color: #fff !important;
 }
 </style>
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">

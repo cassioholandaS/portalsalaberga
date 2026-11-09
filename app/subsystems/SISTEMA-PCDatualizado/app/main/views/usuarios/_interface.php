@@ -118,7 +118,7 @@
       display:flex; align-items:center; gap:12px; padding:25px 22px 18px;
     }
     .sidebar-brand-mark { width:40px; height:40px; display:flex; align-items:center; justify-content:center; flex:0 0 40px; border:1px solid rgba(255,255,255,0.22); border-radius:10px; background:rgba(255,255,255,0.04); }
-    .sidebar-brand img { width:25px; height:32px; object-fit:contain; }
+    .sidebar-brand img { width:28px; height:28px; object-fit:contain; }
     .sidebar-brand-title { color:#fff; font-size:15px; font-weight:700; line-height:1.1; white-space:nowrap; }
     .sidebar-brand-title span { color:#ffad00; }
     .sidebar-brand-subtitle { color:rgba(255,255,255,0.68); font-size:9.5px; line-height:1.35; margin-top:5px; }
@@ -160,22 +160,26 @@
     }
     .nav-item.active .ni { background:rgba(255,176,0,0.13); }
     .sidebar-footer { padding:12px 0; border-top:1px solid rgba(255,255,255,0.10); }
+    .sidebar-account-tools { display:flex; align-items:center; gap:8px; position:relative; padding:0 16px 10px; }
+    .sidebar-account-user {
+      display:flex; align-items:center; gap:9px; flex:1; min-width:0; padding:7px 8px;
+      border:1px solid rgba(255,255,255,0.12); border-radius:9px; background:rgba(255,255,255,0.05);
+      color:#fff; text-align:left; cursor:pointer;
+    }
+    .sidebar-account-user > span:last-child { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sidebar-account-avatar { width:30px; height:30px; flex:0 0 30px; overflow:hidden; font-size:12px; }
+    .sidebar-notification-button {
+      display:flex; width:40px; height:40px; flex:0 0 40px; align-items:center; justify-content:center;
+      position:relative; border:1px solid rgba(255,255,255,0.16); border-radius:9px;
+      background:rgba(255,255,255,0.07); color:#f5fff8; cursor:pointer;
+    }
+    .sidebar-notification-button:hover { background:rgba(255,255,255,0.14); }
     .sidebar-logout { color:#ff927f; }
     .sidebar-logout .ni { color:inherit; }
     .sidebar-logout:hover { color:#ffad9e; background:rgba(255,255,255,0.08); }
 
     /* MAIN */
     .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-
-    /* TOPBAR */
-    .topbar {
-      padding:13px 30px;
-      border-bottom:1px solid var(--border);
-      background:rgba(234,244,231,0.92);
-      backdrop-filter:blur(14px);
-      display:flex; align-items:center; justify-content:space-between;
-      position:sticky; top:0; z-index:20;
-    }
 
     /* CONTENT */
     .content { flex:1; overflow-y:auto; padding:26px 30px; }
@@ -740,7 +744,6 @@
         margin-left:auto;
       }
       .main { min-height:100vh; }
-      .topbar { padding:13px 16px; flex-wrap:wrap; gap:10px; }
       .content { padding:16px; overflow:visible; }
       #page-dashboard > div[style*="grid-template-columns:repeat(3,1fr)"] {
         grid-template-columns:1fr !important;
@@ -778,7 +781,7 @@
       .evolucao-grafico-box { max-width:none; }
       .evolucao-grafico-titulo { font-size:16px; }
       .perfil-aluno-relatorio { height:auto; max-height:none; overflow:visible; }
-      .perfil-aluno-relatorio > .tab-row { top:64px; }
+      .perfil-aluno-relatorio > .tab-row { top:0; }
       .modal-box { margin:12px; padding:20px; }
       .avaliacao-periodos { grid-template-columns:1fr; }
       .avaliacao-dia-lista { padding:8px; }
@@ -800,8 +803,8 @@
 
     /* NOTIF DROPDOWN */
     #notif-dd {
-      position:absolute; top:60px; right:24px; width:290px;
-      background:var(--surface2); border:1px solid var(--border);
+      position:absolute; right:0; bottom:calc(100% + 8px); width:min(260px, calc(100% - 32px)); max-height:min(60vh, 420px); overflow-y:auto;
+      background:#073b26; border:1px solid rgba(255,255,255,0.16); color:#f5fff8;
       border-radius:14px; padding:14px; z-index:30;
       box-shadow:0 16px 48px rgba(0,0,0,0.55);
       display:none;
@@ -824,7 +827,6 @@
     .sidebar [style*="color:#fff"] { color:#fff !important; }
     .sidebar .nav-item.active { color:#ffb000 !important; }
     .sidebar .nav-item.active .ni { color:#ffb000 !important; }
-    .topbar [style*="color:rgba(255,255,255"] { color:#64766a !important; }
     .profile-banner .profile-copy { color:#fff !important; }
 
     /* Mobile layout: keep every workflow usable without horizontal page overflow. */
@@ -832,11 +834,8 @@
       html, body { width:100%; min-width:0; height:auto !important; min-height:100%; overflow-x:hidden !important; }
       body { display:block !important; }
       .main { width:100%; min-width:0; min-height:100vh; overflow:visible; }
-      .content { width:100%; min-width:0; padding:78px 12px 28px !important; overflow:visible; }
-      .topbar { position:fixed !important; top:0; left:0; right:0; width:100%; min-height:64px; padding:10px 12px !important; align-items:center; background:rgba(234,244,231,.98); box-shadow:0 2px 12px rgba(7,91,45,.10); z-index:100; }
-      .topbar > div:last-child { max-width:calc(100% - 50px); }
-      .topbar > div:last-child > div:last-child { max-width:calc(100vw - 105px); overflow:hidden; }
-      .topbar > div:last-child > div:last-child > div:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .content { width:100%; min-width:0; padding:64px 12px 28px !important; overflow:visible; }
+      .mobile-menu-btn { position:fixed; top:12px; left:12px; z-index:100; box-shadow:0 2px 12px rgba(7,91,45,.10); }
       .sidebar-brand { padding:22px 22px 15px; }
       .page { width:100%; min-width:0; }
       .card, .stat-card, .dashboard-panel { max-width:100%; min-width:0; }
@@ -940,17 +939,14 @@
       .btn-p, .btn-g { min-height:42px; }
       .btn-p { white-space:normal; }
       .toast { left:12px; right:12px; bottom:12px; }
-      #notif-dd { position:fixed !important; top:74px !important; left:10px !important; right:10px !important; width:auto !important; max-width:none !important; max-height:70vh; overflow-y:auto; z-index:1000 !important; }
       .cal-cell { min-height:64px; padding:4px; }
       .cal-cell > * { max-width:100%; }
       .ev-chip { font-size:9px; }
     }
 
     @media (max-width: 420px) {
-      .content { padding:78px 8px 28px !important; }
-      .topbar { padding-left:8px !important; padding-right:8px !important; }
+      .content { padding:64px 8px 28px !important; }
       .sidebar { width: min(280px, 88vw); min-width: min(280px, 88vw); }
-      .topbar > div:last-child > div:last-child { display:none !important; }
       .profile-banner { padding:18px 14px !important; }
       .profile-banner > div:first-child { gap:12px; }
       .perfil-avatar-ring { width:68px !important; height:68px !important; font-size:25px !important; }
@@ -995,18 +991,6 @@
       /* Solicitações vazias não reservam uma faixa de cabeçalho desktop. */
       #page-usuarios > .card:first-child .table-scroll:has(tbody:empty) { display:none; }
 
-      /* Dropdown sempre cabe na viewport, inclusive quando o cabeçalho está comprimido. */
-      .topbar #notif-dd,
-      #notif-dd {
-        position:fixed !important;
-        inset:74px 10px auto 10px !important;
-        width:auto !important;
-        max-width:none !important;
-        min-width:0 !important;
-        max-height:calc(100dvh - 90px) !important;
-        overflow-y:auto !important;
-        transform:none !important;
-      }
     }
   </style>
 </head>
@@ -1032,7 +1016,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 <!-- ======================== SIDEBAR ======================== -->
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <div class="sidebar-brand-mark"><img src="assets/s_simbol.png.webp" alt="Símbolo do Sistema PCD"></div>
+    <div class="sidebar-brand-mark"><img src="../../../../../entradasaida/app/main/assets/img/logo.png" alt="Símbolo do Sistema PCD"></div>
     <div>
       <div class="sidebar-brand-title">Sistema <span>PCD</span></div>
       <div class="sidebar-brand-subtitle">Gestão de alunos e<br>acompanhamento escolar</div>
@@ -1099,9 +1083,34 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     <?php endif; ?>
   </nav>
   <div class="sidebar-footer">
-    <div class="nav-item sidebar-logout"
-      onclick="window.location.href='controllers/usuario_controller.php?action=logout'">
-      <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
+      <div class="sidebar-account-tools">
+        <button type="button" class="sidebar-account-user" onclick="go('perfil')" title="Abrir perfil">
+          <span class="av sidebar-account-avatar" id="topbar-avatar">
+            <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
+            <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+          </span>
+          <span>
+            <span style="display:block;font-size:12px;font-weight:600;line-height:1.2"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+            <span style="display:block;margin-top:3px;color:rgba(255,255,255,0.68);font-size:10px"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+          </span>
+        </button>
+        <button id="bell-btn" class="sidebar-notification-button" type="button" onclick="toggleDD()" aria-label="Notificações" aria-controls="notif-dd" aria-expanded="false">
+          <i class="bi bi-bell-fill" aria-hidden="true"></i>
+          <span id="notif-badge" style="position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
+        </button>
+        <div id="notif-dd">
+          <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:rgba(255,255,255,0.76)"><i class="bi bi-bell me-1"></i> Notificações</div>
+          <div id="notif-list">
+            <div class="empty" style="padding:20px 0">
+              <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
+              <span style="font-size:12px">Nenhuma notificação</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item sidebar-logout"
+        onclick="window.location.href='controllers/usuario_controller.php?action=logout'">
+        <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
     </div>
   </div>
 </aside>
@@ -1111,47 +1120,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
 <!-- ======================== MAIN ======================== -->
 <div class="main">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="mobile-menu-btn" onclick="abrirMenu()" aria-label="Abrir menu">
-        <i class="bi bi-list" style="font-size:20px"></i>
-      </button>
-      <div>
-        <div style="font-size:17px;font-weight:700" id="pg-title">Dashboard</div>
-        <div style="font-size:11.5px;color:var(--text-muted)" id="pg-sub">Visão geral do sistema</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;position:relative">
-      <!-- Bell -->
-      <button id="bell-btn" onclick="toggleDD()" style="width:37px;height:37px;border-radius:10px;background:#f7faf6;border:1px solid rgba(7,91,45,0.14);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:background 0.2s,border-color 0.2s" onmouseenter="this.style.background='#eaf4e7';this.style.borderColor='rgba(0,166,81,0.28)'" onmouseleave="this.style.background='#f7faf6';this.style.borderColor='rgba(7,91,45,0.14)'">
-        <i class="bi bi-bell-fill" style="font-size:14px;color:#557064"></i>
-        <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
-      </button>
-      <!-- Notif dropdown -->
-      <div id="notif-dd">
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:rgba(255,255,255,0.6)"><i class="bi bi-bell me-1"></i> Notificações</div>
-        <div id="notif-list">
-          <div class="empty" style="padding:20px 0">
-            <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
-            <span style="font-size:12px">Nenhuma notificação</span>
-          </div>
-        </div>
-      </div>
-      <!-- User -->
-      <div onclick="go('perfil')" title="Abrir perfil" style="display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);cursor:pointer">
-        <div class="av" id="topbar-avatar" style="width:28px;height:28px;font-size:12px;background-size:cover;background-position:center">
-          <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-          <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:600;line-height:1.1"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-          <div style="font-size:10px;color:var(--text-muted)"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <button class="mobile-menu-btn" type="button" onclick="abrirMenu()" aria-label="Abrir menu">
+    <i class="bi bi-list" style="font-size:20px" aria-hidden="true"></i>
+  </button>
 
   <!-- CONTENT -->
   <div class="content">

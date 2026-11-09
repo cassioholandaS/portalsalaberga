@@ -19,6 +19,7 @@ class AcompanhamentoPedagogicoModel extends connect
              INNER JOIN alunos a ON a.id_aluno = ap.id_aluno
              LEFT JOIN usuarios u ON u.id = ap.id_responsavel
              WHERE ap.id_turma = :id_turma
+               AND a.status_aluno = \'ativo\'
              ORDER BY ap.data_registro DESC, ap.id_acompanhamento DESC'
         );
         $stmt->execute([':id_turma' => $idTurma]);

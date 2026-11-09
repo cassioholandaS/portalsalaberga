@@ -10,7 +10,7 @@ USE sistema_pdt;
 
 -- ============================================================
 -- TABELA: USUÁRIOS
--- Descrição: Cadastro de usuários (gestor, coordenador, professor, pdt)
+-- Descrição: Cadastro de usuários (gestor, coordenador e professor; PDT é uma atribuição do professor)
 -- ============================================================
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,16 +22,6 @@ CREATE TABLE usuarios (
     atribuicao ENUM('pdt') DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- CONTAS EXCLUSIVAS DE DESENVOLVIMENTO LOCAL.
--- Senha inicial das três contas: 123456. Remova ou altere este bloco antes de usar o SQL em produção.
--- Os hashes abaixo usam o formato gerado por password_hash(..., PASSWORD_DEFAULT) no PHP.
-INSERT INTO usuarios (nome, matricula, email, senha, tipo)
-VALUES
-    ('Otávio', 'PDT-LOCAL-OTAVIO', 'otavio.ce@gmail.com', '$2y$10$JxY1kq4JbrdhnCfQkoXC2ualO0haU0qo6cSRUzmGPig5FDAhwYtby', 'gestor'),
-    ('Kauan', 'PDT-LOCAL-KAUAN', 'kauan@gmail.com', '$2y$10$ZYdOdUPLsjemZkCDsPDq9eBN7EgG3Q/QkWuk2Zs8.F4iKTmS53JZ6', 'coordenador'),
-    ('Cassio', 'PDT-LOCAL-CASSIO', 'cassio@gmail.com', '$2y$10$leCO0Bv3hUk/GCgHW6kRQe9zhYweJpaL2Veb0pEOqfijRFSd/gYcC', 'professor')
-ON DUPLICATE KEY UPDATE id = id;
 
 -- ============================================================
 -- TABELA: NOTIFICAÇÕES
@@ -88,6 +78,7 @@ CREATE TABLE turmas (
     ano_letivo INT NOT NULL,
     descricao_turma TEXT,
     id_professor INT NOT NULL,
+    turma_origem_id INT NULL DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_turmas_cursos
@@ -104,7 +95,8 @@ CREATE TABLE turmas (
     
     INDEX idx_turmas_professor (id_professor),
     INDEX idx_turmas_curso (id_curso),
-    INDEX idx_turmas_ano_letivo (ano_letivo)
+    INDEX idx_turmas_ano_letivo (ano_letivo),
+    UNIQUE KEY uq_turmas_origem (turma_origem_id)
 );
 
 -- ============================================================
@@ -120,6 +112,8 @@ CREATE TABLE alunos (
     data_insercao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     pcd ENUM('sim', 'nao') DEFAULT 'nao',
     rendimento DECIMAL(5,2) DEFAULT 0.00,
+    status_aluno ENUM('ativo', 'concluinte') NOT NULL DEFAULT 'ativo',
+    ano_conclusao SMALLINT NULL DEFAULT NULL,
     
     CONSTRAINT fk_alunos_turmas
         FOREIGN KEY (id_turma)
@@ -129,6 +123,16 @@ CREATE TABLE alunos (
     
     INDEX idx_alunos_turma (id_turma),
     INDEX idx_alunos_matricula (matricula)
+);
+
+CREATE TABLE aluno_turma_historico (
+    id_aluno INT NOT NULL,
+    id_turma INT NOT NULL,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_aluno, id_turma),
+    INDEX idx_aluno_turma_historico_turma (id_turma),
+    CONSTRAINT fk_ath_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_aluno) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_ath_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turma) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- ============================================================
@@ -225,7 +229,7 @@ CREATE TABLE media_final (
     valor DECIMAL(5,2) DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT uq_media_final_aluno_bimestre UNIQUE (id_aluno, bimestre, disciplina),
+    CONSTRAINT uq_media_final_aluno_turma_bimestre UNIQUE (id_aluno, id_turma, bimestre, disciplina),
     CONSTRAINT fk_media_final_alunos FOREIGN KEY (id_aluno) REFERENCES alunos(id_aluno) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_media_final_turmas FOREIGN KEY (id_turma) REFERENCES turmas(id_turma) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_media_final_professores FOREIGN KEY (id_professor) REFERENCES usuarios(id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -286,6 +290,19 @@ CREATE TABLE conselho_classe_alunos (
     CONSTRAINT fk_cca_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_aluno) ON DELETE CASCADE ON UPDATE CASCADE,
     INDEX idx_cca_aluno (id_aluno)
 );
+
+CREATE TABLE progressao_ano_letivo (
+    ano_destino SMALLINT NOT NULL PRIMARY KEY,
+    ano_origem SMALLINT NOT NULL,
+    tipo_processamento ENUM('baseline', 'concluido') NOT NULL,
+    total_promovidos INT NOT NULL DEFAULT 0,
+    total_concluintes INT NOT NULL DEFAULT 0,
+    executado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO progressao_ano_letivo (ano_destino, ano_origem, tipo_processamento)
+VALUES (YEAR(CURRENT_DATE), YEAR(CURRENT_DATE) - 1, 'baseline')
+ON DUPLICATE KEY UPDATE ano_destino = VALUES(ano_destino);
 
 -- Bancos existentes devem aplicar config/migrations/002_acompanhamento_conselho.sql.
 -- ============================================================

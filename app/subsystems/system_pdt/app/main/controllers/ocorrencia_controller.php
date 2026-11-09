@@ -66,6 +66,22 @@ function criarOcorrencia() {
         $db = new connect();
         $conn = $db->getConnection();
 
+        $stmtAluno = $conn->prepare(
+            "SELECT 1 FROM alunos
+             WHERE id_aluno = :id_aluno
+               AND id_turma = :id_turma
+               AND status_aluno = 'ativo'
+             LIMIT 1"
+        );
+        $stmtAluno->execute([
+            ':id_aluno' => $alunoId,
+            ':id_turma' => $turmaId
+        ]);
+        if (!$stmtAluno->fetchColumn()) {
+            echo json_encode(['sucesso' => false, 'erro' => 'O aluno não pertence a esta turma ativa']);
+            return;
+        }
+
         $stmt = $conn->prepare("
             INSERT INTO ocorrencias (id_aluno, id_turma, id_professor, tipo_ocorrencia, descricao)
             VALUES (:id_aluno, :id_turma, :id_professor, :tipo_ocorrencia, :descricao)

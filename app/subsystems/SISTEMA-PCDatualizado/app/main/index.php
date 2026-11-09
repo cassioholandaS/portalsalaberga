@@ -66,7 +66,7 @@ if ($mensagemAcesso === null && !empty($_GET['erro'])) {
     <meta name="keywords" content="login, acesso, EEEP Salaberga, sistema educacional, Maranguape">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/webp" href="./assets/s_simbol.png.webp">
+    <link rel="icon" type="image/png" href="../../../entradasaida/app/main/assets/img/logo.png">
 
     <!-- Fontes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -824,7 +824,7 @@ if ($mensagemAcesso === null && !empty($_GET['erro'])) {
                 <!-- Logo Container com efeitos Ghibli -->
                 <div class="text-center mb-6 sm:mb-8">
                     <div class="inline-block p-3 sm:p-4 rounded-2xl">
-                        <img src="./assets/s_simbol.png.webp" 
+                        <img src="../../../entradasaida/app/main/assets/img/logo.png"
                              alt="Logo EEEP Salaberga" 
                              class="w-16 h-16 sm:w-20 sm:h-20 object-contain">
                     </div>

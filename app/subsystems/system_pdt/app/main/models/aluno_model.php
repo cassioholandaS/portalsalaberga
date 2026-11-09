@@ -23,7 +23,7 @@ class AlunoModel extends connect
                 }
 
                 if ($col) {
-                    $sql = "SELECT * FROM alunos WHERE " . $col . " = :id_turma ORDER BY data_insercao DESC";
+                    $sql = "SELECT * FROM alunos WHERE " . $col . " = :id_turma AND status_aluno = 'ativo' ORDER BY data_insercao DESC";
                     $stmt = $this->conn->prepare($sql);
                     $stmt->bindValue(':id_turma', $id_turma, PDO::PARAM_INT);
                     $ok = $stmt->execute();
@@ -34,7 +34,7 @@ class AlunoModel extends connect
             }
 
             // fallback: retorna todos os alunos
-            $stmt = $this->conn->prepare("SELECT * FROM alunos ORDER BY data_insercao DESC");
+            $stmt = $this->conn->prepare("SELECT * FROM alunos WHERE status_aluno = 'ativo' ORDER BY data_insercao DESC");
             if ($stmt->execute()) {
                 return $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
@@ -78,12 +78,26 @@ class AlunoModel extends connect
             $sql = "INSERT INTO alunos (" . implode(',', $cols) . ") VALUES (" . implode(',', $place) . ")";
 
             $stmt = $this->conn->prepare($sql);
+            $this->conn->beginTransaction();
             $ok = $stmt->execute($params);
 
             if ($ok) {
-                return ['success' => true, 'id' => (int) $this->conn->lastInsertId()];
+                $idAluno = (int) $this->conn->lastInsertId();
+                if ($turma_id !== null) {
+                    $historico = $this->conn->prepare(
+                        'INSERT INTO aluno_turma_historico (id_aluno, id_turma)
+                         VALUES (:id_aluno, :id_turma)'
+                    );
+                    $historico->execute([
+                        ':id_aluno' => $idAluno,
+                        ':id_turma' => (int) $turma_id
+                    ]);
+                }
+                $this->conn->commit();
+                return ['success' => true, 'id' => $idAluno];
             }
 
+            $this->conn->rollBack();
             // Tratamento de erros específicos
             $err = $stmt->errorInfo();
             $errorMsg = $err[2] ?? 'Erro desconhecido';
@@ -100,6 +114,9 @@ class AlunoModel extends connect
             error_log('Erro ao cadastrar aluno: ' . $errorMsg);
             return ['success' => false, 'error' => $errorMsg];
         } catch (PDOException $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
             $errorMsg = $e->getMessage();
             
             // Tratamento de erros específicos
@@ -192,16 +209,14 @@ class AlunoModel extends connect
                 return 0;
             }
 
-            $sql = "SELECT COUNT(*) AS total FROM alunos a INNER JOIN turmas t ON a." . $col . " = t.id_turma WHERE t.id_professor = :id_professor";
+            $sql = "SELECT COUNT(*) AS total FROM alunos a INNER JOIN turmas t ON a." . $col . " = t.id_turma WHERE t.id_professor = :id_professor AND t.ano_letivo = :ano_letivo AND a.status_aluno = 'ativo'";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bindValue(':id_professor', $id_professor, PDO::PARAM_INT);
-
-            if ($stmt->execute()) {
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                return intval($result['total'] ?? 0);
-            }
-
-            return 0;
+            $stmt->execute([
+                ':id_professor' => (int) $id_professor,
+                ':ano_letivo' => (int) date('Y')
+            ]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return intval($result['total'] ?? 0);
         } catch (PDOException $e) {
             error_log('Erro contarAlunosPorProfessor: ' . $e->getMessage());
             return 0;
@@ -228,10 +243,6 @@ class AlunoModel extends connect
             if (!$this->alunoPertenceATurma((int) $id_aluno, (int) $id_turma)) {
                 return ['success' => false, 'error' => 'O aluno selecionado não pertence a esta turma.'];
             }
-            if ($this->notaAssociadaAOutraTurma((int) $id_aluno, (int) $bimestre, $disciplina, (int) $id_turma)) {
-                return ['success' => false, 'error' => 'Já existe uma nota deste aluno, bimestre e disciplina vinculada a outra turma; o histórico foi preservado.'];
-            }
-
             $sql = "INSERT INTO media_final (id_aluno, id_turma, id_professor, bimestre, disciplina, valor) VALUES (:id_aluno, :id_turma, :id_professor, :bimestre, :disciplina, :valor) 
                     ON DUPLICATE KEY UPDATE valor = VALUES(valor), atualizado_em = CURRENT_TIMESTAMP";
 
@@ -288,10 +299,9 @@ class AlunoModel extends connect
                     !$id_aluno
                     || !$this->validarNota($media_final)
                     || !$this->alunoPertenceATurma($id_aluno, (int) $id_turma)
-                    || $this->notaAssociadaAOutraTurma($id_aluno, (int) $bimestre, $disciplina, (int) $id_turma)
                 ) {
                     $this->conn->rollBack();
-                    return ['success' => false, 'error' => 'Há aluno ou nota inválida, fora da turma, ou vinculada a outra turma. Nenhuma nota foi alterada.'];
+                    return ['success' => false, 'error' => 'Há aluno ou nota inválida ou fora da turma. Nenhuma nota foi alterada.'];
                 }
 
                 $stmt->bindValue(':id_aluno', $id_aluno, PDO::PARAM_INT);
@@ -330,28 +340,9 @@ class AlunoModel extends connect
     private function alunoPertenceATurma(int $idAluno, int $idTurma): bool
     {
         $stmt = $this->conn->prepare(
-            'SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma LIMIT 1'
+            "SELECT 1 FROM alunos WHERE id_aluno = :id_aluno AND id_turma = :id_turma AND status_aluno = 'ativo' LIMIT 1"
         );
         $stmt->execute([':id_aluno' => $idAluno, ':id_turma' => $idTurma]);
-        return (bool) $stmt->fetchColumn();
-    }
-
-    private function notaAssociadaAOutraTurma(int $idAluno, int $bimestre, string $disciplina, int $idTurma): bool
-    {
-        $stmt = $this->conn->prepare(
-            'SELECT 1 FROM media_final
-             WHERE id_aluno = :id_aluno
-               AND bimestre = :bimestre
-               AND disciplina = :disciplina
-               AND (id_turma IS NULL OR id_turma <> :id_turma)
-             LIMIT 1'
-        );
-        $stmt->execute([
-            ':id_aluno' => $idAluno,
-            ':bimestre' => $bimestre,
-            ':disciplina' => $disciplina,
-            ':id_turma' => $idTurma
-        ]);
         return (bool) $stmt->fetchColumn();
     }
 
@@ -359,8 +350,8 @@ class AlunoModel extends connect
     {
         try {
             $stmt = $this->conn->prepare(
-                'SELECT a.id_aluno, a.nome, a.matricula, t.id_turma, t.nome_turma, t.serie_turma,
-                        t.ano_letivo, c.nome_curso
+                'SELECT a.id_aluno, a.nome, a.matricula, a.status_aluno, a.ano_conclusao,
+                        t.id_turma, t.nome_turma, t.serie_turma, t.ano_letivo, c.nome_curso
                  FROM alunos a
                  INNER JOIN turmas t ON t.id_turma = a.id_turma
                  INNER JOIN cursos c ON c.id_curso = t.id_curso
@@ -374,10 +365,11 @@ class AlunoModel extends connect
             }
 
             $stmt = $this->conn->prepare(
-                'SELECT bimestre, disciplina, valor
-                 FROM media_final
-                 WHERE id_aluno = :id_aluno
-                 ORDER BY bimestre, disciplina'
+                'SELECT mf.bimestre, mf.disciplina, mf.valor, t.serie_turma, t.ano_letivo
+                 FROM media_final mf
+                 LEFT JOIN turmas t ON t.id_turma = mf.id_turma
+                 WHERE mf.id_aluno = :id_aluno
+                 ORDER BY t.ano_letivo, mf.bimestre, mf.disciplina'
             );
             $stmt->execute([':id_aluno' => $idAluno]);
             $notas = array_map(function (array $nota): array {
@@ -386,6 +378,8 @@ class AlunoModel extends connect
                 return [
                     'bimestre' => (int) $nota['bimestre'],
                     'disciplina' => $nota['disciplina'],
+                    'serie_turma' => $nota['serie_turma'] !== null ? (int) $nota['serie_turma'] : null,
+                    'ano_letivo' => $nota['ano_letivo'] !== null ? (int) $nota['ano_letivo'] : null,
                     'nota' => $notaValida ? (float) $valor : null,
                     'classificacao' => $notaValida
                         ? $this->classificarDesempenho((float) $valor)
@@ -403,26 +397,22 @@ class AlunoModel extends connect
                         MIN(data_frequencia) AS primeira_data,
                         MAX(data_frequencia) AS ultima_data
                  FROM frequencias
-                 WHERE id_aluno = :id_aluno AND id_turma = :id_turma"
+                 WHERE id_aluno = :id_aluno"
             );
-            $stmt->execute([
-                ':id_aluno' => $idAluno,
-                ':id_turma' => (int) $aluno['id_turma']
-            ]);
+            $stmt->execute([':id_aluno' => $idAluno]);
             $frequencia = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
             $totalFrequencias = (int) ($frequencia['total_registros'] ?? 0);
             $totalPresencas = (int) ($frequencia['presencas'] ?? 0);
 
             $stmt = $this->conn->prepare(
-                'SELECT id_ocorrencia, tipo_ocorrencia, descricao, data_ocorrencia
-                 FROM ocorrencias
-                 WHERE id_aluno = :id_aluno AND id_turma = :id_turma AND deletado_em IS NULL
-                 ORDER BY data_ocorrencia DESC, id_ocorrencia DESC'
+                'SELECT o.id_ocorrencia, o.tipo_ocorrencia, o.descricao, o.data_ocorrencia,
+                        t.serie_turma, t.ano_letivo
+                 FROM ocorrencias o
+                 INNER JOIN turmas t ON t.id_turma = o.id_turma
+                 WHERE o.id_aluno = :id_aluno AND o.deletado_em IS NULL
+                 ORDER BY o.data_ocorrencia DESC, o.id_ocorrencia DESC'
             );
-            $stmt->execute([
-                ':id_aluno' => $idAluno,
-                ':id_turma' => (int) $aluno['id_turma']
-            ]);
+            $stmt->execute([':id_aluno' => $idAluno]);
 
             $aluno['turma'] = sprintf(
                 '%sº %s - %s',
@@ -444,29 +434,26 @@ class AlunoModel extends connect
             $aluno['ocorrencias'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $stmt = $this->conn->prepare(
-                'SELECT data_registro, motivo, observacao, encaminhamento, data_retorno, status
-                 FROM acompanhamentos_pedagogicos
-                 WHERE id_aluno = :id_aluno AND id_turma = :id_turma
-                 ORDER BY data_registro DESC, id_acompanhamento DESC'
+                '                SELECT ap.data_registro, ap.motivo, ap.observacao, ap.encaminhamento,
+                       ap.data_retorno, ap.status, t.serie_turma, t.ano_letivo
+                FROM acompanhamentos_pedagogicos ap
+                INNER JOIN turmas t ON t.id_turma = ap.id_turma
+                WHERE ap.id_aluno = :id_aluno
+                ORDER BY ap.data_registro DESC, ap.id_acompanhamento DESC'
             );
-            $stmt->execute([
-                ':id_aluno' => $idAluno,
-                ':id_turma' => (int) $aluno['id_turma']
-            ]);
+            $stmt->execute([':id_aluno' => $idAluno]);
             $aluno['acompanhamentos'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $stmt = $this->conn->prepare(
-                'SELECT cc.data_conselho, cc.bimestre, cc.pauta,
-                        cca.observacao, cca.encaminhamento
-                 FROM conselho_classe_alunos cca
-                 INNER JOIN conselhos_classe cc ON cc.id_conselho = cca.id_conselho
-                 WHERE cca.id_aluno = :id_aluno AND cc.id_turma = :id_turma
-                 ORDER BY cc.data_conselho DESC, cc.id_conselho DESC'
+                '                SELECT cc.data_conselho, cc.bimestre, cc.pauta,
+                       cca.observacao, cca.encaminhamento, t.serie_turma, t.ano_letivo
+                FROM conselho_classe_alunos cca
+                INNER JOIN conselhos_classe cc ON cc.id_conselho = cca.id_conselho
+                INNER JOIN turmas t ON t.id_turma = cc.id_turma
+                WHERE cca.id_aluno = :id_aluno
+                ORDER BY cc.data_conselho DESC, cc.id_conselho DESC'
             );
-            $stmt->execute([
-                ':id_aluno' => $idAluno,
-                ':id_turma' => (int) $aluno['id_turma']
-            ]);
+            $stmt->execute([':id_aluno' => $idAluno]);
             $aluno['deliberacoes_conselho'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             return $aluno;
@@ -483,7 +470,13 @@ class AlunoModel extends connect
                 return [];
             }
 
-            $sql = "SELECT id_aluno, valor FROM media_final WHERE id_turma = :id_turma AND bimestre = :bimestre AND disciplina = :disciplina";
+            $sql = "SELECT mf.id_aluno, mf.valor
+                    FROM media_final mf
+                    INNER JOIN alunos a ON a.id_aluno = mf.id_aluno
+                    WHERE mf.id_turma = :id_turma
+                      AND mf.bimestre = :bimestre
+                      AND mf.disciplina = :disciplina
+                      AND a.status_aluno = 'ativo'";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindValue(':id_turma', $id_turma, PDO::PARAM_INT);
             $stmt->bindValue(':bimestre', $bimestre, PDO::PARAM_INT);
@@ -521,18 +514,30 @@ class AlunoModel extends connect
                         t.id_turma,
                         t.nome_turma,
                         t.serie_turma,
-                        t.letra,
+                        c.letra,
                         t.sala_turma,
                         t.ano_letivo,
                         c.nome_curso,
-                        COUNT(DISTINCT a.id_aluno) AS total_alunos,
-                        COUNT(m.id) AS total_notas,
-                        SUM(CASE WHEN m.valor BETWEEN 0 AND 10 THEN 1 ELSE 0 END) AS notas_validas,
-                        SUM(CASE WHEN m.valor IS NOT NULL AND (m.valor < 0 OR m.valor > 10) THEN 1 ELSE 0 END) AS notas_invalidas,
-                        AVG(CASE WHEN m.valor BETWEEN 0 AND 10 THEN m.valor END) AS media_geral
+                        COALESCE(roster.total_alunos, 0) AS total_alunos,
+                        COALESCE(grades.total_notas, 0) AS total_notas,
+                        COALESCE(grades.notas_validas, 0) AS notas_validas,
+                        COALESCE(grades.notas_invalidas, 0) AS notas_invalidas,
+                        grades.media_geral
                     FROM turmas t
-                    LEFT JOIN alunos a ON a.id_turma = t.id_turma
-                    LEFT JOIN media_final m ON m.id_aluno = a.id_aluno AND m.valor IS NOT NULL
+                    LEFT JOIN (
+                        SELECT id_turma, COUNT(DISTINCT id_aluno) AS total_alunos
+                        FROM aluno_turma_historico
+                        GROUP BY id_turma
+                    ) roster ON roster.id_turma = t.id_turma
+                    LEFT JOIN (
+                        SELECT id_turma, COUNT(*) AS total_notas,
+                               SUM(CASE WHEN valor BETWEEN 0 AND 10 THEN 1 ELSE 0 END) AS notas_validas,
+                               SUM(CASE WHEN valor IS NOT NULL AND (valor < 0 OR valor > 10) THEN 1 ELSE 0 END) AS notas_invalidas,
+                               AVG(CASE WHEN valor BETWEEN 0 AND 10 THEN valor END) AS media_geral
+                        FROM media_final
+                        WHERE valor IS NOT NULL
+                        GROUP BY id_turma
+                    ) grades ON grades.id_turma = t.id_turma
                     LEFT JOIN cursos c ON t.id_curso = c.id_curso
                     WHERE t.id_turma = :id_turma
                     GROUP BY t.id_turma";

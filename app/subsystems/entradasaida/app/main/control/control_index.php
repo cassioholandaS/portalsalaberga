@@ -134,6 +134,7 @@ if (in_array($_POST['acao'] ?? '', ['preparar_saida_estagio_qr', 'registrar_said
         'registrar_atraso_qr',
         'listar_atrasos_hoje',
         'listar_ausencias_estagio',
+        'excluir_atraso_pendente_qr',
         'excluir_atraso_historico'
     ], true), true);
 
@@ -287,11 +288,6 @@ if (in_array($_POST['acao'] ?? '', ['preparar_saida_estagio_qr', 'registrar_said
     }
 
     if ($_POST['acao'] === 'excluir_atraso_historico') {
-        $tiposUsuario = $_SESSION['tipos_usuario_permitidos'] ?? [];
-        if (!is_array($tiposUsuario) || !in_array('Admin_entrada_saida', $tiposUsuario, true)) {
-            responderJson(['success' => false, 'message' => 'Seu perfil não tem acesso a esta função.'], 403);
-        }
-
         $idRegistro = filter_var($_POST['id_registro_entrada'] ?? null, FILTER_VALIDATE_INT);
         if (!$idRegistro || $idRegistro < 1) {
             responderJson(['success' => false, 'message' => 'O atraso selecionado é inválido.'], 400);
@@ -710,19 +706,31 @@ if (isset($_POST['entrada'])) {
     }
     $date_time = (new DateTimeImmutable())->format('Y-m-d H:i:s');
 
-    // Instancia o modelo e registra a entrada
-    $obj = new MainModel();
-    $result = $obj->registrarEntrada(
-        $nome_responsavel,
-        $nome_conducente,
-        $id_tipo_conducente,
-        $id_tipo_responsavel,
-        $date_time,
-        $id_motivo,
-        $justificativaAtraso,
-        $usuarioSessao,
-        $id_aluno
-    );
+    try {
+        $obj = new MainModel();
+        $result = $obj->registrarEntrada(
+            $nome_responsavel,
+            $nome_conducente,
+            $id_tipo_conducente,
+            $id_tipo_responsavel,
+            $date_time,
+            $id_motivo,
+            $justificativaAtraso,
+            $usuarioSessao,
+            $id_aluno
+        );
+    } catch (RuntimeException $e) {
+        error_log('Erro ao inicializar o registro de atraso: ' . $e->getMessage());
+        if ($respostaAssincrona) {
+            responderJson([
+                'success' => false,
+                'message' => 'Não foi possível conectar ao banco de dados. Verifique a configuração e tente novamente.'
+            ], 503);
+        }
+
+        header('Location: ../views/inicio.php?section=entrada&status=erro_interno');
+        exit();
+    }
 
     if ($respostaAssincrona) {
         $mensagensResultado = [
@@ -740,7 +748,8 @@ if (isset($_POST['entrada'])) {
         responderJson([
             'success' => $sucesso,
             'message' => $mensagensResultado[$result] ?? 'O registro não foi concluído. Tente novamente.',
-            'tipo_registro' => $result === 5 ? 'estagio' : 'entrada'
+            'tipo_registro' => $result === 5 ? 'estagio' : 'entrada',
+            'registro_id' => $result === 0 ? $obj->obterUltimoRegistroEntradaId() : null
         ], $sucesso ? 200 : (in_array($result, [3, 8], true) ? 500 : (in_array($result, [1, 6], true) ? 409 : 422)));
     }
 

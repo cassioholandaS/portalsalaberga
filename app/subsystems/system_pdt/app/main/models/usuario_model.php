@@ -18,6 +18,12 @@
             $this->table1 = 'usuarios';
         }
 
+        public function contar_usuarios(): int
+        {
+            $stmt = $this->conn->query("SELECT COUNT(*) FROM {$this->table1}");
+            return (int) $stmt->fetchColumn();
+        }
+
         // cadastrar usuário
         public function cadastrar($nome, $matricula, $email, $senha, $tipo)
         {

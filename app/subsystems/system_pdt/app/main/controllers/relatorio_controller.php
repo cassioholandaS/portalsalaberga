@@ -96,7 +96,7 @@ function resumoGeral()
         $stmt->execute($paramsProfessor);
         $totalTurmas = (int) ($stmt->fetchColumn() ?? 0);
 
-        $stmt = $conn->prepare("SELECT COUNT(DISTINCT a.id_aluno) as total FROM alunos a JOIN turmas t ON a.id_turma = t.id_turma WHERE 1=1 $filtroProfessor");
+        $stmt = $conn->prepare("SELECT COUNT(DISTINCT a.id_aluno) as total FROM alunos a JOIN turmas t ON a.id_turma = t.id_turma WHERE a.status_aluno = 'ativo' $filtroProfessor");
         $stmt->execute($paramsProfessor);
         $totalAlunos = (int) ($stmt->fetchColumn() ?? 0);
 
@@ -197,7 +197,7 @@ function listarTurmasRelatorio()
         $stmt = $conn->prepare(
             "SELECT t.id_turma, CONCAT(c.nome_curso, ' ', t.serie_turma, 'º ', c.letra) AS turma,
                     u.nome AS professor_nome, t.sala_turma AS sala, t.ano_letivo AS ano,
-                    (SELECT COUNT(*) FROM alunos a WHERE a.id_turma = t.id_turma) AS total_alunos,
+                    (SELECT COUNT(*) FROM aluno_turma_historico ath WHERE ath.id_turma = t.id_turma) AS total_alunos,
                     (SELECT COUNT(*) FROM ocorrencias o
                      WHERE o.id_turma = t.id_turma
                        AND o.data_ocorrencia BETWEEN :ocorrencia_inicio AND :ocorrencia_fim
@@ -325,7 +325,7 @@ function exportarRelatorio()
         $stmt = $conn->prepare(
             "SELECT CONCAT(c.nome_curso, ' ', t.serie_turma, 'º ', c.letra) AS turma,
                     u.nome AS professor_nome, t.sala_turma AS sala, t.ano_letivo AS ano,
-                    (SELECT COUNT(*) FROM alunos a WHERE a.id_turma = t.id_turma) AS total_alunos,
+                    (SELECT COUNT(*) FROM aluno_turma_historico ath WHERE ath.id_turma = t.id_turma) AS total_alunos,
                     (SELECT COUNT(*) FROM ocorrencias o
                      WHERE o.id_turma = t.id_turma
                        AND o.data_ocorrencia BETWEEN :export_ocorrencia_inicio AND :export_ocorrencia_fim
@@ -385,7 +385,7 @@ function exportarRelatorio()
         $stmt = $conn->prepare("SELECT COUNT(*) as total FROM turmas t WHERE 1=1 $filtroProfessor");
         $stmt->execute($paramsProfessor);
         $totalTurmas = (int) ($stmt->fetchColumn() ?? 0);
-        $stmt = $conn->prepare("SELECT COUNT(DISTINCT a.id_aluno) as total FROM alunos a JOIN turmas t ON a.id_turma = t.id_turma WHERE 1=1 $filtroProfessor");
+        $stmt = $conn->prepare("SELECT COUNT(DISTINCT a.id_aluno) as total FROM alunos a JOIN turmas t ON a.id_turma = t.id_turma WHERE a.status_aluno = 'ativo' $filtroProfessor");
         $stmt->execute($paramsProfessor);
         $totalAlunos = (int) ($stmt->fetchColumn() ?? 0);
         $stmt = $conn->prepare("SELECT COUNT(*) as total FROM ocorrencias o JOIN turmas t ON o.id_turma = t.id_turma WHERE o.deletado_em IS NULL AND o.data_ocorrencia BETWEEN :inicio AND :fim $filtroProfessor");
