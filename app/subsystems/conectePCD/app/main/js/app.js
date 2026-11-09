@@ -3,6 +3,7 @@ let students = [], events = [], filtered = [];
 let abrirPerfilApoioAoCarregar = false;
 let avaliacaoDados = { aluno: null, quesitos: [], avaliacoes: [] };
 let avaliacaoModalAtual = null;
+let avaliacaoFrequenciaRequest = 0;
 function carregarAlunos() {
   fetch('controllers/listar_alunos.php')
     .then(async response => {
@@ -554,8 +555,8 @@ function avisarAlunoFaltou() {
 function montarCardAvaliacao(data, periodo, historico = false) {
   const registro = obterAvaliacao(data, periodo);
   const faltaRegistrada = Number(obterFrequenciaApoio(data)?.presente) === 0;
-  const editavel = podeEditarAvaliacao(data, periodo);
   const dataAtual = dataLocalAvaliacao();
+  const editavel = !historico && data < dataAtual ? true : podeEditarAvaliacao(data, periodo);
   const ontem = new Date(`${dataAtual}T12:00:00`);
   ontem.setDate(ontem.getDate() - 1);
   const dataAnterior = ontem.toISOString().slice(0, 10);
@@ -798,6 +799,12 @@ function renderizarPaginaAvaliacao() {
   const historico = document.getElementById('avaliacao-historico');
   inicializarCalendarioAvaliacao();
   const dataAtual = dataLocalAvaliacao();
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (seletorData) {
+    seletorData.max = dataAtual;
+    if (!seletorData.value || seletorData.value > dataAtual) seletorData.value = dataAtual;
+  }
+  const dataSelecionada = seletorData?.value || dataAtual;
   const aluno = avaliacaoDados.aluno;
   const avatar = document.getElementById('avaliacao-aluno-avatar');
   const nome = document.getElementById('avaliacao-aluno-nome');
@@ -813,8 +820,6 @@ function renderizarPaginaAvaliacao() {
   if (nascimento) nascimento.textContent = aluno?.data_nascimento ? formatDateBR(aluno.data_nascimento) : '—';
   const apoio = document.getElementById('avaliacao-aluno-apoio');
   if (apoio) apoio.textContent = aluno?.apoio_nome || '—';
-  const dataEl = document.getElementById('avaliacao-data-atual');
-  if (dataEl) dataEl.textContent = formatDateBR(dataAtual);
   renderizarFrequenciaApoio();
   if (!aluno) {
     if (dia) dia.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-person-x"></i><span style="font-size:13px">Nenhum aluno vinculado ao seu perfil.</span></div>';
@@ -826,7 +831,7 @@ function renderizarPaginaAvaliacao() {
     if (historico) renderizarHistoricoAvaliacao();
     return;
   }
-  if (dia) dia.innerHTML = ['manha', 'tarde'].map(periodo => montarCardAvaliacao(dataAtual, periodo)).join('');
+  if (dia) dia.innerHTML = ['manha', 'tarde'].map(periodo => montarCardAvaliacao(dataSelecionada, periodo)).join('');
   if (historico) renderizarHistoricoAvaliacao();
 }
 
@@ -845,6 +850,11 @@ window.salvarFrequenciaApoio = salvarFrequenciaApoio;
 function carregarPaginaAvaliacao() {
   const alvo = document.getElementById('avaliacao-dia');
   if (!alvo || window.usuarioTipo !== 'apoio') return;
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (seletorData) {
+    seletorData.max = dataLocalAvaliacao();
+    if (!seletorData.value || seletorData.value > dataLocalAvaliacao()) seletorData.value = dataLocalAvaliacao();
+  }
   alvo.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-hourglass-split"></i><span style="font-size:13px">Carregando avaliações...</span></div>';
   avaliacaoDados.frequenciaErro = '';
   fetch('controllers/avaliacao.php')
@@ -853,23 +863,47 @@ function carregarPaginaAvaliacao() {
       if (!ok || !data.success) throw new Error(data.message || 'Não foi possível carregar as avaliações.');
       avaliacaoDados = data;
       avaliacaoDados.frequencia = null;
-      if (data.aluno?.id) {
-        try {
-          const parametros = new URLSearchParams({ aluno_id: data.aluno.id, data: dataLocalAvaliacao() });
-          const resposta = await fetch(`controllers/frequencia_apoio.php?${parametros.toString()}`);
-          const frequencia = await resposta.json();
-          if (!resposta.ok || !frequencia.success) throw new Error(frequencia.message || 'Não foi possível carregar a frequência.');
-          avaliacaoDados.frequencia = frequencia.frequencia;
-          avaliacaoDados.frequencias = Array.isArray(avaliacaoDados.frequencias) ? avaliacaoDados.frequencias : [];
-          avaliacaoDados.frequencias = avaliacaoDados.frequencias.filter(item => item.data !== dataLocalAvaliacao());
-          if (frequencia.frequencia) avaliacaoDados.frequencias.push(frequencia.frequencia);
-        } catch (error) {
-          avaliacaoDados.frequenciaErro = error.message || 'Não foi possível carregar a frequência.';
-        }
-      }
+      await carregarFrequenciaDataAvaliacao(seletorData?.value || dataLocalAvaliacao());
       renderizarPaginaAvaliacao();
     })
     .catch(error => { alvo.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-exclamation-circle"></i><span style="font-size:13px">${escaparUsuario(error.message)}</span></div>`; });
+}
+
+async function carregarFrequenciaDataAvaliacao(data) {
+  const requestId = ++avaliacaoFrequenciaRequest;
+  avaliacaoDados.frequencias = Array.isArray(avaliacaoDados.frequencias) ? avaliacaoDados.frequencias : [];
+  avaliacaoDados.frequencia = obterFrequenciaApoio(data);
+  avaliacaoDados.frequenciaErro = '';
+  renderizarFrequenciaApoio();
+  if (!avaliacaoDados.aluno?.id) return;
+
+  try {
+    const parametros = new URLSearchParams({ aluno_id: avaliacaoDados.aluno.id, data });
+    const resposta = await fetch(`controllers/frequencia_apoio.php?${parametros.toString()}`);
+    const resultado = await resposta.json();
+    if (!resposta.ok || !resultado.success) throw new Error(resultado.message || 'Não foi possível carregar a frequência.');
+    if (requestId !== avaliacaoFrequenciaRequest) return;
+    avaliacaoDados.frequencias = avaliacaoDados.frequencias.filter(item => item.data !== data);
+    if (resultado.frequencia) avaliacaoDados.frequencias.push(resultado.frequencia);
+    avaliacaoDados.frequencia = resultado.frequencia;
+  } catch (error) {
+    if (requestId !== avaliacaoFrequenciaRequest) return;
+    avaliacaoDados.frequenciaErro = error.message || 'Não foi possível carregar a frequência.';
+  }
+  renderizarFrequenciaApoio();
+}
+
+function alterarDataAvaliacao() {
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (!seletorData) return;
+  const hoje = dataLocalAvaliacao();
+  seletorData.max = hoje;
+  if (!seletorData.value || seletorData.value > hoje) {
+    seletorData.value = hoje;
+    toast('Não é possível selecionar uma data futura.', 'bi-exclamation-triangle', 'amber');
+  }
+  carregarFrequenciaDataAvaliacao(seletorData.value);
+  renderizarPaginaAvaliacao();
 }
 
 function renderizarFrequenciaApoio() {
@@ -912,7 +946,7 @@ function salvarFrequenciaApoio() {
   fetch('controllers/frequencia_apoio.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ aluno_id: avaliacaoDados.aluno.id, data: dataLocalAvaliacao(), presente: Number(presente) })
+    body: JSON.stringify({ aluno_id: avaliacaoDados.aluno.id, data: document.getElementById('avaliacao-data-selecionada')?.value || dataLocalAvaliacao(), presente: Number(presente) })
   })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
@@ -935,7 +969,7 @@ function salvarFrequenciaApoio() {
 
 function abrirAvaliacao(data, periodo, modo) {
   const registro = obterAvaliacao(data, periodo);
-  if (modo === 'editar' && !podeEditarAvaliacao(data, periodo)) modo = 'visualizar';
+  if (modo === 'editar' && data === dataLocalAvaliacao() && !podeEditarAvaliacao(data, periodo)) modo = 'visualizar';
   const titulo = document.getElementById('avaliacao-modal-titulo');
   const meta = document.getElementById('avaliacao-modal-meta');
   const quesitos = document.getElementById('avaliacao-modal-quesitos');
@@ -1007,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('evolucao-inicio')?.addEventListener('change', renderRelatorioEvolucao);
   document.getElementById('evolucao-fim')?.addEventListener('change', renderRelatorioEvolucao);
+  document.getElementById('avaliacao-data-selecionada')?.addEventListener('change', alterarDataAvaliacao);
 });
 
   function carregarEvolucaoDashboard(alunos) {

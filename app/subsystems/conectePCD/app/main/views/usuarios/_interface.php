@@ -349,6 +349,18 @@
       .avaliacao-conteudo { min-width:0; }
       .avaliacao-cabecalho { padding:0 0 8px; margin:0; border-left:0; }
       .avaliacao-cabecalho-data { flex-shrink:0; }
+      .avaliacao-data-seletor {
+        min-width:150px;
+        padding:5px 8px;
+        border:1px solid var(--border);
+        border-radius:8px;
+        background:var(--surface);
+        color:var(--text);
+        font:inherit;
+        font-size:12px;
+        font-weight:700;
+      }
+      .avaliacao-data-seletor:focus-visible { outline:3px solid rgba(0,166,81,.22); outline-offset:2px; }
       .avaliacao-dia-secao {
         overflow:hidden;
         padding:20px;
@@ -1318,11 +1330,55 @@
       html[data-theme="dark"] .toast { right:12px; bottom:76px; }
       .plan-document-modal { z-index:10000 !important; padding-left:0; }
     }
+    #avaliacao-modal.modal-bg {
+      z-index:301;
+      inset:16px 0 calc(3.5rem + 16px);
+      padding:0 16px 0 274px;
+      overflow:hidden;
+    }
+    body.sidebar-collapsed #avaliacao-modal.modal-bg { padding-left:16px; }
+    #avaliacao-modal .avaliacao-modal-box {
+      display:flex;
+      flex-direction:column;
+      width:min(600px, calc(100vw - 290px));
+      height:min(660px, 100%);
+      max-height:100% !important;
+      margin:0;
+      overflow:hidden !important;
+    }
+    #avaliacao-modal .avaliacao-modal-header,
+    #avaliacao-modal .avaliacao-modal-footer { flex:0 0 auto; }
+    #avaliacao-modal .avaliacao-modal-conteudo {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto !important;
+      overscroll-behavior-y:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(7,91,45,.28) transparent;
+    }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar { width:8px; }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar-thumb { background:rgba(7,91,45,.22); border-radius:8px; }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar-track { background:transparent; }
+    @media (max-width:768px) {
+      #avaliacao-modal.modal-bg {
+        inset:10px 0 calc(4.25rem + 12px);
+        padding:10px !important;
+      }
+      #avaliacao-modal .avaliacao-modal-box {
+        width:min(600px, 100%);
+        height:100%;
+        max-width:600px !important;
+        padding:14px !important;
+      }
+    }
   </style>
 </head>
 <body style="display:flex;height:100vh">
 <?php
 $nomeUsuario = $_SESSION['nome'] ?? 'Usuário';
+$partesNomeUsuario = preg_split('/\s+/u', trim($nomeUsuario), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+$nomeExibicaoUsuario = implode(' ', array_slice($partesNomeUsuario, 0, 2));
+if ($nomeExibicaoUsuario === '') $nomeExibicaoUsuario = 'Usuário';
 $tipoUsuario = strtolower(trim($_SESSION['tipo'] ?? 'responsavel'));
 $rotulosUsuario = [
   'master' => 'Master do Sistema',
@@ -1421,7 +1477,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
           <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
         </span>
         <span class="sidebar-profile-copy">
-          <span class="sidebar-profile-name"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="sidebar-profile-name" title="<?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($nomeExibicaoUsuario, ENT_QUOTES, 'UTF-8') ?></span>
           <span class="sidebar-profile-role"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></span>
         </span>
       </button>
@@ -1607,7 +1663,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <div class="card avaliacao-dia-secao">
           <div class="avaliacao-cabecalho">
             <div class="avaliacao-cabecalho-titulo"><i class="bi bi-clipboard2-check"></i><span>Avaliação do dia</span></div>
-            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><span id="avaliacao-data-atual">Hoje</span></div>
+            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><input type="date" id="avaliacao-data-selecionada" class="avaliacao-data-seletor" aria-label="Selecionar data da avaliação"></div>
           </div>
 
           <div id="avaliacao-dia" class="avaliacao-dia-lista avaliacao-periodos">
