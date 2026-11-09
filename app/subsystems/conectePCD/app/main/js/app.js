@@ -890,7 +890,7 @@ async function carregarFrequenciaDataAvaliacao(data) {
     if (requestId !== avaliacaoFrequenciaRequest) return;
     avaliacaoDados.frequenciaErro = error.message || 'Não foi possível carregar a frequência.';
   }
-  renderizarFrequenciaApoio();
+  renderizarPaginaAvaliacao();
 }
 
 function alterarDataAvaliacao() {

@@ -1663,7 +1663,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <div class="card avaliacao-dia-secao">
           <div class="avaliacao-cabecalho">
             <div class="avaliacao-cabecalho-titulo"><i class="bi bi-clipboard2-check"></i><span>Avaliação do dia</span></div>
-            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><input type="date" id="avaliacao-data-selecionada" class="avaliacao-data-seletor" aria-label="Selecionar data da avaliação"></div>
+            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><input type="date" id="avaliacao-data-selecionada" class="avaliacao-data-seletor" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>" aria-label="Selecionar data da avaliação"></div>
           </div>
 
           <div id="avaliacao-dia" class="avaliacao-dia-lista avaliacao-periodos">
@@ -2371,7 +2371,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-laudo-upload-1">
+<script src="js/app.js?v=20261109-avaliacao-data-2">
 
 </script>
 </body>
