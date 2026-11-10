@@ -6690,13 +6690,8 @@ $totalStudents = $selectModel->count_alunos_total();
             transition: transform 220ms ease;
         }
 
-        #sidebar-collapse-toggle:hover i,
         body.library-sidebar-collapsed #sidebar-collapse-toggle i {
             transform: rotate(180deg);
-        }
-
-        body.library-sidebar-collapsed #sidebar-collapse-toggle:hover i {
-            transform: rotate(0deg);
         }
 
         @media (max-width: 1023px) {

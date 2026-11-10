@@ -123,6 +123,7 @@
             font-family: 'Nunito', sans-serif;
             background: linear-gradient(135deg, #F7F3E9 0%, #E8F4F8 100%);
         }
+        
 
         /* Animações Studio Ghibli */
         @keyframes float {
@@ -915,6 +916,13 @@
         .swiper-slide-shadow-left,
         .swiper-slide-shadow-right {
             background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
+        }
+
+        @media (min-width: 640px) {
+            .developers-title {
+                position: relative;
+                left: -50px;
+            }
         }
     </style>
 </head>
@@ -1732,35 +1740,58 @@
                     </ul>
                 </div>
 
-                <div class="md:col-span-3 space-y-4">
-                    <h3 class="text-xl font-semibold font-ghibli text-ghibli-sage">Desenvolvedores</h3>
-                    <ul class="space-y-3">
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Otavio Menezes</span>
-                        </li>
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Matheus Felix</span>
-                        </li>
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Lavosier Nascimento</span>
-                        </li>
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Roger Cavalcante</span>
-                        </li>
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Pedro Uchôa</span>
-                        </li>
-                    </ul>
+                <div class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
+                    <h3 class="developers-title sm:col-span-2 text-center text-xl font-semibold font-ghibli text-ghibli-sage">Desenvolvedores</h3>
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-semibold font-ghibli text-gray-400">AreaDev 1</h4>
+                        <ul class="space-y-3">
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Otavio Menezes</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Matheus Felix</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Lavosier Nascimento</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Roger Cavalcante</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Pedro Uchôa</span>
+                            </li>
+                        </ul>
+                    </div>
 
-                    <h3 class="text-xl font-semibold font-ghibli text-ghibli-sage mt-8">Colaboradores</h3>
-                    <ul class="space-y-3">
-                        <li><span class="text-gray-400 flex items-center">
-                                <i class="fas fa-heart text-sm mr-3 text-ghibli-peach"></i>Jefferson Castro</span>
-                        </li>
-                    </ul>
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-semibold font-ghibli text-gray-400">AreaDev 2</h4>
+                        <ul class="space-y-3">
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Kauan Cristian</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Cassio Holanda</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Abraão Lyncoln</span>
+                            </li>
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-code text-sm mr-3 text-ghibli-peach"></i>Armando Filho</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="sm:col-span-2 space-y-4">
+                        <h3 class="text-xl font-semibold font-ghibli text-ghibli-sage">Colaboradores</h3>
+                        <ul class="space-y-3">
+                            <li><span class="text-gray-400 flex items-center whitespace-nowrap">
+                                    <i class="fas fa-paint-brush text-sm mr-3 text-ghibli-peach"></i>Jefferson Castro</span>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <div class="md:col-span-2 flex flex-col items-center justify-center space-y-6">
+                <div class="md:col-span-1 flex flex-col items-center justify-center space-y-6">
                     <div class="w-20 h-20 bg-ghibli-gradient rounded-full flex items-center justify-center animate-float magical-glow">
                         <i class="fas fa-magic text-white text-2xl"></i>
                     </div>
