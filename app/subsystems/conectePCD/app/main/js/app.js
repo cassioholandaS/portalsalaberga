@@ -1680,16 +1680,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!target) return;
     target.style.display = 'block';
     target.innerHTML = '<div style="padding:14px 0;color:var(--text-muted);font-size:12px">Carregando PAEE...</div>';
-    fetch(`controllers/listar_paee.php?aluno_id=${id}`)
+    fetch(`controllers/recurso_planos.php?action=paees_aluno&aluno_id=${id}`, { cache: 'no-store' })
       .then(r => r.json())
-      .then(items => {
-        const registros = Array.isArray(items) && items.length
-          ? items
+      .then(data => {
+        if (!data.success) throw new Error(data.message || 'Não foi possível carregar os documentos PAEE.');
+        const registros = Array.isArray(data.registros) && data.registros.length
+          ? data.registros
           : [{ id: 0, nome_documento: 'PAEE', sem_informacoes: true }];
         target.innerHTML = registros.map(item => renderCartaoDocumentoPerfil('paee', item)).join('');
       })
-      .catch(() => {
-        target.innerHTML = '<div class="empty" style="padding:20px 0"><span style="font-size:12px">Erro ao carregar PAEE.</span></div>';
+      .catch(error => {
+        target.innerHTML = `<div class="empty" style="padding:20px 0"><span style="font-size:12px">${escaparPlano(error.message || 'Erro ao carregar PAEE.')}</span></div>`;
       });
   }
 

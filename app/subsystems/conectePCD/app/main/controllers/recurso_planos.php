@@ -22,6 +22,10 @@ function respostaPlano(array $dados, int $status = 200): never
     exit;
 }
 function inteiro($valor): int { return filter_var($valor, FILTER_VALIDATE_INT) !== false ? (int) $valor : 0; }
+function esquemaPlanoDesatualizado(PDOException $e): bool
+{
+    return in_array((string) $e->getCode(), ['42S02', '42S22'], true);
+}
 
 try {
     if ($action === 'desassociar_disciplina') {
@@ -97,30 +101,43 @@ try {
         $alunoStmt->execute([':aluno_id' => $alunoId]);
         $aluno = $alunoStmt->fetch(PDO::FETCH_ASSOC);
         if (!$aluno) respostaPlano(['success' => false, 'message' => 'Aluno não encontrado.'], 404);
-        $stmt = $pdo->prepare("SELECT p.*, d.nome AS disciplina_nome
-            FROM pei p
-            LEFT JOIN disciplinas d ON d.id = p.disciplina_id
-            WHERE p.aluno_id = :aluno_id
-            ORDER BY p.data_elaboracao DESC, p.id DESC");
-        $stmt->execute([':aluno_id' => $alunoId]);
-        $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $disciplinasStmt = $pdo->prepare("SELECT d.id, d.nome
-            FROM alunos_disciplinas ad
-            INNER JOIN disciplinas d ON d.id = ad.disciplina_id
-            WHERE ad.aluno_id = :aluno_id
-              AND ad.ativa = 1
-              AND NOT EXISTS (
-                  SELECT 1
-                  FROM pei p
-                  WHERE p.aluno_id = ad.aluno_id
-                    AND (
-                        p.disciplina_id = ad.disciplina_id
-                        OR (p.disciplina_id IS NULL AND LOWER(TRIM(p.nome_documento)) = LOWER(TRIM(d.nome)))
-                    )
-              )
-            ORDER BY d.nome");
-        $disciplinasStmt->execute([':aluno_id' => $alunoId]);
-        foreach ($disciplinasStmt->fetchAll(PDO::FETCH_ASSOC) as $disciplina) {
+        try {
+            $stmt = $pdo->prepare("SELECT p.*, d.nome AS disciplina_nome
+                FROM pei p
+                LEFT JOIN disciplinas d ON d.id = p.disciplina_id
+                WHERE p.aluno_id = :aluno_id
+                ORDER BY p.data_elaboracao DESC, p.id DESC");
+            $stmt->execute([':aluno_id' => $alunoId]);
+            $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $disciplinasStmt = $pdo->prepare("SELECT d.id, d.nome
+                FROM alunos_disciplinas ad
+                INNER JOIN disciplinas d ON d.id = ad.disciplina_id
+                WHERE ad.aluno_id = :aluno_id
+                  AND ad.ativa = 1
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM pei p
+                      WHERE p.aluno_id = ad.aluno_id
+                        AND (
+                            p.disciplina_id = ad.disciplina_id
+                            OR (p.disciplina_id IS NULL AND LOWER(TRIM(p.nome_documento)) = LOWER(TRIM(d.nome)))
+                        )
+                  )
+                ORDER BY d.nome");
+            $disciplinasStmt->execute([':aluno_id' => $alunoId]);
+            $disciplinasSemPei = $disciplinasStmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if (!esquemaPlanoDesatualizado($e)) {
+                throw $e;
+            }
+
+            error_log('recurso_planos: usando consulta PEI compatível com esquema legado: ' . $e->getMessage());
+            $stmt = $pdo->prepare('SELECT * FROM pei WHERE aluno_id = :aluno_id ORDER BY data_elaboracao DESC, id DESC');
+            $stmt->execute([':aluno_id' => $alunoId]);
+            $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $disciplinasSemPei = [];
+        }
+        foreach ($disciplinasSemPei as $disciplina) {
             $registros[] = [
                 'id' => 0,
                 'aluno_id' => $alunoId,
@@ -149,11 +166,7 @@ try {
         $alunoStmt->execute([':aluno_id' => $alunoId]);
         $aluno = $alunoStmt->fetch(PDO::FETCH_ASSOC);
         if (!$aluno) respostaPlano(['success' => false, 'message' => 'Aluno não encontrado.'], 404);
-        $stmt = $pdo->prepare("SELECT p.id, p.aluno_id, p.disciplina_id, p.nome_documento,
-            p.data_elaboracao, p.responsavel_preenchimento, p.data_atendimento, p.profissional_responsavel
-            FROM paee p
-            WHERE p.aluno_id = :aluno_id
-            ORDER BY COALESCE(p.data_elaboracao, p.data_atendimento) DESC, p.id DESC");
+        $stmt = $pdo->prepare('SELECT * FROM paee WHERE aluno_id = :aluno_id ORDER BY id DESC');
         $stmt->execute([':aluno_id' => $alunoId]);
         respostaPlano(['success' => true, 'aluno' => $aluno, 'registros' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
     }
