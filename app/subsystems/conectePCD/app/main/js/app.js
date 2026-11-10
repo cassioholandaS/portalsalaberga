@@ -4,6 +4,8 @@ let abrirPerfilApoioAoCarregar = false;
 let avaliacaoDados = { aluno: null, quesitos: [], avaliacoes: [] };
 let avaliacaoModalAtual = null;
 let avaliacaoFrequenciaRequest = 0;
+let avaliacaoHistoricoPagina = 1;
+const avaliacaoHistoricoItensPorPagina = 2;
 function carregarAlunos() {
   fetch('controllers/listar_alunos.php')
     .then(async response => {
@@ -366,6 +368,68 @@ function observarRedimensionamentoGrafico() {
   evolucaoGraficoResizeObserver.observe(svg);
 }
 
+function atualizarControleGraficoExpandido() {
+  const stage = document.getElementById('evolucao-grafico-mobile-stage');
+  const botao = document.getElementById('evolucao-grafico-expandir');
+  if (!stage || !botao) return;
+  const expandido = document.fullscreenElement === stage || stage.classList.contains('is-expanded-fallback');
+  const icone = botao.querySelector('i');
+  const texto = botao.querySelector('span');
+  if (icone) icone.className = `bi ${expandido ? 'bi-fullscreen-exit' : 'bi-arrows-fullscreen'}`;
+  if (texto) texto.textContent = expandido ? 'Voltar ao relatório' : 'Expandir gráfico';
+  botao.setAttribute('aria-pressed', String(expandido));
+  botao.setAttribute('aria-label', expandido ? 'Fechar gráfico expandido' : 'Expandir gráfico para tela cheia');
+}
+
+async function alternarGraficoExpandido() {
+  const stage = document.getElementById('evolucao-grafico-mobile-stage');
+  if (!stage || window.innerWidth > 768) return;
+  const expandido = document.fullscreenElement === stage || stage.classList.contains('is-expanded-fallback');
+  if (expandido) {
+    if (document.fullscreenElement === stage) {
+      try {
+        await document.exitFullscreen();
+      } catch (error) {
+        console.error('Não foi possível fechar o gráfico em tela cheia:', error);
+        return;
+      }
+    } else {
+      stage.classList.remove('is-expanded-fallback', 'is-landscape-fallback');
+      document.documentElement.classList.remove('chart-expanded');
+      document.body.classList.remove('chart-expanded');
+      if (screen.orientation && typeof screen.orientation.unlock === 'function') screen.orientation.unlock();
+    }
+    atualizarControleGraficoExpandido();
+    return;
+  }
+
+  document.documentElement.classList.add('chart-expanded');
+  document.body.classList.add('chart-expanded');
+  try {
+    if (typeof stage.requestFullscreen === 'function') {
+      await stage.requestFullscreen();
+    } else {
+      stage.classList.add('is-expanded-fallback');
+    }
+  } catch (error) {
+    stage.classList.add('is-expanded-fallback');
+    console.info('Tela cheia não disponível; usando expansão visual do gráfico.', error);
+  }
+
+  if (screen.orientation && typeof screen.orientation.lock === 'function') {
+    try {
+      await screen.orientation.lock('landscape');
+      stage.classList.remove('is-landscape-fallback');
+    } catch (error) {
+      stage.classList.add('is-expanded-fallback', 'is-landscape-fallback');
+      console.info('Orientação paisagem não disponível; girando o gráfico na tela.', error);
+    }
+  } else {
+    stage.classList.add('is-expanded-fallback', 'is-landscape-fallback');
+  }
+  atualizarControleGraficoExpandido();
+}
+
 function desenharGraficoEvolucao(registros) {
   const svg = document.getElementById('evolucao-grafico');
   const legenda = document.getElementById('evolucao-legenda');
@@ -712,6 +776,7 @@ function inicializarCalendarioAvaliacao() {
       botao.addEventListener('click', (event) => {
         const dataSelecionada = event.currentTarget.dataset.avaliacaoSelecionar;
         input.value = dataSelecionada;
+        avaliacaoHistoricoPagina = 1;
         atualizarTextoBotao();
         popup.classList.remove('is-open');
         trigger.setAttribute('aria-expanded', 'false');
@@ -728,6 +793,7 @@ function inicializarCalendarioAvaliacao() {
     popup.querySelectorAll('[data-avaliacao-limpar]').forEach(botao => {
       botao.addEventListener('click', () => {
         input.value = '';
+        avaliacaoHistoricoPagina = 1;
         atualizarTextoBotao();
         popup.classList.remove('is-open');
         trigger.setAttribute('aria-expanded', 'false');
@@ -770,6 +836,15 @@ function limparFiltroHistoricoAvaliacao() {
     trigger.setAttribute('aria-expanded', 'false');
   }
   if (popup) popup.classList.remove('is-open');
+  avaliacaoHistoricoPagina = 1;
+  renderizarHistoricoAvaliacao();
+}
+
+function mudarPaginaHistoricoAvaliacao(direcao) {
+  const container = document.getElementById('avaliacao-historico');
+  if (!container) return;
+  const paginas = Number(container.dataset.totalPaginas || 1);
+  avaliacaoHistoricoPagina = Math.min(Math.max(1, avaliacaoHistoricoPagina + direcao), paginas);
   renderizarHistoricoAvaliacao();
 }
 
@@ -794,11 +869,17 @@ function renderizarHistoricoAvaliacao() {
   }
 
   if (!datas.length) {
+    avaliacaoHistoricoPagina = 1;
+    container.dataset.totalPaginas = '1';
     container.innerHTML = '<div class="empty" style="padding:30px 0"><i class="bi bi-calendar2-x"></i><span style="font-size:13px">Nenhuma avaliação ou frequência registrada</span></div>';
     return;
   }
 
-  container.innerHTML = datas.map(data => {
+  const totalPaginas = Math.ceil(datas.length / avaliacaoHistoricoItensPorPagina);
+  avaliacaoHistoricoPagina = Math.min(Math.max(1, avaliacaoHistoricoPagina), totalPaginas);
+  const inicio = (avaliacaoHistoricoPagina - 1) * avaliacaoHistoricoItensPorPagina;
+  const datasPagina = datas.slice(inicio, inicio + avaliacaoHistoricoItensPorPagina);
+  const historico = datasPagina.map(data => {
     const frequencia = obterFrequenciaApoio(data);
     const falta = Number(frequencia?.presente) === 0;
     const statusFrequencia = frequencia
@@ -807,6 +888,14 @@ function renderizarHistoricoAvaliacao() {
     const periodos = falta || !avaliacaoDados.quesitos?.length ? '' : `<div class="avaliacao-historico-periodos">${['manha', 'tarde'].map(periodo => montarCardAvaliacao(data, periodo, true)).join('')}</div>`;
     return `<div class="avaliacao-historico-dia"><div class="avaliacao-historico-data">${formatDateBR(data)}${statusFrequencia}</div>${periodos}</div>`;
   }).join('');
+  const paginacao = totalPaginas > 1
+    ? `<div class="avaliacao-historico-paginacao"><button type="button" class="btn-g" data-avaliacao-historico-pagina="-1" ${avaliacaoHistoricoPagina === 1 ? 'disabled' : ''}><i class="bi bi-chevron-left"></i> Anterior</button><span aria-live="polite">Página ${avaliacaoHistoricoPagina} de ${totalPaginas}</span><button type="button" class="btn-g" data-avaliacao-historico-pagina="1" ${avaliacaoHistoricoPagina === totalPaginas ? 'disabled' : ''}>Próxima <i class="bi bi-chevron-right"></i></button></div>`
+    : '';
+  container.dataset.totalPaginas = String(totalPaginas);
+  container.innerHTML = historico + paginacao;
+  container.querySelectorAll('[data-avaliacao-historico-pagina]').forEach(botao => {
+    botao.addEventListener('click', () => mudarPaginaHistoricoAvaliacao(Number(botao.dataset.avaliacaoHistoricoPagina)));
+  });
 }
 
 function renderizarPresencaAvaliacao() {
@@ -903,6 +992,7 @@ function renderizarPaginaAvaliacao() {
 window.inicializarCalendarioAvaliacao = inicializarCalendarioAvaliacao;
 window.limparFiltroHistoricoAvaliacao = limparFiltroHistoricoAvaliacao;
 window.renderizarHistoricoAvaliacao = renderizarHistoricoAvaliacao;
+window.mudarPaginaHistoricoAvaliacao = mudarPaginaHistoricoAvaliacao;
 window.renderizarPaginaAvaliacao = renderizarPaginaAvaliacao;
 window.carregarPaginaAvaliacao = carregarPaginaAvaliacao;
 window.abrirAvaliacao = abrirAvaliacao;
@@ -1095,6 +1185,17 @@ function excluirAvaliacaoAtual(registroId, periodo) {
 
 document.addEventListener('DOMContentLoaded', () => {
   inicializarModoEscuro();
+  document.getElementById('evolucao-grafico-expandir')?.addEventListener('click', alternarGraficoExpandido);
+  document.addEventListener('fullscreenchange', () => {
+    const stage = document.getElementById('evolucao-grafico-mobile-stage');
+    if (document.fullscreenElement !== stage && stage) {
+      stage.classList.remove('is-expanded-fallback', 'is-landscape-fallback');
+      document.documentElement.classList.remove('chart-expanded');
+      document.body.classList.remove('chart-expanded');
+      if (screen.orientation && typeof screen.orientation.unlock === 'function') screen.orientation.unlock();
+    }
+    atualizarControleGraficoExpandido();
+  });
   document.getElementById('evolucao-aluno')?.addEventListener('change', () => { atualizarQuesitosEvolucao(); renderRelatorioEvolucao(); });
   document.getElementById('evolucao-quesito')?.addEventListener('change', renderRelatorioEvolucao);
   document.querySelectorAll('input[name="evolucao-periodo"]').forEach(radio => {

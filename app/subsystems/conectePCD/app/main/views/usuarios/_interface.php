@@ -535,6 +535,9 @@
       .avaliacao-historico-data { display:flex; align-items:center; gap:10px; margin-bottom:10px; color:var(--c1); font-size:13px; font-weight:800; }
       .avaliacao-historico-data .avaliacao-status { margin-top:0; padding:4px 9px; border:1px solid currentColor; border-radius:999px; font-size:10px; }
       .avaliacao-historico-data::after { content:''; height:1px; flex:1; background:var(--border); }
+      .avaliacao-historico-paginacao { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; }
+      .avaliacao-historico-paginacao > span { color:var(--text-muted); font-size:12px; }
+      .avaliacao-historico-paginacao .btn-g { min-height:34px; padding:7px 11px; font-size:11px; }
       .avaliacao-historico-topo { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:16px; }
       .avaliacao-historico-titulo { display:flex; align-items:center; gap:8px; min-width:0; }
       .avaliacao-historico-filtro { display:flex; align-items:center; gap:6px; flex-shrink:0; }
@@ -822,6 +825,8 @@
     .evolucao-grafico-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; align-items:stretch; min-width:0; }
     .evolucao-grafico-layout > div:first-child { min-width:0; }
     .evolucao-grafico-box { display:flex; flex-direction:column; width:100%; height:400px; min-width:0; max-width:none; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
+    .evolucao-grafico-mobile-stage { min-width:0; }
+    .evolucao-grafico-expandir { display:none; }
     .evolucao-grafico-titulo { color:#59675e; font-size:19px; font-weight:500; text-align:center; margin-bottom:4px; }
     html[data-theme="dark"] .evolucao-grafico-titulo { color:#f3f4f6; font-weight:600; }
     .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
@@ -1179,6 +1184,69 @@
       .cal-cell { min-height:64px; padding:4px; }
       .cal-cell > * { max-width:100%; }
       .ev-chip { font-size:9px; }
+      .evolucao-grafico-mobile-stage { position:relative; }
+      .evolucao-grafico-expandir {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:7px;
+        width:100%;
+        min-height:40px;
+        margin-top:8px;
+        padding:8px 12px;
+        border:1px solid rgba(0,143,69,.28);
+        border-radius:10px;
+        background:rgba(0,166,81,.08);
+        color:var(--c1);
+        font:600 12px 'Poppins',sans-serif;
+        cursor:pointer;
+      }
+      .evolucao-grafico-mobile-stage:fullscreen,
+      .evolucao-grafico-mobile-stage.is-expanded-fallback {
+        position:fixed;
+        inset:0;
+        z-index:10000;
+        display:flex;
+        width:100vw;
+        height:100dvh;
+        max-width:none;
+        flex-direction:column;
+        justify-content:center;
+        gap:8px;
+        padding:12px;
+        background:var(--bg);
+      }
+      .evolucao-grafico-mobile-stage:fullscreen .evolucao-grafico-box,
+      .evolucao-grafico-mobile-stage.is-expanded-fallback .evolucao-grafico-box {
+        flex:1 1 auto;
+        width:100%;
+        height:auto;
+        min-height:0;
+      }
+      .evolucao-grafico-mobile-stage:fullscreen .evolucao-grafico-expandir,
+      .evolucao-grafico-mobile-stage.is-expanded-fallback .evolucao-grafico-expandir {
+        position:absolute;
+        top:max(12px, env(safe-area-inset-top));
+        right:max(12px, env(safe-area-inset-right));
+        z-index:1;
+        width:auto;
+        min-height:38px;
+        margin:0;
+        padding:7px 12px;
+        background:var(--surface);
+      }
+      @media (orientation:portrait) {
+        .evolucao-grafico-mobile-stage.is-landscape-fallback .evolucao-grafico-box {
+          position:absolute;
+          top:50%;
+          left:50%;
+          width:100vw;
+          height:100dvh;
+          transform:translate(-50%,-50%) rotate(90deg);
+        }
+      }
+      html.chart-expanded,
+      body.chart-expanded { overflow:hidden !important; }
     }
 
     @media (max-width: 420px) {
@@ -1843,11 +1911,16 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <div class="evolucao-grafico-layout">
           <div>
-            <div class="evolucao-grafico-box">
-              <div class="evolucao-grafico-titulo">Evolução por período</div>
-              <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:9px">Feliz corresponde a Bom, neutro a Neutro e triste a Ruim.</div>
-              <svg id="evolucao-grafico" viewBox="0 0 760 320"></svg>
-              <div class="evolucao-grafico-eixo">Registros: data, hora e período</div>
+            <div class="evolucao-grafico-mobile-stage" id="evolucao-grafico-mobile-stage">
+              <div class="evolucao-grafico-box">
+                <div class="evolucao-grafico-titulo">Evolução por período</div>
+                <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-bottom:9px">Feliz corresponde a Bom, neutro a Neutro e triste a Ruim.</div>
+                <svg id="evolucao-grafico" viewBox="0 0 760 320"></svg>
+                <div class="evolucao-grafico-eixo">Registros: data, hora e período</div>
+              </div>
+              <button type="button" class="evolucao-grafico-expandir" id="evolucao-grafico-expandir" aria-controls="evolucao-grafico" aria-pressed="false">
+                <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span>Expandir gráfico</span>
+              </button>
             </div>
           </div>
           <div class="evolucao-grafico-legenda">
@@ -2456,7 +2529,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-relatorios-linhas-frequencia-2">
+<script src="js/app.js?v=20261110-grafico-mobile-expandir-1">
 
 </script>
 </body>
