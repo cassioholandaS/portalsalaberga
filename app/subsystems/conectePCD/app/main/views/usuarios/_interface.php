@@ -736,6 +736,8 @@
       min-height:82px; border-right:1px solid var(--border); border-bottom:1px solid var(--border);
       padding:7px; transition:background 0.13s; cursor:pointer;
     }
+    .cal-cell.cal-cell-future { cursor:not-allowed; opacity:.72; }
+    .cal-cell.cal-cell-future:hover { background:transparent; }
     .cal-cell:hover { background:rgba(76,175,80,0.05); }
     .cal-day {
       width:25px; height:25px; display:flex; align-items:center; justify-content:center;
@@ -1815,8 +1817,8 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             </div>
             <input type="hidden" id="evolucao-periodo" value="tarde">
           </div>
-          <div><label class="lbl" for="evolucao-inicio">De</label><input id="evolucao-inicio" type="date" class="inp"></div>
-          <div><label class="lbl" for="evolucao-fim">Até</label><input id="evolucao-fim" type="date" class="inp"></div>
+          <div><label class="lbl" for="evolucao-inicio">De</label><input id="evolucao-inicio" type="date" class="inp" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>"></div>
+          <div><label class="lbl" for="evolucao-fim">Até</label><input id="evolucao-fim" type="date" class="inp" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>"></div>
         </div>
         <button type="button" class="btn-p" onclick="gerarRelatorioEvolucao()" title="Gerar relatório dos filtros atuais" style="width:100%;justify-content:center">
           <i class="bi bi-file-earmark-pdf"></i> Gerar relatório
@@ -2095,7 +2097,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             </div>
             <div>
               <label class="lbl">Data de Nascimento *</label>
-              <input type="date" id="f-nasc" class="inp" />
+              <input type="date" id="f-nasc" class="inp" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>" />
             </div>
             <div>
               <label class="lbl">Sexo *</label>
@@ -2302,7 +2304,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     <div style="display:flex;flex-direction:column;gap:12px">
       <div><label class="lbl">Título *</label><input type="text" id="ev-tit" class="inp" placeholder="Ex: Reunião de Pais" /></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div><label class="lbl">Data *</label><input type="date" id="ev-dat" class="inp" /></div>
+        <div><label class="lbl">Data *</label><input type="date" id="ev-dat" class="inp" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>" /></div>
         <div><label class="lbl">Horário</label><input type="time" id="ev-hor" class="inp" /></div>
       </div>
       <div><label class="lbl">Descrição</label><textarea id="ev-desc" class="inp" rows="2" placeholder="Opcional..."></textarea></div>
@@ -2446,7 +2448,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-planos-perfil-18">
+<script src="js/app.js?v=20261110-no-future-dates-1">
 
 </script>
 </body>

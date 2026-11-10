@@ -101,6 +101,14 @@ try {
         exit;
     }
 
+    $dataNascimento = trim((string) ($dados['data_nascimento'] ?? ''));
+    $dataNascimentoValida = DateTime::createFromFormat('!Y-m-d', $dataNascimento);
+    if (!$dataNascimentoValida || $dataNascimentoValida->format('Y-m-d') !== $dataNascimento || $dataNascimento > date('Y-m-d')) {
+        http_response_code(422);
+        echo json_encode(['success' => false, 'message' => 'A data de nascimento deve ser válida e igual ou anterior a hoje.']);
+        exit;
+    }
+
     $model = new Aluno($pdo);
     $curso = trim((string) ($dados['curso'] ?? ''));
     $diagnosticos = $dados['diagnostico'] ?? [];
@@ -145,7 +153,7 @@ try {
         'nome' => $dados['nome'] ?? '',
         'matricula' => $matricula,
         'cpf' => $dados['cpf'] ?? '',
-        'data_nascimento' => $dados['data_nascimento'] ?? '',
+        'data_nascimento' => $dataNascimento,
         'sexo' => $dados['sexo'] ?? '',
         'turma' => $dados['turma'] ?? '',
         'curso' => $curso,

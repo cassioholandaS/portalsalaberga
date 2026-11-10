@@ -1092,6 +1092,14 @@ function excluirAvaliacaoAtual(registroId, periodo) {
 
 document.addEventListener('DOMContentLoaded', () => {
   inicializarModoEscuro();
+  document.querySelectorAll('input[type="date"][max]').forEach(input => {
+    input.addEventListener('change', () => {
+      if (input.value && input.value > input.max) {
+        input.value = '';
+        toast('Não é possível selecionar uma data futura.', 'bi-exclamation-triangle', 'amber');
+      }
+    });
+  });
   document.getElementById('evolucao-aluno')?.addEventListener('change', () => { atualizarQuesitosEvolucao(); renderRelatorioEvolucao(); });
   document.getElementById('evolucao-quesito')?.addEventListener('change', renderRelatorioEvolucao);
   document.querySelectorAll('input[name="evolucao-periodo"]').forEach(radio => {
@@ -2774,14 +2782,16 @@ function handleAlunoSaveResponse(data, nome) {
     const fd = new Date(y,m,1).getDay(), dim = new Date(y,m+1,0).getDate();
     const off = fd===0?6:fd-1;
     const today = new Date(); today.setHours(0,0,0,0);
+    const todayString = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const grid = document.getElementById('cal-grid'); grid.innerHTML='';
     for(let i=0;i<off;i++){const c=document.createElement('div');c.className='cal-cell';c.style.background='rgba(0,0,0,0.1)';grid.appendChild(c);}
     for(let d=1;d<=dim;d++){
       const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const isTd = new Date(ds+'T00:00').getTime()===today.getTime();
+      const isFuture = ds > todayString;
       const evs = (events||[]).filter(e=>e.data_evento===ds || e.date===ds);
-      const cell=document.createElement('div'); cell.className='cal-cell'+(isTd?' today-cell':'');
-      cell.onclick=()=>quickEv(ds);
+      const cell=document.createElement('div'); cell.className='cal-cell'+(isTd?' today-cell':'')+(isFuture?' cal-cell-future':'');
+      if (!isFuture) cell.onclick=()=>quickEv(ds);
       const dn=document.createElement('div'); dn.className='cal-day'+(isTd?' today':''); dn.textContent=d; cell.appendChild(dn);
       evs.forEach(ev=>{
         const chip=document.createElement('span');chip.className='ev-chip';
@@ -2799,11 +2809,13 @@ function handleAlunoSaveResponse(data, nome) {
   function prevM(){calDate.setMonth(calDate.getMonth()-1);renderCal();}
   function nextM(){calDate.setMonth(calDate.getMonth()+1);renderCal();}
   function goToday(){calDate=new Date();renderCal();}
-  function openEvModal(){document.getElementById('ev-dat').value=new Date().toISOString().split('T')[0];openM('ev-modal');setTimeout(()=>document.getElementById('ev-tit').focus(),50);}
-  function quickEv(ds){document.getElementById('ev-dat').value=ds;openM('ev-modal');setTimeout(()=>document.getElementById('ev-tit').focus(),50);}
+  function openEvModal(){document.getElementById('ev-dat').value=dataLocalHoje();openM('ev-modal');setTimeout(()=>document.getElementById('ev-tit').focus(),50);}
+  function quickEv(ds){if(ds>dataLocalHoje()){toast('Não é possível selecionar uma data futura.','bi-exclamation-triangle','amber');return;}document.getElementById('ev-dat').value=ds;openM('ev-modal');setTimeout(()=>document.getElementById('ev-tit').focus(),50);}
+  function dataLocalHoje(){const hoje=new Date();return `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;}
   function saveEv(){
     const t=document.getElementById('ev-tit').value.trim(),d=document.getElementById('ev-dat').value,h=document.getElementById('ev-hor').value,desc=document.getElementById('ev-desc').value.trim();
     if(!t||!d){toast('Título e data são obrigatórios!','bi-exclamation-triangle','amber');return;}
+    if(d>document.getElementById('ev-dat').max){toast('Não é possível selecionar uma data futura.','bi-exclamation-triangle','amber');return;}
     fetch('controllers/salvar_evento.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ titulo:t, data_evento:d, horario:h || null, descricao: desc }) })
       .then(r=>r.json()).then(res=>{
         if(res.success){ closeM('ev-modal'); loadEventos(); toast('Evento criado!'); addNotif(`Evento: ${t}`); ['ev-tit','ev-hor','ev-desc'].forEach(id=>{const e=document.getElementById(id); if(e) e.value='';}); }
