@@ -239,10 +239,10 @@
     }
 
     /* MAIN */
-    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .main { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
 
     /* CONTENT */
-    .content { flex:1; overflow-y:auto; padding:26px 30px 5rem; }
+    .content { flex:1; min-height:0; overflow-y:auto; padding:26px 30px 5rem; }
     .entryexit-footer {
       position:fixed; z-index:80; right:0; bottom:0; left:258px;
       display:flex; min-height:3.5rem; align-items:center; justify-content:center;
@@ -823,10 +823,18 @@
     .evolucao-grafico-layout > div:first-child { min-width:0; }
     .evolucao-grafico-box { display:flex; flex-direction:column; width:100%; height:400px; min-width:0; max-width:none; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
     .evolucao-grafico-titulo { color:#59675e; font-size:19px; font-weight:500; text-align:center; margin-bottom:4px; }
+    html[data-theme="dark"] .evolucao-grafico-titulo { color:#f3f4f6; font-weight:600; }
     .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
     .evolucao-grafico-eixo { color:#718077; font-size:10px; text-align:center; margin-top:2px; }
     .evolucao-tabela-controles { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap; }
     .evolucao-tabela-titulo { color:var(--text); font-size:13px; font-weight:700; }
+    #page-relatorios #evolucao-tabela .evolucao-mensagem-vazia {
+      padding:12px 10px !important;
+      color:var(--text-muted);
+      font-size:12px !important;
+      text-align:center;
+      vertical-align:middle;
+    }
     .evolucao-tabela-alternador { display:inline-flex; gap:4px; padding:4px; border:1px solid rgba(0,143,69,.28); border-radius:12px; background:rgba(0,166,81,.07); box-shadow:0 3px 10px rgba(7,91,45,.08); }
     .evolucao-tabela-alternador button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:34px; padding:6px 11px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--c1); font:700 11px 'Poppins',sans-serif; cursor:pointer; transition:background .16s,color .16s,box-shadow .16s,transform .16s; }
     .evolucao-tabela-alternador button:hover { border-color:rgba(0,143,69,.2); background:rgba(0,166,81,.1); transform:translateY(-1px); }
@@ -862,6 +870,50 @@
       font-size:11px;
       line-height:1.5;
       color:var(--text);
+    }
+    @media (min-width:769px) {
+      .content.content--reports {
+        display:flex;
+        flex-direction:column;
+        min-height:0;
+        overflow:hidden;
+        padding:12px 20px calc(3.5rem + 12px);
+      }
+      #page-relatorios.active { display:flex; flex:1 1 0; min-height:0; }
+      #page-relatorios .evolucao-relatorio-grid {
+        flex:1 1 0;
+        grid-template-rows:minmax(0,1fr);
+        height:100%;
+        min-height:0;
+        align-items:stretch;
+      }
+      #page-relatorios .evolucao-relatorio-grid > .card {
+        display:flex;
+        flex-direction:column;
+        min-width:0;
+        min-height:0;
+        height:100%;
+        overflow:hidden;
+        padding:12px !important;
+      }
+      #page-relatorios .evolucao-grafico-layout {
+        flex:0 0 auto;
+        grid-template-columns:minmax(0,1fr) 210px;
+        gap:12px;
+      }
+      #page-relatorios .evolucao-grafico-layout > div:first-child,
+      #page-relatorios .evolucao-grafico-legenda { min-height:0; height:100%; }
+      #page-relatorios .evolucao-grafico-box { flex:0 0 400px; height:400px; }
+      #page-relatorios .evolucao-grafico-legenda { padding:10px; }
+      #page-relatorios #evolucao-legenda { gap:5px; }
+      #page-relatorios #evolucao-legenda > div { margin-bottom:0 !important; }
+      #page-relatorios #evolucao-tendencia { padding:8px 10px !important; line-height:1.35 !important; }
+      #page-relatorios .evolucao-tabela-controles { flex:0 0 auto; margin-top:10px; }
+      #page-relatorios .table-scroll { flex:0 0 auto; min-height:0; overflow-x:auto; overflow-y:hidden; }
+      #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
+      #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
+      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
+      #page-relatorios #evolucao-paginacao .btn-g { min-height:32px; padding:6px 10px; font-size:11px; }
     }
     .perfil-aluno-grid { align-items:stretch; }
     .perfil-aluno-sidebar { min-width:0; }
@@ -2384,7 +2436,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-relatorios-tabela-2">
+<script src="js/app.js?v=20261110-preservar-sessao-1">
 
 </script>
 </body>

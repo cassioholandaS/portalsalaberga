@@ -26,6 +26,19 @@ function carregarAlunos() {
       atualizarFiltrosPerfis();
       refreshDash();
       renderTable(filtered);
+      if (navegacaoInicialSalva?.page === 'aluno') {
+        const alunoSalvo = students.find(item => Number(item.id) === Number(navegacaoInicialSalva.sid));
+        if (alunoSalvo) {
+          go('aluno', alunoSalvo.id, false);
+        } else {
+          try {
+            sessionStorage.removeItem(navegacaoStorageKey);
+          } catch (error) {
+            console.warn('Não foi possível limpar a última tela salva:', error);
+          }
+        }
+        navegacaoInicialSalva = null;
+      }
       if (abrirPerfilApoioAoCarregar && window.usuarioTipo === 'apoio' && students[0]) {
         abrirPerfilApoioAoCarregar = false;
         go('aluno', students[0].id);
@@ -51,6 +64,14 @@ let evolucaoTipoTabela = 'avaliacoes';
 const evolucaoItensPorPagina = 4;
 let calDate = new Date();
 let notifCount = 0;
+const navegacaoStorageKey = `sistema-pcd-current-page:${window.usuarioTipo || 'usuario'}:${String(window.usuarioNome || '').trim().toLocaleLowerCase()}`;
+let navegacaoInicialSalva = null;
+try {
+  const navegacaoSalva = JSON.parse(sessionStorage.getItem(navegacaoStorageKey) || 'null');
+  if (navegacaoSalva && typeof navegacaoSalva.page === 'string') navegacaoInicialSalva = navegacaoSalva;
+} catch (error) {
+  console.warn('Não foi possível restaurar a última tela:', error);
+}
 
 function abrirMenu() {
   const sidebar = document.querySelector('.sidebar');
@@ -160,10 +181,10 @@ window.addEventListener('resize', () => {
   overlay?.classList.remove('show');
 });
 
-function go(page, sid) {
+function go(page, sid, persistirNavegacao = true) {
   if (page === 'perfis' && window.usuarioTipo === 'apoio') {
     if (students[0]) {
-      go('aluno', students[0].id);
+      go('aluno', students[0].id, persistirNavegacao);
     } else {
       abrirPerfilApoioAoCarregar = true;
       carregarAlunos();
@@ -171,16 +192,26 @@ function go(page, sid) {
     return;
   }
   if (page === 'cadastrar') {
-    go('perfis');
+    go('perfis', undefined, persistirNavegacao);
     abrirModalCadastro();
     return;
   }
 
+  const pagina = document.getElementById('page-' + page);
+  if (!pagina) return;
   document.querySelectorAll('.modal-bg.open').forEach(modal => modal.classList.remove('open'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); if(n.querySelector('.ni')) n.querySelector('.ni').style.color = ''; });
-  document.getElementById('page-' + page).classList.add('active');
+  pagina.classList.add('active');
+  if (persistirNavegacao) {
+    try {
+      sessionStorage.setItem(navegacaoStorageKey, JSON.stringify({ page, sid: page === 'aluno' ? sid : null }));
+    } catch (error) {
+      console.warn('Não foi possível salvar a última tela:', error);
+    }
+  }
   const content = document.querySelector('.content');
+  if (content) content.classList.toggle('content--reports', page === 'relatorios');
   if (content) content.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   const nav = document.getElementById('nav-' + page);
@@ -446,7 +477,7 @@ function renderTabelaEvolucao(registros, frequencias = []) {
     }
     const classe = item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
     return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(rotulos[item.avaliacao] || item.avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.observacao || '—')}</td></tr>`;
-  }).join('') : `<tr><td colspan="${tabelaFrequencia ? 3 : 5}" style="padding:22px;text-align:center;color:var(--text-muted)">${tabelaFrequencia ? 'Nenhuma frequência encontrada para este filtro.' : 'Nenhuma avaliação encontrada para este filtro.'}</td></tr>`;
+  }).join('') : `<tr><td class="evolucao-mensagem-vazia" colspan="${tabelaFrequencia ? 3 : 5}">${tabelaFrequencia ? 'Nenhuma frequência encontrada para este filtro.' : 'Nenhuma avaliação encontrada para este filtro.'}</td></tr>`;
   const paginacao = document.getElementById('evolucao-paginacao');
   if (paginacao) {
     paginacao.innerHTML = linhas.length > evolucaoItensPorPagina ? `<button type="button" class="btn-g" ${evolucaoPagina === 1 ? 'disabled' : ''} onclick="mudarPaginaEvolucao(-1)"><i class="bi bi-chevron-left"></i> Anterior</button><span style="font-size:12px;color:var(--text-muted)">Página ${evolucaoPagina} de ${totalPaginas}</span><button type="button" class="btn-g" ${evolucaoPagina === totalPaginas ? 'disabled' : ''} onclick="mudarPaginaEvolucao(1)">Próxima <i class="bi bi-chevron-right"></i></button>` : '';
@@ -3202,4 +3233,21 @@ function handleAlunoSaveResponse(data, nome) {
 
 carregarAlunos();
 loadEventos();
-go('dashboard');
+go('dashboard', undefined, false);
+if (navegacaoInicialSalva) {
+  if (navegacaoInicialSalva.page === 'aluno') {
+    if (navegacaoInicialSalva.sid == null) navegacaoInicialSalva = null;
+  } else {
+    const paginaSalva = document.getElementById('page-' + navegacaoInicialSalva.page);
+    if (paginaSalva) {
+      go(navegacaoInicialSalva.page, navegacaoInicialSalva.sid, false);
+    } else {
+      try {
+        sessionStorage.removeItem(navegacaoStorageKey);
+      } catch (error) {
+        console.warn('Não foi possível limpar a última tela salva:', error);
+      }
+    }
+    navegacaoInicialSalva = null;
+  }
+}
