@@ -123,6 +123,7 @@
             font-family: 'Nunito', sans-serif;
             background: linear-gradient(135deg, #F7F3E9 0%, #E8F4F8 100%);
         }
+        
 
         /* Animações Studio Ghibli */
         @keyframes float {
@@ -915,6 +916,13 @@
         .swiper-slide-shadow-left,
         .swiper-slide-shadow-right {
             background: linear-gradient(to right, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.05));
+        }
+
+        @media (min-width: 640px) {
+            .developers-title {
+                position: relative;
+                left: -50px;
+            }
         }
     </style>
 </head>
@@ -1733,7 +1741,7 @@
                 </div>
 
                 <div class="md:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
-                    <h3 class="sm:col-span-2 text-center text-xl font-semibold font-ghibli text-ghibli-sage">Desenvolvedores</h3>
+                    <h3 class="developers-title sm:col-span-2 text-center text-xl font-semibold font-ghibli text-ghibli-sage">Desenvolvedores</h3>
                     <div class="space-y-4">
                         <h4 class="text-sm font-semibold font-ghibli text-gray-400">AreaDev 1</h4>
                         <ul class="space-y-3">
