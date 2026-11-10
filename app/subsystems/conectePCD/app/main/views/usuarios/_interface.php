@@ -2114,7 +2114,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
               <select id="f-sexo" class="inp">
                 <option value="">Selecionar</option>
                 <option>Masculino</option><option>Feminino</option>
-                <option>Outro / Prefiro não informar</option>
+                <option value="Outro">Outro / Prefiro não informar</option>
               </select>
             </div>
             <div>
@@ -2195,11 +2195,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
       <button onclick="go('<?= $tipoUsuario === 'apoio' ? 'dashboard' : 'perfis' ?>')" class="btn-g" style="margin-bottom:18px;font-size:12.5px">
         <i class="bi bi-arrow-left"></i> <?= $tipoUsuario === 'apoio' ? 'Voltar para Início' : 'Voltar para Perfis' ?>
       </button>
-      <?php if ($tipoUsuario !== 'apoio'): ?>
+      <?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
-        <button type="button" class="btn-g" onclick="abrirSeletorFotoAluno()"><i class="bi bi-camera"></i> Alterar foto do PCD</button>
-        <button type="button" class="btn-g" id="btn-remover-foto-aluno" onclick="removerFotoAluno()" disabled><i class="bi bi-trash3"></i> Remover foto</button>
-        <input type="file" id="input-foto-aluno" accept="image/jpeg,image/png,image/webp" hidden>
+        <button type="button" class="btn-p" onclick="abrirEdicaoPerfilAluno()"><i class="bi bi-pencil-square"></i> Editar perfil</button>
       </div>
       <?php endif; ?>
       <div class="perfil-aluno-grid" style="display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px">
@@ -2298,6 +2296,87 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
   </div><!-- /content -->
 </div><!-- /main -->
+
+<?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
+<div class="modal-bg" id="editar-perfil-aluno-modal" onclick="if(event.target===this)closeM('editar-perfil-aluno-modal')">
+  <div class="modal-box" style="position:relative;width:min(680px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;padding:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:18px;font-weight:700">Editar perfil do aluno</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Atualize os dados cadastrais e a foto.</div>
+      </div>
+      <button type="button" class="btn-g" onclick="closeM('editar-perfil-aluno-modal')" aria-label="Fechar edição"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px">
+        <div id="editar-aluno-foto-preview" class="av" style="width:64px;height:64px;flex-shrink:0;overflow:hidden">?</div>
+        <div style="flex:1">
+          <label class="lbl" for="editar-aluno-foto">Foto do aluno</label>
+          <input type="file" id="editar-aluno-foto" class="inp" accept="image/jpeg,image/png,image/webp">
+          <label id="editar-aluno-remover-foto-wrap" style="display:none;align-items:center;gap:7px;margin-top:8px;font-size:12px;color:var(--text-muted)">
+            <input type="checkbox" id="editar-aluno-remover-foto"> Remover foto atual
+          </label>
+        </div>
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl" for="editar-aluno-nome">Nome completo *</label>
+        <input type="text" id="editar-aluno-nome" class="inp" maxlength="100" required>
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-matricula">Matrícula *</label>
+        <input type="text" id="editar-aluno-matricula" class="inp" maxlength="7" inputmode="numeric">
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-cpf">CPF *</label>
+        <input type="text" id="editar-aluno-cpf" class="inp" maxlength="14" placeholder="000.000.000-00">
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-nascimento">Data de nascimento *</label>
+        <input type="date" id="editar-aluno-nascimento" class="inp" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>">
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-sexo">Sexo *</label>
+        <select id="editar-aluno-sexo" class="inp">
+          <option value="">Selecionar</option>
+          <option>Masculino</option>
+          <option>Feminino</option>
+          <option value="Outro">Outro / Prefiro não informar</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-turma">Turma *</label>
+        <input type="text" id="editar-aluno-turma" class="inp" maxlength="100">
+      </div>
+      <div>
+        <label class="lbl" for="editar-aluno-curso">Curso *</label>
+        <input type="text" id="editar-aluno-curso" class="inp" maxlength="150">
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl">Condição(ões) geral(is) *</label>
+        <select id="editar-aluno-diagnostico" class="inp" multiple hidden></select>
+        <div class="multi-select" id="editar-aluno-diagnosticos">
+          <button type="button" class="inp multi-select-toggle" onclick="toggleDiagnosticosEdicao()" aria-haspopup="listbox" aria-expanded="false">
+            <span class="multi-select-values" id="editar-aluno-diagnosticos-selecionados"><span class="multi-select-placeholder">Carregando condições...</span></span>
+            <i class="bi bi-chevron-down"></i>
+          </button>
+          <div class="multi-select-menu" id="editar-aluno-diagnosticos-opcoes" role="listbox" aria-multiselectable="true"></div>
+        </div>
+        <div id="editar-aluno-diagnosticos-aviso" style="display:none;font-size:11px;color:#b45309;margin-top:6px"></div>
+      </div>
+      <div style="grid-column:1/-1">
+        <label class="lbl" for="editar-aluno-apoio">Profissional de apoio</label>
+        <select id="editar-aluno-apoio" class="inp">
+          <option value="">Sem apoio definido</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:20px">
+      <button type="button" class="btn-g" style="flex:1;justify-content:center" onclick="closeM('editar-perfil-aluno-modal')">Cancelar</button>
+      <button type="button" id="editar-aluno-salvar" class="btn-p" style="flex:1;justify-content:center" onclick="salvarEdicaoPerfilAluno()"><i class="bi bi-check-circle-fill"></i> Salvar alterações</button>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- ============= MODAL EVENTO ============= -->
 <div class="modal-bg" id="ev-modal" onclick="if(event.target===this)closeM('ev-modal')">
@@ -2458,7 +2537,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-no-future-dates-1">
+<script src="js/app.js?v=20261110-edit-student-profile-2">
 
 </script>
 </body>

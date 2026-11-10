@@ -1332,50 +1332,252 @@ document.addEventListener('DOMContentLoaded', () => {
     return aluno?.foto ? `<img src="${escaparUsuario(aluno.foto)}?v=${Date.now()}" alt="Foto do aluno" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : inicial;
   }
 
-  function atualizarFotoAlunoPerfil(foto) {
-    const av = document.getElementById('a-av');
-    if (av) {
-      av.style.backgroundImage = '';
-      av.innerHTML = foto ? `<img src="${escaparUsuario(foto)}?v=${Date.now()}" alt="Foto do aluno" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : '?';
+  let fotoAlunoPreviewObjectUrl = null;
+  function renderFotoEdicaoAluno(aluno, fotoTemporaria = '') {
+    const preview = document.getElementById('editar-aluno-foto-preview');
+    if (!preview) return;
+    if (fotoAlunoPreviewObjectUrl) {
+      URL.revokeObjectURL(fotoAlunoPreviewObjectUrl);
+      fotoAlunoPreviewObjectUrl = null;
     }
-    const alunoAtual = students.find(item => Number(item.id) === Number(curSid));
-    if (alunoAtual) alunoAtual.foto = foto || null;
-    const btnRemover = document.getElementById('btn-remover-foto-aluno');
-    if (btnRemover) btnRemover.disabled = !foto;
+    if (fotoTemporaria) {
+      fotoAlunoPreviewObjectUrl = fotoTemporaria.startsWith('blob:') ? fotoTemporaria : null;
+      preview.innerHTML = `<img src="${escaparUsuario(fotoTemporaria)}" alt="Prévia da foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      preview.innerHTML = renderAvatarAluno(aluno);
+    }
   }
 
-  function abrirSeletorFotoAluno() {
-    if (!curSid) return;
-    document.getElementById('input-foto-aluno')?.click();
+  function renderOpcoesDiagnosticoEdicao(opcoes, selecionados = []) {
+    const select = document.getElementById('editar-aluno-diagnostico');
+    const menu = document.getElementById('editar-aluno-diagnosticos-opcoes');
+    const aviso = document.getElementById('editar-aluno-diagnosticos-aviso');
+    if (!select || !menu || !aviso) return;
+
+    select.innerHTML = '';
+    menu.innerHTML = '';
+    opcoes.forEach(opcao => {
+      const option = new Option(`${opcao.nome} (${opcao.sigla})`, opcao.sigla);
+      option.selected = selecionados.includes(opcao.sigla);
+      select.add(option);
+
+      const label = document.createElement('label');
+      label.className = `multi-select-option${option.selected ? ' selected' : ''}`;
+      label.setAttribute('role', 'option');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = opcao.sigla;
+      checkbox.checked = option.selected;
+      checkbox.addEventListener('change', () => selecionarDiagnosticoEdicao(checkbox));
+      const texto = document.createElement('span');
+      texto.className = `tag ${tagC(opcao.sigla)}`;
+      texto.setAttribute('style', estiloCondicao(opcao.sigla));
+      texto.textContent = `${opcao.nome} (${opcao.sigla})`;
+      label.append(checkbox, texto);
+      menu.append(label);
+    });
+
+    aviso.textContent = opcoes.length ? '' : 'Nenhuma condição cadastrada está disponível. Cadastre uma condição geral antes de editar o aluno.';
+    aviso.style.display = aviso.textContent ? 'block' : 'none';
+    renderDiagnosticosEdicaoSelecionados();
   }
 
-  document.getElementById('input-foto-aluno')?.addEventListener('change', event => {
+  function renderDiagnosticosEdicaoSelecionados() {
+    const select = document.getElementById('editar-aluno-diagnostico');
+    const valores = document.getElementById('editar-aluno-diagnosticos-selecionados');
+    const menu = document.getElementById('editar-aluno-diagnosticos-opcoes');
+    if (!select || !valores || !menu) return;
+
+    const selecionados = Array.from(select.selectedOptions);
+    valores.innerHTML = selecionados.length
+      ? selecionados.map(option => `<span class="tag ${tagC(option.value)}" style="${estiloCondicao(option.value)}">${escaparUsuario(option.textContent)}</span>`).join('')
+      : '<span class="multi-select-placeholder">Selecione uma ou mais condições</span>';
+    menu.querySelectorAll('.multi-select-option').forEach(item => {
+      const checkbox = item.querySelector('input');
+      const marcado = selecionados.some(option => option.value === checkbox.value);
+      checkbox.checked = marcado;
+      item.classList.toggle('selected', marcado);
+    });
+  }
+
+  function toggleDiagnosticosEdicao() {
+    const seletor = document.getElementById('editar-aluno-diagnosticos');
+    if (!seletor) return;
+    const aberto = seletor.classList.toggle('open');
+    seletor.querySelector('.multi-select-toggle')?.setAttribute('aria-expanded', String(aberto));
+  }
+
+  function selecionarDiagnosticoEdicao(input) {
+    const select = document.getElementById('editar-aluno-diagnostico');
+    const option = Array.from(select?.options || []).find(item => item.value === input.value);
+    if (option) option.selected = input.checked;
+    renderDiagnosticosEdicaoSelecionados();
+  }
+
+  async function abrirEdicaoPerfilAluno() {
+    if (!['master', 'aee'].includes(String(window.usuarioTipo || '').trim().toLowerCase()) || !curSid) return;
+    const aluno = students.find(item => Number(item.id) === Number(curSid));
+    if (!aluno) return;
+
+    document.getElementById('editar-aluno-nome').value = aluno.nome || '';
+    document.getElementById('editar-aluno-matricula').value = aluno.matricula || '';
+    document.getElementById('editar-aluno-cpf').value = aluno.cpf || '';
+    document.getElementById('editar-aluno-nascimento').value = aluno.data_nascimento || aluno.nasc || '';
+    document.getElementById('editar-aluno-turma').value = aluno.turma || '';
+    document.getElementById('editar-aluno-curso').value = aluno.curso || '';
+    const diagnosticosSalvos = String(aluno.diagnostico || '').split(',').map(item => item.trim()).filter(Boolean);
+    renderOpcoesDiagnosticoEdicao([], []);
+    document.getElementById('editar-aluno-foto').value = '';
+    document.getElementById('editar-aluno-remover-foto').checked = false;
+    document.getElementById('editar-aluno-remover-foto-wrap').style.display = aluno.foto ? 'flex' : 'none';
+    renderFotoEdicaoAluno(aluno);
+
+    const sexo = document.getElementById('editar-aluno-sexo');
+    const sexoAtual = String(aluno.sexo || '');
+    if (sexoAtual && !Array.from(sexo.options).some(option => option.value === sexoAtual)) {
+      sexo.add(new Option(sexoAtual, sexoAtual));
+    }
+    sexo.value = sexoAtual;
+
+    const apoio = document.getElementById('editar-aluno-apoio');
+    const apoioAtual = String(aluno.id_apoio || '');
+    apoio.innerHTML = '<option value="">Sem apoio definido</option>';
+    if (apoioAtual) {
+      apoio.add(new Option(aluno.apoio_nome || 'Apoio atualmente vinculado', apoioAtual));
+    }
+    apoio.value = apoioAtual;
+    openM('editar-perfil-aluno-modal');
+
+    try {
+      const response = await fetch('controllers/listar_opcoes_alunos.php');
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.message || 'Não foi possível carregar condições e profissionais de apoio.');
+      const diagnosticos = Array.isArray(data.diagnosticos) ? data.diagnosticos : [];
+      const diagnosticosSelecionados = diagnosticos
+        .filter(item => diagnosticosSalvos.some(salvo => {
+          const salvoNormalizado = salvo.toLocaleLowerCase('pt-BR');
+          return salvoNormalizado === String(item.sigla || item.nome).toLocaleLowerCase('pt-BR')
+            || salvoNormalizado === String(item.nome).toLocaleLowerCase('pt-BR');
+        }))
+        .map(item => item.sigla || item.nome);
+      renderOpcoesDiagnosticoEdicao(diagnosticos, diagnosticosSelecionados);
+      const diagnosticosNaoEncontrados = diagnosticosSalvos.filter(salvo => !diagnosticos.some(item =>
+        salvo.toLocaleLowerCase('pt-BR') === String(item.sigla || item.nome).toLocaleLowerCase('pt-BR')
+        || salvo.toLocaleLowerCase('pt-BR') === String(item.nome).toLocaleLowerCase('pt-BR')
+      ));
+      if (diagnosticosNaoEncontrados.length) {
+        const aviso = document.getElementById('editar-aluno-diagnosticos-aviso');
+        aviso.textContent = `Condição(ões) não cadastrada(s): ${diagnosticosNaoEncontrados.join(', ')}. Selecione as condições cadastradas para atualizar o perfil.`;
+        aviso.style.display = 'block';
+      }
+      const apoios = Array.isArray(data.apoios) ? data.apoios : [];
+      apoio.innerHTML = '<option value="">Sem apoio definido</option>';
+      apoios.forEach(item => apoio.add(new Option(item.nome, String(item.id))));
+      if (apoioAtual && !apoios.some(item => String(item.id) === apoioAtual)) {
+        apoio.add(new Option(aluno.apoio_nome || 'Apoio atualmente vinculado', apoioAtual));
+      }
+      apoio.value = apoioAtual;
+    } catch (error) {
+      console.error(error);
+      toast(error.message || 'Erro ao carregar profissionais de apoio.', 'bi-x-circle', 'danger');
+    }
+  }
+
+  async function salvarEdicaoPerfilAluno() {
+    if (!['master', 'aee'].includes(String(window.usuarioTipo || '').trim().toLowerCase()) || !curSid) return;
+    const aluno = students.find(item => Number(item.id) === Number(curSid));
+    if (!aluno) return;
+
+    const nome = document.getElementById('editar-aluno-nome').value.trim();
+    const matricula = document.getElementById('editar-aluno-matricula').value.trim();
+    const cpf = document.getElementById('editar-aluno-cpf').value.trim();
+    const dataNascimento = document.getElementById('editar-aluno-nascimento').value;
+    const sexo = document.getElementById('editar-aluno-sexo').value;
+    const turma = document.getElementById('editar-aluno-turma').value.trim();
+    const curso = document.getElementById('editar-aluno-curso').value.trim();
+    const diagnosticos = Array.from(document.getElementById('editar-aluno-diagnostico').selectedOptions).map(option => option.value);
+    const arquivoFoto = document.getElementById('editar-aluno-foto').files?.[0];
+    if (!nome || !/^\d{7}$/.test(matricula) || cpf.replace(/\D/g, '').length !== 11 || !dataNascimento || !sexo || !turma || !curso || !diagnosticos.length) {
+      toast('Confira os campos obrigatórios e informe matrícula com 7 números e CPF com 11 números.', 'bi-exclamation-triangle', 'amber');
+      return;
+    }
+    if (dataNascimento > document.getElementById('editar-aluno-nascimento').max) {
+      toast('A data de nascimento não pode ser futura.', 'bi-exclamation-triangle', 'amber');
+      return;
+    }
+    if (arquivoFoto && arquivoFoto.size > 5 * 1024 * 1024) {
+      toast('A foto deve ter no máximo 5 MB.', 'bi-exclamation-triangle', 'amber');
+      return;
+    }
+
+    const botao = document.getElementById('editar-aluno-salvar');
+    botao.disabled = true;
+    try {
+      const dados = new FormData();
+      dados.append('id', String(aluno.id));
+      dados.append('nome', nome);
+      dados.append('matricula', matricula);
+      dados.append('cpf', cpf);
+      dados.append('data_nascimento', dataNascimento);
+      dados.append('sexo', sexo);
+      dados.append('turma', turma);
+      dados.append('curso', curso);
+      diagnosticos.forEach(diagnostico => dados.append('diagnostico[]', diagnostico));
+      dados.append('id_apoio', document.getElementById('editar-aluno-apoio').value);
+      dados.append('remover_foto', document.getElementById('editar-aluno-remover-foto').checked ? '1' : '0');
+      if (arquivoFoto) dados.append('foto', arquivoFoto);
+
+      const response = await fetch('controllers/salvar_aluno.php?action=atualizar_perfil_aluno', { method: 'POST', body: dados });
+      const resultado = await response.json();
+      if (!response.ok || !resultado.success) throw new Error(resultado.message || 'Não foi possível atualizar o perfil.');
+
+      const selectApoio = document.getElementById('editar-aluno-apoio');
+      aluno.nome = nome;
+      aluno.matricula = matricula;
+      aluno.cpf = cpf.replace(/\D/g, '').replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+      aluno.data_nascimento = dataNascimento;
+      aluno.sexo = sexo;
+      aluno.turma = turma;
+      aluno.curso = curso;
+      aluno.diagnostico = diagnosticos.join(', ');
+      aluno.id_apoio = selectApoio.value ? Number(selectApoio.value) : null;
+      aluno.apoio_nome = selectApoio.value ? selectApoio.options[selectApoio.selectedIndex].textContent : '';
+      aluno.foto = resultado.foto || null;
+
+      closeM('editar-perfil-aluno-modal');
+      renderTable(filtered);
+      openProfile(aluno.id);
+      carregarAlunos();
+      toast(resultado.message || 'Perfil atualizado com sucesso.', 'bi-check-circle', 'success');
+    } catch (error) {
+      console.error(error);
+      toast(error.message || 'Erro ao atualizar o perfil do aluno.', 'bi-x-circle', 'danger');
+    } finally {
+      botao.disabled = false;
+    }
+  }
+
+  document.getElementById('editar-aluno-foto')?.addEventListener('change', event => {
     const arquivo = event.target.files?.[0];
-    if (!arquivo || !curSid) return;
-    const dados = new FormData();
-    dados.append('foto', arquivo);
-    fetch(`controllers/salvar_aluno.php?action=upload_foto_aluno&aluno_id=${curSid}`, { method: 'POST', body: dados })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.erro || 'Não foi possível salvar a foto.');
-        atualizarFotoAlunoPerfil(data.foto);
-        toast('Foto do aluno atualizada!', 'bi-check-circle', 'success');
-        event.target.value = '';
-      })
-      .catch(error => toast(error.message || 'Erro ao salvar foto do aluno.', 'bi-x-circle', 'danger'));
+    if (!arquivo) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) {
+      event.target.value = '';
+      toast('Selecione uma imagem JPG, PNG ou WEBP.', 'bi-exclamation-triangle', 'amber');
+      return;
+    }
+    document.getElementById('editar-aluno-remover-foto').checked = false;
+    renderFotoEdicaoAluno(null, URL.createObjectURL(arquivo));
   });
 
-  function removerFotoAluno() {
-    if (!curSid) return;
-    fetch(`controllers/salvar_aluno.php?action=remover_foto_aluno&aluno_id=${curSid}`, { method: 'POST' })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.success) throw new Error(data.erro || 'Não foi possível remover a foto.');
-        atualizarFotoAlunoPerfil('');
-        toast('Foto removida com sucesso!', 'bi-trash3', 'danger');
-      })
-      .catch(error => toast(error.message || 'Erro ao remover a foto.', 'bi-x-circle', 'danger'));
-  }
+  document.getElementById('editar-aluno-remover-foto')?.addEventListener('change', event => {
+    const aluno = students.find(item => Number(item.id) === Number(curSid));
+    if (event.target.checked) {
+      renderFotoEdicaoAluno({ nome: document.getElementById('editar-aluno-nome').value });
+      document.getElementById('editar-aluno-foto').value = '';
+    } else if (aluno) {
+      renderFotoEdicaoAluno(aluno);
+    }
+  });
 
   // ===== PERFIL =====
   let perfilAlunoResizeObserver = null;
@@ -1406,8 +1608,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('a-sexo').textContent = s.sexo;
     const dataNascimento = s.data_nascimento || s.nasc || '';
     document.getElementById('a-nasc').textContent = dataNascimento ? new Date(dataNascimento + 'T12:00:00').toLocaleDateString('pt-BR') : '—';
-    const btnRemover = document.getElementById('btn-remover-foto-aluno');
-    if (btnRemover) btnRemover.disabled = !s.foto;
     const tag = document.getElementById('a-diag-tag');
     tag.innerHTML = renderCondicoes(s.diagnostico); tag.className = 'student-profile-block__conditions';
     const ac = document.getElementById('a-acompanhante'); if(ac) ac.textContent = s.apoio_nome || '—';
