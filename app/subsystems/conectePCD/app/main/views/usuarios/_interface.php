@@ -874,6 +874,8 @@
       line-height:1.5;
       color:var(--text);
     }
+    .evolucao-tendencia-conteudo { width:100%; }
+    .evolucao-tendencia-conteudo--vazio { text-align:center; }
     @media (min-width:769px) {
       .content.content--reports {
         display:flex;
@@ -910,19 +912,27 @@
       #page-relatorios .evolucao-grafico-legenda { padding:10px; }
       #page-relatorios #evolucao-legenda { gap:5px; }
       #page-relatorios #evolucao-legenda > div { margin-bottom:0 !important; }
-      #page-relatorios #evolucao-tendencia { padding:8px 10px !important; line-height:1.35 !important; }
+      #page-relatorios #evolucao-tendencia {
+        display:flex;
+        flex:1 1 auto;
+        align-items:center;
+        margin-top:14px !important;
+        padding:16px 12px !important;
+        line-height:1.7 !important;
+      }
+      #page-relatorios .evolucao-tabela-alternador-wrap { margin-top:auto; padding-top:10px; }
       #page-relatorios .evolucao-tabela-controles { flex:0 0 auto; margin-top:10px; }
       #page-relatorios .table-scroll { flex:1 1 0; min-height:0; overflow-x:auto; overflow-y:hidden; }
       #page-relatorios .table-scroll table { height:100%; }
       #page-relatorios .table-scroll--empty { flex:0 0 auto; }
       #page-relatorios .table-scroll--empty table { height:auto; }
-      #page-relatorios .table-scroll--empty #evolucao-tabela tr { height:auto; }
-      #page-relatorios #evolucao-tabela-cabecalho tr,
-      #page-relatorios #evolucao-tabela-cabecalho th { height:34px; }
-      #page-relatorios #evolucao-tabela tr { height:25%; }
+      #page-relatorios .table-scroll--partial { flex:0 0 auto; }
+      #page-relatorios .table-scroll--partial table { height:auto; }
+      #page-relatorios .table-scroll--partial #evolucao-tabela tr { height:54px; }
+      #page-relatorios #evolucao-tabela-cabecalho tr { height:34px; }
       #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
       #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
-      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
+      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:auto !important; padding-top:8px; }
       #page-relatorios #evolucao-paginacao .btn-g { min-height:32px; padding:6px 10px; font-size:11px; }
     }
     .perfil-aluno-grid { align-items:stretch; }
