@@ -101,8 +101,7 @@
       outline:2px solid var(--gold);
       outline-offset:2px;
     }
-    .sidebar-collapse-toggle i { transition:transform .22s ease; }
-    .sidebar-collapse-toggle:hover i { transform:rotate(180deg); }
+    .sidebar-collapse-toggle i { transition:none; }
     body.sidebar-collapsed .sidebar {
       width:0;
       min-width:0;
@@ -110,7 +109,7 @@
     }
     body.sidebar-collapsed .sidebar-collapse-toggle { left:0; }
     body.sidebar-collapsed .sidebar-collapse-toggle i { transform:rotate(180deg); }
-    body.sidebar-collapsed .sidebar-collapse-toggle:hover i { transform:rotate(0deg); }
+    body.sidebar-collapsed .sidebar-collapse-toggle:hover i { transform:rotate(180deg); }
     @media (max-width:768px) {
       .sidebar { transition:transform .3s ease; }
       .sidebar-collapse-toggle { display:none; }
