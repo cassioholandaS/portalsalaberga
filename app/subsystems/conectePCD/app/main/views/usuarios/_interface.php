@@ -452,8 +452,8 @@
       .avaliacao-dia-card--avaliado { background:#edf9f0; border-left-color:#16a34a !important; }
       .avaliacao-dia-card--avaliado:hover { background:#e5f5e9; }
       .avaliacao-dia-card--bloqueado { background:#f7f8f7; border-left-color:#6b7280 !important; }
-      .avaliacao-editar-btn { background:#c62828 !important; border-color:#b71c1c !important; color:#fff !important; }
-      .avaliacao-editar-btn:hover { background:#a61b1b !important; border-color:#8f1717 !important; color:#fff !important; }
+      .avaliacao-editar-btn { background:#FFA500 !important; border-color:#e69500 !important; color:#fff !important; }
+      .avaliacao-editar-btn:hover { background:#e69500 !important; border-color:#cc8500 !important; color:#fff !important; }
       .avaliacao-acao-principal { min-height:36px !important; padding:9px 16px !important; border:1px solid transparent !important; border-radius:10px !important; font-size:12px !important; font-weight:700 !important; line-height:1.2; transition:transform .2s, box-shadow .2s, background .2s, border-color .2s !important; }
       .avaliacao-acao-principal:hover { transform:translateY(-1px); box-shadow:0 5px 12px rgba(7,91,45,.22); }
       .avaliacao-acao-indisponivel,
@@ -463,7 +463,7 @@
       .avaliacao-dia-card .btn-p.avaliacao-acao-indisponivel:hover { background:#e8eeea !important; border-color:#cbd8ce !important; color:#718074 !important; }
       .avaliacao-dia-card .btn-p.avaliacao-acao-principal.avaliacao-acao-indisponivel,
       .avaliacao-dia-card .btn-p.avaliacao-acao-principal.avaliacao-acao-indisponivel:hover { background:#e8eeea !important; border-color:#cbd8ce !important; color:#718074 !important; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
-      .avaliacao-dia-card .btn-g.avaliacao-acao-principal:hover { background:#a61b1b !important; border-color:#8f1717 !important; color:#fff !important; }
+      .avaliacao-dia-card .btn-g.avaliacao-acao-principal.avaliacao-editar-btn:hover { background:#a61b1b !important; border-color:#8f1717 !important; color:#fff !important; }
       .avaliacao-dia-card .btn-p.avaliacao-acao-principal { background:linear-gradient(135deg,var(--c2),var(--c3)) !important; border-color:var(--c3) !important; color:#fff !important; }
       .avaliacao-dia-card .btn-p.avaliacao-acao-principal:hover { background:linear-gradient(135deg,var(--c3),var(--c2)) !important; border-color:var(--c3) !important; color:#fff !important; }
       .avaliacao-historico-periodos {
