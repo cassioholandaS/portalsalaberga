@@ -882,6 +882,96 @@
     .evolucao-tendencia-conteudo { width:100%; }
     .evolucao-tendencia-conteudo--vazio { text-align:center; }
     @media (min-width:769px) {
+      .content.content--avaliacao {
+        display:flex;
+        flex-direction:column;
+        min-height:0;
+        overflow:hidden;
+        padding:12px 20px calc(3.5rem + 12px);
+      }
+      #page-avaliacao.active { display:flex; flex:1 1 0; min-height:0; }
+      #page-avaliacao .avaliacao-layout {
+        flex:1 1 0;
+        grid-template-rows:minmax(0,1fr);
+        height:100%;
+        min-height:0;
+        align-items:stretch;
+      }
+      #page-avaliacao .avaliacao-aluno-card {
+        height:100%;
+        overflow:hidden;
+        padding:16px;
+      }
+      #page-avaliacao .avaliacao-conteudo {
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        height:100%;
+        min-height:0;
+      }
+      #page-avaliacao .avaliacao-dia-secao {
+        flex:0 0 auto;
+        padding:12px;
+      }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-dia-lista { gap:8px; padding:0 4px 4px; }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-dia-card {
+        min-height:88px;
+        gap:5px;
+        padding:8px 10px;
+      }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-dia-card > div:first-child { min-height:34px; }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-card-cabecalho { min-height:38px; padding-right:28px; }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-card-rodape { min-height:28px; margin-top:3px; }
+      #page-avaliacao .avaliacao-dia-secao .avaliacao-acao-principal { min-height:30px !important; padding:6px 10px !important; }
+      #page-avaliacao .frequencia-apoio { gap:10px; padding:8px 4px 0; margin-top:5px; }
+      #page-avaliacao .frequencia-apoio-titulo { margin-bottom:5px; }
+      #page-avaliacao .frequencia-apoio-status { min-height:0; margin-top:4px; }
+      #page-avaliacao .frequencia-apoio-opcao label { min-height:30px; padding:6px 10px; }
+      #page-avaliacao #frequencia-apoio-salvar { min-height:34px; padding:8px 12px; }
+      #page-avaliacao .avaliacao-conteudo > .card:last-child {
+        display:flex;
+        flex:1 1 0;
+        flex-direction:column;
+        min-height:0;
+        margin-top:0 !important;
+        padding:12px !important;
+        overflow:hidden;
+      }
+      #page-avaliacao .avaliacao-historico-topo { flex:0 0 auto; margin-bottom:8px; }
+      #page-avaliacao #avaliacao-historico {
+        display:flex;
+        flex:1 1 0;
+        flex-direction:column;
+        justify-content:space-between;
+        min-height:0;
+        overflow:hidden;
+      }
+      #page-avaliacao .avaliacao-historico-dia { flex:0 0 auto; margin-top:6px; }
+      #page-avaliacao .avaliacao-historico-dia:first-child { margin-top:0; }
+      #page-avaliacao .avaliacao-historico-data { margin-bottom:5px; font-size:12px; }
+      #page-avaliacao .avaliacao-historico-periodos { gap:8px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card {
+        min-height:88px;
+        gap:5px;
+        padding:8px 10px;
+      }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card > div:first-child { min-height:32px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-cabecalho { min-height:36px; padding-right:26px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-periodo-icone { width:25px; height:25px; font-size:12px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-titulo { font-size:12px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-rodape { min-height:26px; margin-top:2px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-acao-principal { min-height:28px !important; padding:5px 9px !important; }
+      #page-avaliacao .avaliacao-historico-paginacao { flex:0 0 auto; margin-top:auto; padding-top:7px; }
+      #page-avaliacao .avaliacao-historico-paginacao .btn-g { min-height:30px; padding:5px 9px; }
+      @media (max-height:760px) {
+        #page-avaliacao .avaliacao-conteudo { gap:8px; }
+        #page-avaliacao .avaliacao-dia-secao { padding:9px; }
+        #page-avaliacao .avaliacao-dia-secao .avaliacao-dia-card,
+        #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card { min-height:78px; padding:6px 8px; }
+        #page-avaliacao .avaliacao-dia-secao .avaliacao-card-cabecalho,
+        #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-cabecalho { min-height:32px; }
+        #page-avaliacao .avaliacao-historico-topo { margin-bottom:5px; }
+      }
       .content.content--reports {
         display:flex;
         flex-direction:column;
@@ -1390,6 +1480,9 @@
     html[data-theme="dark"] .inp,
     html[data-theme="dark"] .multi-select-menu,
     html[data-theme="dark"] .avaliacao-data-picker-popup { background:#262626; border-color:rgba(255,255,255,.12); color:#f3f4f6; }
+    html[data-theme="dark"] .avaliacao-data-picker-trigger { background:#262626; border-color:rgba(255,255,255,.12); color:#f3f4f6; }
+    html[data-theme="dark"] .avaliacao-data-picker-trigger:hover,
+    html[data-theme="dark"] .avaliacao-data-picker-trigger:focus-visible { background:#303030; border-color:var(--c3); }
     html[data-theme="dark"] input[type="date"].inp { color-scheme:dark; color:#f3f4f6; }
     html[data-theme="dark"] input[type="date"].inp::-webkit-calendar-picker-indicator { filter:invert(.85); }
     html[data-theme="dark"] .inp::placeholder { color:#9ca3af; }
@@ -1406,6 +1499,10 @@
     html[data-theme="dark"] .tab-btn:hover,
     html[data-theme="dark"] .multi-select-option:hover { background:#262626; color:#f3f4f6; }
     html[data-theme="dark"] .avaliacao-dia-card--avaliado { background:rgba(31,174,90,.12); }
+    html[data-theme="dark"] .avaliacao-dia-card--pendente:hover,
+    html[data-theme="dark"] .avaliacao-dia-card--bloqueado:hover { background:#202820; }
+    html[data-theme="dark"] .avaliacao-dia-card--avaliado:hover,
+    html[data-theme="dark"] .avaliacao-historico-periodos .avaliacao-dia-card:hover { background:rgba(31,174,90,.2); }
     html[data-theme="dark"] .avaliacao-opcao label,
     html[data-theme="dark"] .frequencia-apoio-opcao label { background:#262626; border-color:rgba(255,255,255,.08); color:#e5e7eb; }
     html[data-theme="dark"] .avaliacao-opcao input:checked + label,
@@ -2531,7 +2628,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-grafico-mobile-expandir-1">
+<script src="js/app.js?v=20261110-avaliacao-sem-rolagem-1">
 
 </script>
 </body>

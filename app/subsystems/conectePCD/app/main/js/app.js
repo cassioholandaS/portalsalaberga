@@ -213,7 +213,10 @@ function go(page, sid, persistirNavegacao = true) {
     }
   }
   const content = document.querySelector('.content');
-  if (content) content.classList.toggle('content--reports', page === 'relatorios');
+  if (content) {
+    content.classList.toggle('content--reports', page === 'relatorios');
+    content.classList.toggle('content--avaliacao', page === 'avaliacao');
+  }
   if (content) content.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   const nav = document.getElementById('nav-' + page);
