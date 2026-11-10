@@ -47,7 +47,8 @@ let evolucaoGraficoRegistrosVisiveis = [];
 let evolucaoGraficoResizeObserver = null;
 let evolucaoGraficoResizeKey = '';
 let evolucaoPagina = 1;
-const evolucaoItensPorPagina = 5;
+let evolucaoTipoTabela = 'avaliacoes';
+const evolucaoItensPorPagina = 4;
 let calDate = new Date();
 let notifCount = 0;
 
@@ -415,26 +416,55 @@ function renderTabelaEvolucao(registros, frequencias = []) {
   const tbody = document.getElementById('evolucao-tabela');
   if (!tbody) return;
   const rotulos = { triste: 'Ruim', neutro: 'Neutro', feliz: 'Bom' };
-  const linhas = [
-    ...registros.map(item => ({ ...item, tipoRegistro: 'avaliacao' })),
-    ...frequencias.map(item => ({ ...item, tipoRegistro: 'frequencia' })),
-  ].sort((a, b) => String(b.data).localeCompare(String(a.data))
-    || String(b.data_hora_registro || '').localeCompare(String(a.data_hora_registro || ''))
-    || String(a.tipoRegistro).localeCompare(String(b.tipoRegistro)));
+  const cabecalho = document.getElementById('evolucao-tabela-cabecalho');
+  const tabelaFrequencia = evolucaoTipoTabela === 'frequencia';
+  const linhas = (tabelaFrequencia
+    ? frequencias.map(item => ({ ...item, tipoRegistro: 'frequencia' }))
+    : registros.map(item => ({ ...item, tipoRegistro: 'avaliacao' })))
+    .sort((a, b) => String(b.data).localeCompare(String(a.data))
+      || String(b.data_hora_registro || '').localeCompare(String(a.data_hora_registro || ''))
+      || String(a.tipoRegistro).localeCompare(String(b.tipoRegistro)));
+  if (cabecalho) {
+    cabecalho.innerHTML = tabelaFrequencia
+      ? '<tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PRESENÇA</th><th style="text-align:left;padding:11px;font-size:10px">REGISTRADO POR</th></tr>'
+      : '<tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO</th></tr>';
+  }
+  document.querySelectorAll('[data-evolucao-tabela-tipo]').forEach(botao => {
+    const ativo = botao.dataset.evolucaoTabelaTipo === evolucaoTipoTabela;
+    botao.classList.toggle('is-active', ativo);
+    botao.setAttribute('aria-pressed', String(ativo));
+  });
   const totalPaginas = Math.max(1, Math.ceil(linhas.length / evolucaoItensPorPagina));
   evolucaoPagina = Math.min(Math.max(1, evolucaoPagina), totalPaginas);
   const inicio = (evolucaoPagina - 1) * evolucaoItensPorPagina;
   const linhasPagina = linhas.slice(inicio, inicio + evolucaoItensPorPagina);
   tbody.innerHTML = linhasPagina.length ? linhasPagina.map(item => {
-    const falta = item.tipoRegistro === 'frequencia';
-    const avaliacao = falta ? (Number(item.presente) === 1 ? 'Presente' : 'Faltou') : rotulos[item.avaliacao] || item.avaliacao;
-    const classe = falta ? (Number(item.presente) === 1 ? 't-ok' : 't-danger') : item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
-    return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${item.data.split('-').reverse().join('/')}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${falta ? 'Frequência' : escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${falta ? '—' : escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(falta ? item.usuario_nome || '—' : item.observacao || '—')}</td></tr>`;
-  }).join('') : '<tr><td colspan="5" style="padding:22px;text-align:center;color:var(--text-muted)">Nenhuma avaliação ou frequência encontrada para este filtro.</td></tr>';
+    const data = item.data.split('-').reverse().join('/');
+    if (tabelaFrequencia) {
+      const presente = Number(item.presente) === 1;
+      return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${presente ? 't-ok' : 't-danger'}">${presente ? 'Presente' : 'Faltou'}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.usuario_nome || '—')}</td></tr>`;
+    }
+    const classe = item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
+    return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(rotulos[item.avaliacao] || item.avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.observacao || '—')}</td></tr>`;
+  }).join('') : `<tr><td colspan="${tabelaFrequencia ? 3 : 5}" style="padding:22px;text-align:center;color:var(--text-muted)">${tabelaFrequencia ? 'Nenhuma frequência encontrada para este filtro.' : 'Nenhuma avaliação encontrada para este filtro.'}</td></tr>`;
   const paginacao = document.getElementById('evolucao-paginacao');
   if (paginacao) {
     paginacao.innerHTML = linhas.length > evolucaoItensPorPagina ? `<button type="button" class="btn-g" ${evolucaoPagina === 1 ? 'disabled' : ''} onclick="mudarPaginaEvolucao(-1)"><i class="bi bi-chevron-left"></i> Anterior</button><span style="font-size:12px;color:var(--text-muted)">Página ${evolucaoPagina} de ${totalPaginas}</span><button type="button" class="btn-g" ${evolucaoPagina === totalPaginas ? 'disabled' : ''} onclick="mudarPaginaEvolucao(1)">Próxima <i class="bi bi-chevron-right"></i></button>` : '';
   }
+}
+
+function alternarTabelaEvolucao(tipo) {
+  if (!['avaliacoes', 'frequencia'].includes(tipo) || tipo === evolucaoTipoTabela) return;
+  evolucaoTipoTabela = tipo;
+  evolucaoPagina = 1;
+  const alunoId = document.getElementById('evolucao-aluno')?.value;
+  const quesitoId = document.getElementById('evolucao-quesito')?.value || '__todos';
+  const periodo = document.getElementById('evolucao-periodo')?.value || '__todos';
+  const inicio = document.getElementById('evolucao-inicio')?.value || '';
+  const fim = document.getElementById('evolucao-fim')?.value || '';
+  const registros = evolucaoRegistros.filter(item => String(item.aluno_id) === String(alunoId) && (quesitoId === '__todos' || String(item.quesito_id) === String(quesitoId)) && (periodo === '__todos' || String(item.periodo) === periodo) && (!inicio || item.data >= inicio) && (!fim || item.data <= fim));
+  const frequencias = evolucaoFrequencias.filter(item => String(item.aluno_id) === String(alunoId) && (!inicio || item.data >= inicio) && (!fim || item.data <= fim));
+  renderTabelaEvolucao(registros, frequencias);
 }
 
 function mudarPaginaEvolucao(direcao) {

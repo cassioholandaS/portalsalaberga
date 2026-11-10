@@ -825,6 +825,17 @@
     .evolucao-grafico-titulo { color:#59675e; font-size:19px; font-weight:500; text-align:center; margin-bottom:4px; }
     .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
     .evolucao-grafico-eixo { color:#718077; font-size:10px; text-align:center; margin-top:2px; }
+    .evolucao-tabela-controles { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap; }
+    .evolucao-tabela-titulo { color:var(--text); font-size:13px; font-weight:700; }
+    .evolucao-tabela-alternador { display:inline-flex; gap:4px; padding:4px; border:1px solid rgba(0,143,69,.28); border-radius:12px; background:rgba(0,166,81,.07); box-shadow:0 3px 10px rgba(7,91,45,.08); }
+    .evolucao-tabela-alternador button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:34px; padding:6px 11px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--c1); font:700 11px 'Poppins',sans-serif; cursor:pointer; transition:background .16s,color .16s,box-shadow .16s,transform .16s; }
+    .evolucao-tabela-alternador button:hover { border-color:rgba(0,143,69,.2); background:rgba(0,166,81,.1); transform:translateY(-1px); }
+    .evolucao-tabela-alternador button:focus-visible { outline:3px solid rgba(0,166,81,.28); outline-offset:2px; }
+    .evolucao-tabela-alternador button.is-active { border-color:var(--c3); background:var(--c3); color:#fff; box-shadow:0 3px 8px rgba(0,143,69,.24); }
+    .evolucao-tabela-alternador button.is-active:hover { background:var(--c1); color:#fff; }
+    html[data-theme="dark"] .evolucao-tabela-alternador { border-color:rgba(118,216,158,.28); background:rgba(31,174,90,.1); }
+    html[data-theme="dark"] .evolucao-tabela-alternador button { color:#b9c9be; }
+    html[data-theme="dark"] .evolucao-tabela-alternador button.is-active { border-color:#1fae5a; background:#1fae5a; color:#fff; }
     .evolucao-grafico-legenda {
       padding:12px 14px 10px;
       border:1px solid rgba(7,91,45,0.08);
@@ -1335,6 +1346,9 @@
       inset:16px 0 calc(3.5rem + 16px);
       padding:0 16px 0 274px;
       overflow:hidden;
+      background:rgba(3,31,16,.48);
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
     }
     body.sidebar-collapsed #avaliacao-modal.modal-bg { padding-left:16px; }
     #avaliacao-modal .avaliacao-modal-box {
@@ -1345,6 +1359,7 @@
       max-height:100% !important;
       margin:0;
       overflow:hidden !important;
+      box-shadow:0 18px 48px rgba(0,24,12,.22),0 4px 12px rgba(0,24,12,.12);
     }
     #avaliacao-modal .avaliacao-modal-header,
     #avaliacao-modal .avaliacao-modal-footer { flex:0 0 auto; }
@@ -1771,22 +1786,20 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <div id="evolucao-tendencia" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(0,166,81,.08);font-size:11px;line-height:1.5"></div>
           </div>
         </div>
-        <div class="table-scroll" style="margin-top:20px">
+        <div class="evolucao-tabela-controles">
+          <div class="evolucao-tabela-titulo">Registros do aluno</div>
+          <div class="evolucao-tabela-alternador" role="group" aria-label="Tipo de registro exibido">
+            <button type="button" class="is-active" data-evolucao-tabela-tipo="avaliacoes" aria-pressed="true" onclick="alternarTabelaEvolucao('avaliacoes')"><i class="bi bi-clipboard2-check"></i> Avaliações</button>
+            <button type="button" data-evolucao-tabela-tipo="frequencia" aria-pressed="false" onclick="alternarTabelaEvolucao('frequencia')"><i class="bi bi-calendar-check"></i> Frequência</button>
+          </div>
+        </div>
+        <div class="table-scroll" style="margin-top:8px">
           <table style="width:100%;border-collapse:collapse;min-width:650px">
-            <thead><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO / TIPO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO / FREQUÊNCIA</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO / REGISTRADO POR</th></tr></thead>
+            <thead id="evolucao-tabela-cabecalho"><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO</th></tr></thead>
             <tbody id="evolucao-tabela"></tbody>
           </table>
         </div>
-        <div id="evolucao-paginacao" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px"></div>
-        <div style="margin-top:24px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:10px">Frequência do aluno</div>
-          <div class="table-scroll">
-            <table style="width:100%;border-collapse:collapse;min-width:0">
-              <thead><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PRESENÇA</th><th style="text-align:left;padding:11px;font-size:10px">REGISTRADO POR</th></tr></thead>
-              <tbody id="frequencia-tabela"></tbody>
-            </table>
-          </div>
-        </div>
+        <div id="evolucao-paginacao" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px"></div>
       </div>
       </div>
     </div>
@@ -2371,7 +2384,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261109-avaliacao-data-2">
+<script src="js/app.js?v=20261110-relatorios-tabela-2">
 
 </script>
 </body>
