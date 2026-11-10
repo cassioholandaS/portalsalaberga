@@ -826,8 +826,9 @@
     html[data-theme="dark"] .evolucao-grafico-titulo { color:#f3f4f6; font-weight:600; }
     .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
     .evolucao-grafico-eixo { color:#718077; font-size:10px; text-align:center; margin-top:2px; }
-    .evolucao-tabela-controles { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap; }
+    .evolucao-tabela-controles { display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-top:16px; flex-wrap:wrap; }
     .evolucao-tabela-titulo { color:var(--text); font-size:13px; font-weight:700; }
+    .evolucao-tabela-alternador-wrap { display:flex; width:100%; min-width:0; margin-top:10px; }
     #page-relatorios #evolucao-tabela .evolucao-mensagem-vazia {
       padding:12px 10px !important;
       color:var(--text-muted);
@@ -835,8 +836,8 @@
       text-align:center;
       vertical-align:middle;
     }
-    .evolucao-tabela-alternador { display:inline-flex; gap:4px; padding:4px; border:1px solid rgba(0,143,69,.28); border-radius:12px; background:rgba(0,166,81,.07); box-shadow:0 3px 10px rgba(7,91,45,.08); }
-    .evolucao-tabela-alternador button { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:34px; padding:6px 11px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--c1); font:700 11px 'Poppins',sans-serif; cursor:pointer; transition:background .16s,color .16s,box-shadow .16s,transform .16s; }
+    .evolucao-tabela-alternador { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; min-width:0; gap:3px; padding:4px; border:1px solid rgba(0,143,69,.28); border-radius:12px; background:rgba(0,166,81,.07); box-shadow:0 3px 10px rgba(7,91,45,.08); }
+    .evolucao-tabela-alternador button { display:inline-flex; align-items:center; justify-content:center; gap:4px; min-width:0; min-height:34px; padding:6px 4px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--c1); font:700 10px 'Poppins',sans-serif; white-space:nowrap; cursor:pointer; transition:background .16s,color .16s,box-shadow .16s,transform .16s; }
     .evolucao-tabela-alternador button:hover { border-color:rgba(0,143,69,.2); background:rgba(0,166,81,.1); transform:translateY(-1px); }
     .evolucao-tabela-alternador button:focus-visible { outline:3px solid rgba(0,166,81,.28); outline-offset:2px; }
     .evolucao-tabela-alternador button.is-active { border-color:var(--c3); background:var(--c3); color:#fff; box-shadow:0 3px 8px rgba(0,143,69,.24); }
@@ -859,10 +860,10 @@
       flex-direction:column;
       gap:8px;
       margin-bottom:10px;
-      flex:1;
+      flex:0 0 auto;
     }
     #evolucao-tendencia {
-      margin-top:auto;
+      margin-top:14px;
       padding:12px 14px;
       border-radius:10px;
       background:rgba(72, 151, 98, 0.10);
@@ -909,7 +910,14 @@
       #page-relatorios #evolucao-legenda > div { margin-bottom:0 !important; }
       #page-relatorios #evolucao-tendencia { padding:8px 10px !important; line-height:1.35 !important; }
       #page-relatorios .evolucao-tabela-controles { flex:0 0 auto; margin-top:10px; }
-      #page-relatorios .table-scroll { flex:0 0 auto; min-height:0; overflow-x:auto; overflow-y:hidden; }
+      #page-relatorios .table-scroll { flex:1 1 0; min-height:0; overflow-x:auto; overflow-y:hidden; }
+      #page-relatorios .table-scroll table { height:100%; }
+      #page-relatorios .table-scroll--empty { flex:0 0 auto; }
+      #page-relatorios .table-scroll--empty table { height:auto; }
+      #page-relatorios .table-scroll--empty #evolucao-tabela tr { height:auto; }
+      #page-relatorios #evolucao-tabela-cabecalho tr,
+      #page-relatorios #evolucao-tabela-cabecalho th { height:34px; }
+      #page-relatorios #evolucao-tabela tr { height:25%; }
       #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
       #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
       #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
@@ -1836,14 +1844,16 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px">Linhas por quesito</div>
             <div id="evolucao-legenda"></div>
             <div id="evolucao-tendencia" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(0,166,81,.08);font-size:11px;line-height:1.5"></div>
+            <div class="evolucao-tabela-alternador-wrap">
+              <div class="evolucao-tabela-alternador" role="group" aria-label="Tipo de registro exibido">
+                <button type="button" class="is-active" data-evolucao-tabela-tipo="avaliacoes" aria-pressed="true" onclick="alternarTabelaEvolucao('avaliacoes')"><i class="bi bi-clipboard2-check"></i> Avaliações</button>
+                <button type="button" data-evolucao-tabela-tipo="frequencia" aria-pressed="false" onclick="alternarTabelaEvolucao('frequencia')"><i class="bi bi-calendar-check"></i> Frequência</button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="evolucao-tabela-controles">
           <div class="evolucao-tabela-titulo">Registros do aluno</div>
-          <div class="evolucao-tabela-alternador" role="group" aria-label="Tipo de registro exibido">
-            <button type="button" class="is-active" data-evolucao-tabela-tipo="avaliacoes" aria-pressed="true" onclick="alternarTabelaEvolucao('avaliacoes')"><i class="bi bi-clipboard2-check"></i> Avaliações</button>
-            <button type="button" data-evolucao-tabela-tipo="frequencia" aria-pressed="false" onclick="alternarTabelaEvolucao('frequencia')"><i class="bi bi-calendar-check"></i> Frequência</button>
-          </div>
         </div>
         <div class="table-scroll" style="margin-top:8px">
           <table style="width:100%;border-collapse:collapse;min-width:650px">
@@ -2436,7 +2446,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-preservar-sessao-1">
+<script src="js/app.js?v=20261110-cabecalho-tabela-vazio-1">
 
 </script>
 </body>
