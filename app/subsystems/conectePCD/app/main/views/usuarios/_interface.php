@@ -915,8 +915,8 @@
         flex:1 1 auto;
         align-items:center;
         margin-top:14px !important;
-        padding:14px 12px !important;
-        line-height:1.5 !important;
+        padding:16px 12px !important;
+        line-height:1.7 !important;
       }
       #page-relatorios .evolucao-tabela-alternador-wrap { margin-top:auto; padding-top:10px; }
       #page-relatorios .evolucao-tabela-controles { flex:0 0 auto; margin-top:10px; }
@@ -924,16 +924,14 @@
       #page-relatorios .table-scroll table { height:100%; }
       #page-relatorios .table-scroll--empty { flex:0 0 auto; }
       #page-relatorios .table-scroll--empty table { height:auto; }
-      #page-relatorios .table-scroll--empty #evolucao-tabela tr { height:auto; }
-      #page-relatorios #evolucao-tabela-cabecalho tr,
-      #page-relatorios #evolucao-tabela-cabecalho th { height:34px; }
+      #page-relatorios .table-scroll--partial { flex:0 0 auto; }
+      #page-relatorios .table-scroll--partial table { height:auto; }
+      #page-relatorios .table-scroll--partial #evolucao-tabela tr { height:54px; }
+      #page-relatorios #evolucao-tabela-cabecalho tr { height:34px; }
       #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
       #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
       #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
       #page-relatorios #evolucao-paginacao .btn-g { min-height:32px; padding:6px 10px; font-size:11px; }
-    }
-    @media (max-width:768px) {
-      #page-relatorios #evolucao-tabela .evolucao-linha-vazia { display:none; }
     }
     .perfil-aluno-grid { align-items:stretch; }
     .perfil-aluno-sidebar { min-width:0; }
@@ -2458,7 +2456,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-relatorios-linhas-frequencia-1">
+<script src="js/app.js?v=20261110-relatorios-linhas-frequencia-2">
 
 </script>
 </body>

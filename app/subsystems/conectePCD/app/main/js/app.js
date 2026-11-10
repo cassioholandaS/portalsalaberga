@@ -478,11 +478,10 @@ function renderTabelaEvolucao(registros, frequencias = []) {
     const classe = item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
     return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(rotulos[item.avaliacao] || item.avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.observacao || '—')}</td></tr>`;
   }).join('') : `<tr><td class="evolucao-mensagem-vazia" colspan="${tabelaFrequencia ? 3 : 5}">${tabelaFrequencia ? 'Nenhuma frequência encontrada para este filtro.' : 'Nenhuma avaliação encontrada para este filtro.'}</td></tr>`;
-  const linhasVazias = linhasPagina.length
-    ? Array.from({ length: evolucaoItensPorPagina - linhasPagina.length }, () => `<tr class="evolucao-linha-vazia" aria-hidden="true"><td colspan="${tabelaFrequencia ? 3 : 5}"></td></tr>`).join('')
-    : '';
-  tbody.innerHTML = linhasHtml + linhasVazias;
-  tbody.closest('.table-scroll')?.classList.toggle('table-scroll--empty', linhasPagina.length === 0);
+  tbody.innerHTML = linhasHtml;
+  const tabelaScroll = tbody.closest('.table-scroll');
+  tabelaScroll?.classList.toggle('table-scroll--empty', linhasPagina.length === 0);
+  tabelaScroll?.classList.toggle('table-scroll--partial', linhasPagina.length > 0 && linhasPagina.length < evolucaoItensPorPagina);
   const paginacao = document.getElementById('evolucao-paginacao');
   if (paginacao) {
     paginacao.innerHTML = linhas.length > evolucaoItensPorPagina ? `<button type="button" class="btn-g" ${evolucaoPagina === 1 ? 'disabled' : ''} onclick="mudarPaginaEvolucao(-1)"><i class="bi bi-chevron-left"></i> Anterior</button><span style="font-size:12px;color:var(--text-muted)">Página ${evolucaoPagina} de ${totalPaginas}</span><button type="button" class="btn-g" ${evolucaoPagina === totalPaginas ? 'disabled' : ''} onclick="mudarPaginaEvolucao(1)">Próxima <i class="bi bi-chevron-right"></i></button>` : '';
