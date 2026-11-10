@@ -111,7 +111,6 @@ try {
     $alunoId = (int) ($dados['aluno_id'] ?? 0);
     $periodo = trim((string) ($dados['periodo'] ?? ''));
     $data = trim((string) ($dados['data'] ?? ''));
-    $ontem = (new DateTimeImmutable('today'))->modify('-1 day')->format('Y-m-d');
     $respostas = is_array($dados['respostas'] ?? null) ? $dados['respostas'] : [];
     if ($alunoId <= 0 || !in_array($periodo, ['manha', 'tarde'], true) || !avaliacaoDataValida($data) || $data > date('Y-m-d') || !$respostas) {
         avaliacaoResponder(422, ['success' => false, 'message' => 'Informe aluno, data, período e todos os quesitos.']);
@@ -147,10 +146,6 @@ try {
     $stmtExistente = $pdo->prepare('SELECT id FROM registros_apoio WHERE aluno_id = ? AND data = ? AND periodo = ? ORDER BY id DESC LIMIT 1');
     $stmtExistente->execute([$alunoId, $data, $periodo]);
     $registroId = (int) $stmtExistente->fetchColumn();
-    if ($data !== date('Y-m-d') && $data !== $ontem && $registroId <= 0) {
-        avaliacaoResponder(422, ['success' => false, 'message' => 'Somente hoje e ontem podem receber avaliações ou edições.']);
-    }
-
     $pdo->beginTransaction();
     $foiAtualizacao = $registroId > 0;
     if ($foiAtualizacao) {

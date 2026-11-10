@@ -14,7 +14,7 @@ if ($id <= 0) {
 }
 
 // Obtém o registro para excluir arquivo físico, se existir
-$stmt = $pdo->prepare('SELECT arquivo FROM laudos WHERE id = :id');
+$stmt = $pdo->prepare('SELECT arquivo, aluno_id FROM laudos WHERE id = :id');
 $stmt->execute([':id' => $id]);
 $registro = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -23,8 +23,21 @@ $stmt = $pdo->prepare($sql);
 $res = $stmt->execute([':id' => $id]);
 
 if ($res && $registro && !empty($registro['arquivo'])) {
-    $path = dirname(__DIR__) . '/uploads/laudos/' . basename($registro['arquivo']);
-    if (file_exists($path)) unlink($path);
+    $referencias = $pdo->prepare('SELECT COUNT(*) FROM laudos WHERE arquivo = :arquivo');
+    $referencias->execute([':arquivo' => $registro['arquivo']]);
+    if ((int) $referencias->fetchColumn() === 0) {
+        $arquivo = str_replace('\\', '/', (string) $registro['arquivo']);
+        $segmentosArquivo = explode('/', $arquivo);
+        $caminhoNovo = count($segmentosArquivo) === 2
+            && ctype_digit($segmentosArquivo[0])
+            && $segmentosArquivo[1] !== ''
+            && $segmentosArquivo[1] === basename($segmentosArquivo[1])
+            && (int) $segmentosArquivo[0] === (int) $registro['aluno_id'];
+        $caminhoRelativo = $caminhoNovo ? $arquivo : basename($arquivo);
+        $pastaLaudos = dirname(__DIR__) . '/uploads/laudos/';
+        $path = $pastaLaudos . $caminhoRelativo;
+        if (is_file($path)) unlink($path);
+    }
 }
 
 echo json_encode(['success' => (bool)$res]);

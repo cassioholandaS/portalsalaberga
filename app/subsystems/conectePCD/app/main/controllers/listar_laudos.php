@@ -12,8 +12,17 @@ $stmt->execute([':aluno_id' => $alunoId]);
 
 $registros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($registros as &$registro) {
-    $arquivo = basename($registro['arquivo'] ?? '');
-    $registro['url'] = $arquivo ? '../uploads/laudos/' . $arquivo : '';
+    $arquivo = str_replace('\\', '/', (string) ($registro['arquivo'] ?? ''));
+    $segmentosArquivo = explode('/', $arquivo);
+    $caminhoNovo = count($segmentosArquivo) === 2
+        && ctype_digit($segmentosArquivo[0])
+        && $segmentosArquivo[1] !== ''
+        && $segmentosArquivo[1] === basename($segmentosArquivo[1])
+        && (int) $segmentosArquivo[0] === (int) $registro['aluno_id'];
+    $arquivo = $caminhoNovo ? $arquivo : basename($arquivo);
+    $segmentos = array_map('rawurlencode', explode('/', $arquivo));
+    $registro['arquivo'] = basename($arquivo);
+    $registro['url'] = $arquivo !== '' ? 'uploads/laudos/' . implode('/', $segmentos) : '';
 }
 
 echo json_encode($registros);

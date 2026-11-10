@@ -3,6 +3,7 @@ let students = [], events = [], filtered = [];
 let abrirPerfilApoioAoCarregar = false;
 let avaliacaoDados = { aluno: null, quesitos: [], avaliacoes: [] };
 let avaliacaoModalAtual = null;
+let avaliacaoFrequenciaRequest = 0;
 function carregarAlunos() {
   fetch('controllers/listar_alunos.php')
     .then(async response => {
@@ -25,6 +26,19 @@ function carregarAlunos() {
       atualizarFiltrosPerfis();
       refreshDash();
       renderTable(filtered);
+      if (navegacaoInicialSalva?.page === 'aluno') {
+        const alunoSalvo = students.find(item => Number(item.id) === Number(navegacaoInicialSalva.sid));
+        if (alunoSalvo) {
+          go('aluno', alunoSalvo.id, false);
+        } else {
+          try {
+            sessionStorage.removeItem(navegacaoStorageKey);
+          } catch (error) {
+            console.warn('Não foi possível limpar a última tela salva:', error);
+          }
+        }
+        navegacaoInicialSalva = null;
+      }
       if (abrirPerfilApoioAoCarregar && window.usuarioTipo === 'apoio' && students[0]) {
         abrirPerfilApoioAoCarregar = false;
         go('aluno', students[0].id);
@@ -42,28 +56,22 @@ function carregarAlunos() {
 let curSid = null, relatorios = {}, laudos = {};
 let evolucaoRegistros = [];
 let evolucaoFrequencias = [];
+let evolucaoGraficoRegistrosVisiveis = [];
+let evolucaoGraficoResizeObserver = null;
+let evolucaoGraficoResizeKey = '';
 let evolucaoPagina = 1;
-const evolucaoItensPorPagina = 5;
+let evolucaoTipoTabela = 'avaliacoes';
+const evolucaoItensPorPagina = 4;
 let calDate = new Date();
 let notifCount = 0;
-
-const pageMeta = {
-  dashboard: ['Dashboard','Visão geral do sistema'],
-  perfis:    window.usuarioTipo === 'apoio'
-    ? ['Perfil do Aluno','Aluno vinculado ao seu acompanhamento']
-    : ['Perfis de Alunos','Gerencie todos os alunos PCD cadastrados'],
-  agenda:    ['Agenda','Organize seus eventos e compromissos'],
-  cadastrar: ['Cadastrar Aluno','Adicionar novo aluno ao sistema'],
-  aluno:     ['Perfil do Aluno','Informações detalhadas e documentos'],
-  usuarios:  ['Gerenciar Usuários','Controle os acessos e cadastros do sistema'],
-  quesitos:  ['Quesitos avaliação','Configure os critérios observados por condição'],
-  condicoes: ['Condições gerais','Gerencie as condições disponíveis nos cadastros'],
-  relatorios:['Relatórios de evolução','Acompanhe o progresso dos quesitos avaliados'],
-  avaliacao: ['Avaliação','Registre e acompanhe as avaliações do aluno'],
-  perfil:    ['Perfil','Gerencie suas informações e foto de perfil']
-  ,paee:     ['PAEE','Documentos do Plano de Atendimento Educacional Especializado']
-  ,pei:      ['PEI','Planos Educacionais Individualizados']
-};
+const navegacaoStorageKey = `sistema-pcd-current-page:${window.usuarioTipo || 'usuario'}:${String(window.usuarioNome || '').trim().toLocaleLowerCase()}`;
+let navegacaoInicialSalva = null;
+try {
+  const navegacaoSalva = JSON.parse(sessionStorage.getItem(navegacaoStorageKey) || 'null');
+  if (navegacaoSalva && typeof navegacaoSalva.page === 'string') navegacaoInicialSalva = navegacaoSalva;
+} catch (error) {
+  console.warn('Não foi possível restaurar a última tela:', error);
+}
 
 function abrirMenu() {
   const sidebar = document.querySelector('.sidebar');
@@ -173,10 +181,10 @@ window.addEventListener('resize', () => {
   overlay?.classList.remove('show');
 });
 
-function go(page, sid) {
+function go(page, sid, persistirNavegacao = true) {
   if (page === 'perfis' && window.usuarioTipo === 'apoio') {
     if (students[0]) {
-      go('aluno', students[0].id);
+      go('aluno', students[0].id, persistirNavegacao);
     } else {
       abrirPerfilApoioAoCarregar = true;
       carregarAlunos();
@@ -184,16 +192,26 @@ function go(page, sid) {
     return;
   }
   if (page === 'cadastrar') {
-    go('perfis');
+    go('perfis', undefined, persistirNavegacao);
     abrirModalCadastro();
     return;
   }
 
+  const pagina = document.getElementById('page-' + page);
+  if (!pagina) return;
   document.querySelectorAll('.modal-bg.open').forEach(modal => modal.classList.remove('open'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); if(n.querySelector('.ni')) n.querySelector('.ni').style.color = ''; });
-  document.getElementById('page-' + page).classList.add('active');
+  pagina.classList.add('active');
+  if (persistirNavegacao) {
+    try {
+      sessionStorage.setItem(navegacaoStorageKey, JSON.stringify({ page, sid: page === 'aluno' ? sid : null }));
+    } catch (error) {
+      console.warn('Não foi possível salvar a última tela:', error);
+    }
+  }
   const content = document.querySelector('.content');
+  if (content) content.classList.toggle('content--reports', page === 'relatorios');
   if (content) content.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   const nav = document.getElementById('nav-' + page);
@@ -203,10 +221,7 @@ function go(page, sid) {
     if (botaoGrupo) alternarGrupoMenu(botaoGrupo);
   }
   if (nav) { nav.classList.add('active'); if(nav.querySelector('.ni')) nav.querySelector('.ni').style.color = 'var(--gold)'; }
-  const [t,s] = pageMeta[page] || ['',''];
-  document.getElementById('pg-title').textContent = t;
-  document.getElementById('pg-sub').textContent = s;
-  document.getElementById('notif-dd').style.display = 'none';
+  toggleDD(false);
   if (window.innerWidth <= 768) fecharMenu();
   if (page === 'dashboard') refreshDash();
   if (page === 'perfis')    { filtered = [...students]; renderTable(filtered); if(document.getElementById('srch-inp')) document.getElementById('srch-inp').value=''; if(document.getElementById('fil-turma')) document.getElementById('fil-turma').value=''; if(document.getElementById('fil-diag')) document.getElementById('fil-diag').value=''; }
@@ -331,8 +346,24 @@ function renderRelatorioEvolucao() {
   if (metaEl) metaEl.textContent = aluno ? `Matrícula ${aluno.matricula || '—'} · Turma ${aluno.turma || '—'} · ${aluno.curso || '—'}` : '';
   const resumo = document.getElementById('evolucao-resumo');
   if (resumo) resumo.textContent = `${registros.length} ${registros.length === 1 ? 'avaliação' : 'avaliações'} · ${faltas.length} ${faltas.length === 1 ? 'falta' : 'faltas'}`;
+  evolucaoGraficoRegistrosVisiveis = registros;
   desenharGraficoEvolucao(registros);
+  observarRedimensionamentoGrafico();
   renderTabelaEvolucao(registros, frequencias);
+}
+
+function observarRedimensionamentoGrafico() {
+  const svg = document.getElementById('evolucao-grafico');
+  if (!svg || evolucaoGraficoResizeObserver || typeof ResizeObserver === 'undefined') return;
+
+  evolucaoGraficoResizeObserver = new ResizeObserver(([entry]) => {
+    const { width, height } = entry.contentRect;
+    const chave = `${Math.round(width)}x${Math.round(height)}`;
+    if (width <= 0 || height <= 0 || chave === evolucaoGraficoResizeKey) return;
+    evolucaoGraficoResizeKey = chave;
+    desenharGraficoEvolucao(evolucaoGraficoRegistrosVisiveis);
+  });
+  evolucaoGraficoResizeObserver.observe(svg);
 }
 
 function desenharGraficoEvolucao(registros) {
@@ -340,6 +371,11 @@ function desenharGraficoEvolucao(registros) {
   const legenda = document.getElementById('evolucao-legenda');
   const tendenciaEl = document.getElementById('evolucao-tendencia');
   if (!svg || !legenda || !tendenciaEl) return;
+  const H = 320;
+  const dimensoesSvg = svg.getBoundingClientRect();
+  const escalaSvg = dimensoesSvg.height > 0 ? dimensoesSvg.height / H : 1;
+  const W = dimensoesSvg.width > 0 ? dimensoesSvg.width / escalaSvg : 760;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const niveis = { triste: 0, neutro: 1, feliz: 2 };
   const rotulos = { triste: 'Ruim', neutro: 'Neutro', feliz: 'Bom' };
   const quesitos = [...new Map(registros.map(item => [String(item.quesito_id), item.quesito])).entries()]
@@ -349,11 +385,11 @@ function desenharGraficoEvolucao(registros) {
   const mapaCores = gerarMapaCoresQuesitos(quesitosParaCores);
   legenda.innerHTML = quesitos.map(([id, titulo]) => `<div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;font-size:12px;line-height:1.2"><span style="display:inline-block;width:26px;height:3px;border-radius:2px;background:${obterCorQuesito(id, titulo, mapaCores)}; margin-left:4px;"></span><span style="padding-left:2px">${escapeEvolucao(titulo)}</span></div>`).join('') || '<span style="font-size:11px;color:var(--text-muted)">Sem dados para o filtro.</span>';
   if (!registros.length) {
-    svg.innerHTML = '<text x="350" y="140" text-anchor="middle" fill="#7b8b81" font-size="13">Sem dados para o filtro selecionado</text>';
+    svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" fill="#7b8b81" font-size="13">Sem dados para o filtro selecionado</text>`;
     tendenciaEl.textContent = 'Nenhuma tendência disponível.';
     return;
   }
-  const W = 760, H = 320, left = 64, right = 18, top = 20, bottom = 46, plotW = W - left - right, plotH = H - top - bottom;
+  const left = 64, right = 18, top = 20, bottom = 46, plotW = W - left - right, plotH = H - top - bottom;
   const chaveEvento = item => `${item.data}|${item.data_hora_registro || ''}|${item.periodo}`;
   const eventos = [...new Map(registros.map(item => [chaveEvento(item), { data: item.data, hora: item.data_hora_registro, periodo: item.periodo, chave: chaveEvento(item) }])).values()]
     .sort((a, b) => String(a.data).localeCompare(String(b.data)) || String(a.hora).localeCompare(String(b.hora)) || String(a.periodo).localeCompare(String(b.periodo)));
@@ -411,26 +447,56 @@ function renderTabelaEvolucao(registros, frequencias = []) {
   const tbody = document.getElementById('evolucao-tabela');
   if (!tbody) return;
   const rotulos = { triste: 'Ruim', neutro: 'Neutro', feliz: 'Bom' };
-  const linhas = [
-    ...registros.map(item => ({ ...item, tipoRegistro: 'avaliacao' })),
-    ...frequencias.map(item => ({ ...item, tipoRegistro: 'frequencia' })),
-  ].sort((a, b) => String(b.data).localeCompare(String(a.data))
-    || String(b.data_hora_registro || '').localeCompare(String(a.data_hora_registro || ''))
-    || String(a.tipoRegistro).localeCompare(String(b.tipoRegistro)));
+  const cabecalho = document.getElementById('evolucao-tabela-cabecalho');
+  const tabelaFrequencia = evolucaoTipoTabela === 'frequencia';
+  const linhas = (tabelaFrequencia
+    ? frequencias.map(item => ({ ...item, tipoRegistro: 'frequencia' }))
+    : registros.map(item => ({ ...item, tipoRegistro: 'avaliacao' })))
+    .sort((a, b) => String(b.data).localeCompare(String(a.data))
+      || String(b.data_hora_registro || '').localeCompare(String(a.data_hora_registro || ''))
+      || String(a.tipoRegistro).localeCompare(String(b.tipoRegistro)));
+  if (cabecalho) {
+    cabecalho.innerHTML = tabelaFrequencia
+      ? '<tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PRESENÇA</th><th style="text-align:left;padding:11px;font-size:10px">REGISTRADO POR</th></tr>'
+      : '<tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO</th></tr>';
+  }
+  document.querySelectorAll('[data-evolucao-tabela-tipo]').forEach(botao => {
+    const ativo = botao.dataset.evolucaoTabelaTipo === evolucaoTipoTabela;
+    botao.classList.toggle('is-active', ativo);
+    botao.setAttribute('aria-pressed', String(ativo));
+  });
   const totalPaginas = Math.max(1, Math.ceil(linhas.length / evolucaoItensPorPagina));
   evolucaoPagina = Math.min(Math.max(1, evolucaoPagina), totalPaginas);
   const inicio = (evolucaoPagina - 1) * evolucaoItensPorPagina;
   const linhasPagina = linhas.slice(inicio, inicio + evolucaoItensPorPagina);
   tbody.innerHTML = linhasPagina.length ? linhasPagina.map(item => {
-    const falta = item.tipoRegistro === 'frequencia';
-    const avaliacao = falta ? (Number(item.presente) === 1 ? 'Presente' : 'Faltou') : rotulos[item.avaliacao] || item.avaliacao;
-    const classe = falta ? (Number(item.presente) === 1 ? 't-ok' : 't-danger') : item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
-    return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${item.data.split('-').reverse().join('/')}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${falta ? 'Frequência' : escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${falta ? '—' : escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(falta ? item.usuario_nome || '—' : item.observacao || '—')}</td></tr>`;
-  }).join('') : '<tr><td colspan="5" style="padding:22px;text-align:center;color:var(--text-muted)">Nenhuma avaliação ou frequência encontrada para este filtro.</td></tr>';
+    const data = item.data.split('-').reverse().join('/');
+    if (tabelaFrequencia) {
+      const presente = Number(item.presente) === 1;
+      return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${presente ? 't-ok' : 't-danger'}">${presente ? 'Presente' : 'Faltou'}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.usuario_nome || '—')}</td></tr>`;
+    }
+    const classe = item.avaliacao === 'feliz' ? 't-ok' : item.avaliacao === 'neutro' ? 't-warn' : 't-danger';
+    return `<tr><td style="padding:10px;border-bottom:1px solid var(--border)">${data}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.periodo)}</td><td style="padding:10px;border-bottom:1px solid var(--border)">${escapeEvolucao(item.quesito)}</td><td style="padding:10px;border-bottom:1px solid var(--border)"><span class="tag ${classe}">${escapeEvolucao(rotulos[item.avaliacao] || item.avaliacao)}</span></td><td style="padding:10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${escapeEvolucao(item.observacao || '—')}</td></tr>`;
+  }).join('') : `<tr><td class="evolucao-mensagem-vazia" colspan="${tabelaFrequencia ? 3 : 5}">${tabelaFrequencia ? 'Nenhuma frequência encontrada para este filtro.' : 'Nenhuma avaliação encontrada para este filtro.'}</td></tr>`;
+  tbody.closest('.table-scroll')?.classList.toggle('table-scroll--empty', linhasPagina.length === 0);
   const paginacao = document.getElementById('evolucao-paginacao');
   if (paginacao) {
     paginacao.innerHTML = linhas.length > evolucaoItensPorPagina ? `<button type="button" class="btn-g" ${evolucaoPagina === 1 ? 'disabled' : ''} onclick="mudarPaginaEvolucao(-1)"><i class="bi bi-chevron-left"></i> Anterior</button><span style="font-size:12px;color:var(--text-muted)">Página ${evolucaoPagina} de ${totalPaginas}</span><button type="button" class="btn-g" ${evolucaoPagina === totalPaginas ? 'disabled' : ''} onclick="mudarPaginaEvolucao(1)">Próxima <i class="bi bi-chevron-right"></i></button>` : '';
   }
+}
+
+function alternarTabelaEvolucao(tipo) {
+  if (!['avaliacoes', 'frequencia'].includes(tipo) || tipo === evolucaoTipoTabela) return;
+  evolucaoTipoTabela = tipo;
+  evolucaoPagina = 1;
+  const alunoId = document.getElementById('evolucao-aluno')?.value;
+  const quesitoId = document.getElementById('evolucao-quesito')?.value || '__todos';
+  const periodo = document.getElementById('evolucao-periodo')?.value || '__todos';
+  const inicio = document.getElementById('evolucao-inicio')?.value || '';
+  const fim = document.getElementById('evolucao-fim')?.value || '';
+  const registros = evolucaoRegistros.filter(item => String(item.aluno_id) === String(alunoId) && (quesitoId === '__todos' || String(item.quesito_id) === String(quesitoId)) && (periodo === '__todos' || String(item.periodo) === periodo) && (!inicio || item.data >= inicio) && (!fim || item.data <= fim));
+  const frequencias = evolucaoFrequencias.filter(item => String(item.aluno_id) === String(alunoId) && (!inicio || item.data >= inicio) && (!fim || item.data <= fim));
+  renderTabelaEvolucao(registros, frequencias);
 }
 
 function mudarPaginaEvolucao(direcao) {
@@ -551,8 +617,8 @@ function avisarAlunoFaltou() {
 function montarCardAvaliacao(data, periodo, historico = false) {
   const registro = obterAvaliacao(data, periodo);
   const faltaRegistrada = Number(obterFrequenciaApoio(data)?.presente) === 0;
-  const editavel = podeEditarAvaliacao(data, periodo);
   const dataAtual = dataLocalAvaliacao();
+  const editavel = !historico && data < dataAtual ? true : podeEditarAvaliacao(data, periodo);
   const ontem = new Date(`${dataAtual}T12:00:00`);
   ontem.setDate(ontem.getDate() - 1);
   const dataAnterior = ontem.toISOString().slice(0, 10);
@@ -795,6 +861,12 @@ function renderizarPaginaAvaliacao() {
   const historico = document.getElementById('avaliacao-historico');
   inicializarCalendarioAvaliacao();
   const dataAtual = dataLocalAvaliacao();
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (seletorData) {
+    seletorData.max = dataAtual;
+    if (!seletorData.value || seletorData.value > dataAtual) seletorData.value = dataAtual;
+  }
+  const dataSelecionada = seletorData?.value || dataAtual;
   const aluno = avaliacaoDados.aluno;
   const avatar = document.getElementById('avaliacao-aluno-avatar');
   const nome = document.getElementById('avaliacao-aluno-nome');
@@ -810,8 +882,6 @@ function renderizarPaginaAvaliacao() {
   if (nascimento) nascimento.textContent = aluno?.data_nascimento ? formatDateBR(aluno.data_nascimento) : '—';
   const apoio = document.getElementById('avaliacao-aluno-apoio');
   if (apoio) apoio.textContent = aluno?.apoio_nome || '—';
-  const dataEl = document.getElementById('avaliacao-data-atual');
-  if (dataEl) dataEl.textContent = formatDateBR(dataAtual);
   renderizarFrequenciaApoio();
   if (!aluno) {
     if (dia) dia.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-person-x"></i><span style="font-size:13px">Nenhum aluno vinculado ao seu perfil.</span></div>';
@@ -823,7 +893,7 @@ function renderizarPaginaAvaliacao() {
     if (historico) renderizarHistoricoAvaliacao();
     return;
   }
-  if (dia) dia.innerHTML = ['manha', 'tarde'].map(periodo => montarCardAvaliacao(dataAtual, periodo)).join('');
+  if (dia) dia.innerHTML = ['manha', 'tarde'].map(periodo => montarCardAvaliacao(dataSelecionada, periodo)).join('');
   if (historico) renderizarHistoricoAvaliacao();
 }
 
@@ -842,6 +912,11 @@ window.salvarFrequenciaApoio = salvarFrequenciaApoio;
 function carregarPaginaAvaliacao() {
   const alvo = document.getElementById('avaliacao-dia');
   if (!alvo || window.usuarioTipo !== 'apoio') return;
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (seletorData) {
+    seletorData.max = dataLocalAvaliacao();
+    if (!seletorData.value || seletorData.value > dataLocalAvaliacao()) seletorData.value = dataLocalAvaliacao();
+  }
   alvo.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-hourglass-split"></i><span style="font-size:13px">Carregando avaliações...</span></div>';
   avaliacaoDados.frequenciaErro = '';
   fetch('controllers/avaliacao.php')
@@ -850,23 +925,47 @@ function carregarPaginaAvaliacao() {
       if (!ok || !data.success) throw new Error(data.message || 'Não foi possível carregar as avaliações.');
       avaliacaoDados = data;
       avaliacaoDados.frequencia = null;
-      if (data.aluno?.id) {
-        try {
-          const parametros = new URLSearchParams({ aluno_id: data.aluno.id, data: dataLocalAvaliacao() });
-          const resposta = await fetch(`controllers/frequencia_apoio.php?${parametros.toString()}`);
-          const frequencia = await resposta.json();
-          if (!resposta.ok || !frequencia.success) throw new Error(frequencia.message || 'Não foi possível carregar a frequência.');
-          avaliacaoDados.frequencia = frequencia.frequencia;
-          avaliacaoDados.frequencias = Array.isArray(avaliacaoDados.frequencias) ? avaliacaoDados.frequencias : [];
-          avaliacaoDados.frequencias = avaliacaoDados.frequencias.filter(item => item.data !== dataLocalAvaliacao());
-          if (frequencia.frequencia) avaliacaoDados.frequencias.push(frequencia.frequencia);
-        } catch (error) {
-          avaliacaoDados.frequenciaErro = error.message || 'Não foi possível carregar a frequência.';
-        }
-      }
+      await carregarFrequenciaDataAvaliacao(seletorData?.value || dataLocalAvaliacao());
       renderizarPaginaAvaliacao();
     })
     .catch(error => { alvo.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:34px 0"><i class="bi bi-exclamation-circle"></i><span style="font-size:13px">${escaparUsuario(error.message)}</span></div>`; });
+}
+
+async function carregarFrequenciaDataAvaliacao(data) {
+  const requestId = ++avaliacaoFrequenciaRequest;
+  avaliacaoDados.frequencias = Array.isArray(avaliacaoDados.frequencias) ? avaliacaoDados.frequencias : [];
+  avaliacaoDados.frequencia = obterFrequenciaApoio(data);
+  avaliacaoDados.frequenciaErro = '';
+  renderizarFrequenciaApoio();
+  if (!avaliacaoDados.aluno?.id) return;
+
+  try {
+    const parametros = new URLSearchParams({ aluno_id: avaliacaoDados.aluno.id, data });
+    const resposta = await fetch(`controllers/frequencia_apoio.php?${parametros.toString()}`);
+    const resultado = await resposta.json();
+    if (!resposta.ok || !resultado.success) throw new Error(resultado.message || 'Não foi possível carregar a frequência.');
+    if (requestId !== avaliacaoFrequenciaRequest) return;
+    avaliacaoDados.frequencias = avaliacaoDados.frequencias.filter(item => item.data !== data);
+    if (resultado.frequencia) avaliacaoDados.frequencias.push(resultado.frequencia);
+    avaliacaoDados.frequencia = resultado.frequencia;
+  } catch (error) {
+    if (requestId !== avaliacaoFrequenciaRequest) return;
+    avaliacaoDados.frequenciaErro = error.message || 'Não foi possível carregar a frequência.';
+  }
+  renderizarPaginaAvaliacao();
+}
+
+function alterarDataAvaliacao() {
+  const seletorData = document.getElementById('avaliacao-data-selecionada');
+  if (!seletorData) return;
+  const hoje = dataLocalAvaliacao();
+  seletorData.max = hoje;
+  if (!seletorData.value || seletorData.value > hoje) {
+    seletorData.value = hoje;
+    toast('Não é possível selecionar uma data futura.', 'bi-exclamation-triangle', 'amber');
+  }
+  carregarFrequenciaDataAvaliacao(seletorData.value);
+  renderizarPaginaAvaliacao();
 }
 
 function renderizarFrequenciaApoio() {
@@ -909,7 +1008,7 @@ function salvarFrequenciaApoio() {
   fetch('controllers/frequencia_apoio.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ aluno_id: avaliacaoDados.aluno.id, data: dataLocalAvaliacao(), presente: Number(presente) })
+    body: JSON.stringify({ aluno_id: avaliacaoDados.aluno.id, data: document.getElementById('avaliacao-data-selecionada')?.value || dataLocalAvaliacao(), presente: Number(presente) })
   })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
@@ -932,7 +1031,7 @@ function salvarFrequenciaApoio() {
 
 function abrirAvaliacao(data, periodo, modo) {
   const registro = obterAvaliacao(data, periodo);
-  if (modo === 'editar' && !podeEditarAvaliacao(data, periodo)) modo = 'visualizar';
+  if (modo === 'editar' && data === dataLocalAvaliacao() && !podeEditarAvaliacao(data, periodo)) modo = 'visualizar';
   const titulo = document.getElementById('avaliacao-modal-titulo');
   const meta = document.getElementById('avaliacao-modal-meta');
   const quesitos = document.getElementById('avaliacao-modal-quesitos');
@@ -1004,6 +1103,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('evolucao-inicio')?.addEventListener('change', renderRelatorioEvolucao);
   document.getElementById('evolucao-fim')?.addEventListener('change', renderRelatorioEvolucao);
+  document.getElementById('avaliacao-data-selecionada')?.addEventListener('change', alterarDataAvaliacao);
 });
 
   function carregarEvolucaoDashboard(alunos) {
@@ -1267,6 +1367,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ===== PERFIL =====
+  let perfilAlunoResizeObserver = null;
+  function sincronizarAlturaPainelPerfil() {
+    const sidebar = document.getElementById('perfil-aluno-sidebar');
+    const painel = document.getElementById('perfil-aluno-documentos');
+    if (!sidebar || !painel) return;
+    if (window.innerWidth <= 768) {
+      painel.style.height = '';
+      return;
+    }
+    const altura = sidebar.getBoundingClientRect().height;
+    if (altura > 0) painel.style.height = `${altura}px`;
+  }
+
+  window.addEventListener('resize', sincronizarAlturaPainelPerfil);
+
   function openProfile(id) {
     const s = students.find(x=>x.id===id); if(!s) return;
     curSid = id;
@@ -1295,6 +1410,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPAEE(id);
     renderLaudos(id);
     if (ehGestorAvaliacao) carregarAssociacaoQuesitos(id);
+    requestAnimationFrame(sincronizarAlturaPainelPerfil);
+    if (perfilAlunoResizeObserver) perfilAlunoResizeObserver.disconnect();
+    if ('ResizeObserver' in window) {
+      perfilAlunoResizeObserver = new ResizeObserver(sincronizarAlturaPainelPerfil);
+      perfilAlunoResizeObserver.observe(document.getElementById('perfil-aluno-sidebar'));
+    }
   }
 
   function aplicarModoSomenteLeitura() {
@@ -1970,7 +2091,7 @@ function handleLaudoUpload() {
       toast('Selecione um arquivo PDF para enviar.','bi-file-earmark-pdf','amber');
       return;
     }
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isPdf = /\.pdf$/i.test(file.name);
     if (!isPdf) {
       toast('Apenas arquivos PDF são aceitos.','bi-file-earmark-pdf','amber');
       return;
@@ -2012,17 +2133,19 @@ function handleLaudoUpload() {
         }
         list.innerHTML = docs.map(doc => {
           const url = doc.url || `uploads/laudos/${encodeURIComponent(doc.arquivo || '')}`;
+          const arquivo = escapeEvolucao(doc.arquivo || 'Laudo PDF');
+          const urlSegura = escapeEvolucao(url);
           return `
             <div class="doc-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
               <div style="display:flex;gap:10px;align-items:center">
                 <i class="bi bi-file-earmark-pdf" style="font-size:18px;color:var(--peach)"></i>
                 <div>
-                  <div style="font-size:13px;font-weight:600">${doc.arquivo || 'Laudo PDF'}</div>
+                  <div style="font-size:13px;font-weight:600">${arquivo}</div>
                   <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Salvo no servidor</div>
                 </div>
               </div>
               <div style="display:flex;gap:8px;align-items:center">
-                <a href="${url}" target="_blank" class="btn-g" style="padding:6px 12px;font-size:12px">Abrir PDF</a>
+                <a href="${urlSegura}" target="_blank" rel="noopener noreferrer" class="btn-g" style="padding:6px 12px;font-size:12px">Abrir PDF</a>
                 ${String(window.usuarioTipo || '').trim().toLowerCase() !== 'apoio' ? `<button onclick="deleteLaudo(${doc.id})" class="btn-g" style="padding:6px 12px;font-size:12px;background:rgba(255,0,0,0.06);border-color:rgba(255,0,0,0.12)">Excluir</button>` : ''}
               </div>
             </div>`;
@@ -2034,8 +2157,8 @@ function handleLaudoUpload() {
   }
 
 let planosEstado = {
-  pei: { etapa: 'alunos', aluno: null, disciplina: null, registro: null, token: 0 },
-  paee: { etapa: 'alunos', aluno: null, disciplina: null, registros: [], registro: null, token: 0 }
+  pei: { etapa: 'alunos', aluno: null, disciplina: null, disciplinas: [], registro: null, novaDisciplina: false, token: 0 },
+  paee: { etapa: 'alunos', aluno: null, disciplina: null, disciplinas: [], registro: null, novaDisciplina: false, token: 0 }
 };
 
 function escaparPlano(valor) {
@@ -2044,7 +2167,7 @@ function escaparPlano(valor) {
 
 function abrirModuloPlano(modulo, alunoId = null) {
   const estado = planosEstado[modulo];
-  estado.etapa = 'alunos'; estado.aluno = null; estado.disciplina = null; estado.registros = []; estado.registro = null; estado.token += 1;
+  estado.etapa = 'alunos'; estado.aluno = null; estado.disciplina = null; estado.disciplinas = []; estado.registro = null; estado.novaDisciplina = false; estado.token += 1;
   document.getElementById(`plano-${modulo}-voltar`)?.style.setProperty('display', 'none');
   if (alunoId != null && Number(alunoId) > 0) {
     selecionarAlunoPlano(modulo, Number(alunoId));
@@ -2070,78 +2193,103 @@ function carregarAlunosPlano(modulo, token) {
 }
 
 function selecionarAlunoPlano(modulo, alunoId) {
-  const estado = planosEstado[modulo]; estado.aluno = { id: alunoId }; estado.disciplina = null; estado.registro = null; estado.etapa = modulo === 'paee' ? 'documentos' : 'disciplinas'; estado.token += 1;
+  const estado = planosEstado[modulo]; estado.aluno = { id: alunoId }; estado.disciplina = null; estado.registro = null; estado.novaDisciplina = false; estado.etapa = 'disciplinas'; estado.token += 1;
   const token = estado.token;
   const alvo = document.getElementById(`plano-${modulo}-conteudo`);
   document.getElementById(`plano-${modulo}-voltar`)?.style.setProperty('display', window.usuarioTipo === 'apoio' ? 'none' : 'inline-flex');
-  if (modulo === 'paee') {
-    carregarPaeesDoAluno(estado, token, alvo);
-    return;
-  }
-  estado.disciplina = null;
   alvo.innerHTML = '<div class="empty" style="padding:30px 0"><i class="bi bi-hourglass-split"></i><span>Carregando disciplinas...</span></div>';
   fetch(`controllers/recurso_planos.php?action=disciplinas&aluno_id=${Number(alunoId)}`, { cache: 'no-store' })
-    .then(r => r.json()).then(data => {
+    .then(r => r.json())
+    .then(data => {
       if (estado.token !== token) return;
       if (!data.success) throw new Error(data.message || 'Falha ao consultar disciplinas.');
       estado.aluno = data.aluno;
+      estado.disciplinas = data.disciplinas;
       document.getElementById(`plano-${modulo}-contexto`).textContent = `${data.aluno.nome} · selecione uma disciplina`;
-      const gestao = window.usuarioTipo !== 'apoio' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><input class="inp" id="nova-disciplina-${modulo}" placeholder="Nova disciplina"><button class="btn-p" type="button" onclick="cadastrarDisciplinaPlano('${modulo}')"><i class="bi bi-plus-lg"></i> Cadastrar e associar</button></div>` : '';
+      const gestao = window.usuarioTipo !== 'apoio' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="btn-p" type="button" onclick="cadastrarDisciplinaPlano('${modulo}')"><i class="bi bi-plus-lg"></i> Cadastrar e associar</button></div>` : '';
       const vazio = '<div class="empty" style="padding:26px 0"><i class="bi bi-journal-x"></i><span>Este aluno não possui disciplinas associadas.</span></div>';
-      alvo.innerHTML = gestao + (data.disciplinas.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">${data.disciplinas.map(d => `<button type="button" class="card" style="padding:16px;text-align:left;cursor:pointer" onclick="selecionarDisciplinaPlano('${modulo}',${Number(d.id)})"><div style="font-weight:700">${escaparPlano(d.nome)}</div><div style="font-size:11px;color:var(--text-muted);margin-top:7px">${modulo === 'pei' ? (Number(d.tem_pei) ? 'PEI cadastrado' : 'PEI ainda não cadastrado') : (Number(d.tem_paee) ? 'PAEE cadastrado' : 'PAEE ainda não cadastrado')}</div></button>`).join('')}</div>` : vazio);
+      const cards = data.disciplinas.length ? `<div class="plan-discipline-grid">${data.disciplinas.map(d => {
+        const cadastrado = Number(modulo === 'pei' ? d.tem_pei : d.tem_paee) === 1;
+        const documento = modulo.toUpperCase();
+        const inicial = Array.from(String(d.nome || 'D'))[0] || 'D';
+        return `<div class="student-profile-block plan-discipline-card" role="button" tabindex="0" onclick="selecionarDisciplinaPlano('${modulo}',${Number(d.id)})" onkeydown="if(event.target===this&&(event.key==='Enter'||event.key===' ')){event.preventDefault();selecionarDisciplinaPlano('${modulo}',${Number(d.id)})}">
+          <div class="student-profile-block__top">
+            <div class="student-profile-block__identity">
+              <span class="plan-discipline-card__avatar" aria-hidden="true">${escaparPlano(inicial)}</span>
+              <span class="student-profile-block__name">${escaparPlano(d.nome)}</span>
+            </div>
+            ${['master', 'aee'].includes(window.usuarioTipo) ? `<button type="button" class="plan-discipline-card__delete" aria-label="Remover ${escaparPlano(d.nome)} deste aluno" title="Remover disciplina" onclick="event.stopPropagation();excluirDisciplinaPlano('${modulo}',${Number(data.aluno.id)},${Number(d.id)},decodeURIComponent('${encodeURIComponent(String(d.nome)).replace(/'/g, '%27')}'))" onkeydown="event.stopPropagation()"><i class="bi bi-trash3" aria-hidden="true"></i></button>` : '<i class="bi bi-chevron-right student-profile-block__arrow" aria-hidden="true"></i>'}
+          </div>
+          <div class="plan-discipline-card__status">
+            <span class="student-profile-block__label">Status do ${documento}</span>
+            <span class="plan-discipline-card__badge${cadastrado ? ' is-complete' : ''}">${cadastrado ? `${documento} cadastrado` : 'Pendente'}</span>
+          </div>
+          <div class="student-profile-block__details">
+            <div><span class="student-profile-block__label">Aluno</span><strong>${escaparPlano(data.aluno.nome)}</strong></div>
+            <div><span class="student-profile-block__label">Documento</span><strong>${documento}</strong></div>
+          </div>
+        </div>`;
+      }).join('')}</div>` : vazio;
+      alvo.innerHTML = gestao + cards;
     }).catch(error => { alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`; });
 }
 
-function carregarPaeesDoAluno(estado, token, alvo) {
-  alvo.innerHTML = '<div class="empty" style="padding:30px 0"><i class="bi bi-hourglass-split"></i><span>Carregando documentos PAEE...</span></div>';
-  return fetch(`controllers/recurso_planos.php?action=paees_aluno&aluno_id=${Number(estado.aluno.id)}`)
-    .then(r => r.json()).then(documentos => {
-    if (estado.token !== token) return;
-    if (!documentos.success) throw new Error(documentos.message || 'Falha ao consultar os documentos PAEE.');
-    estado.aluno = documentos.aluno;
-    estado.registros = documentos.registros;
-    document.getElementById('plano-paee-contexto').textContent = `${estado.aluno.nome} · documentos PAEE`;
-    const novo = ['master', 'aee'].includes(window.usuarioTipo)
-      ? `<div style="margin-bottom:16px"><input class="inp" id="novo-documento-paee" placeholder="Nome do documento PAEE"><button class="btn-p" type="button" style="margin-top:8px" onclick="cadastrarDocumentoPaee()"><i class="bi bi-plus-lg"></i> Cadastrar PAEE</button></div>`
-      : '';
-    const lista = estado.registros.length
-      ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">${estado.registros.map(item => `<button type="button" class="card" style="padding:16px;text-align:left;cursor:pointer" onclick="abrirDocumentoPaee(${Number(item.id)})"><div style="font-weight:700">${escaparPlano(item.nome_documento || 'PAEE')}</div><div style="font-size:11px;color:var(--text-muted);margin-top:7px">${item.data_elaboracao || item.data_atendimento ? `${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} · ${escaparPlano(item.responsavel_preenchimento || item.profissional_responsavel || 'Sem responsável informado')}` : 'Documento não preenchido'}</div></button>`).join('')}</div>`
-      : '';
-    alvo.innerHTML = novo + lista;
-  }).catch(error => {
-    alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`;
-    throw error;
+function excluirDisciplinaPlano(modulo, alunoId, disciplinaId, nomeDisciplina) {
+  openConfirm(`Remover "${nomeDisciplina}" deste aluno? O documento e o histórico serão preservados.`, function() {
+    fetch('controllers/recurso_planos.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'desassociar_disciplina', aluno_id: alunoId, disciplina_id: disciplinaId })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) throw new Error(data.message || 'Não foi possível remover a disciplina.');
+        toast(data.message, 'bi-trash3', 'success');
+        selecionarAlunoPlano(modulo, alunoId);
+      })
+      .catch(error => toast(error.message, 'bi-x-circle', 'danger'));
   });
 }
 
-function cadastrarDocumentoPaee() {
-  const estado = planosEstado.paee;
-  const nome = document.getElementById('novo-documento-paee')?.value.trim() || '';
-  if (!nome) return toast('Informe o nome do documento PAEE.', 'bi-exclamation-triangle', 'amber');
-  fetch('controllers/recurso_planos.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'cadastrar_paee', aluno_id: estado.aluno.id, nome_documento: nome })
-  }).then(r => r.json()).then(data => {
-    if (!data.success) throw new Error(data.message || 'Não foi possível cadastrar o documento PAEE.');
-    toast(data.message, 'bi-check-circle', 'success');
-    carregarPaeesDoAluno(estado, estado.token, document.getElementById('plano-paee-conteudo'));
-  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
-}
-
-function abrirDocumentoPaee(id) {
-  abrirHistoricoPlano('paee', id);
-}
-
 function cadastrarDisciplinaPlano(modulo) {
-  const estado = planosEstado[modulo]; const input = document.getElementById(`nova-disciplina-${modulo}`); const nome = input?.value.trim();
-  if (!nome || !estado.aluno) return toast('Informe o nome da disciplina.', 'bi-exclamation-circle', 'amber');
-  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ action:'cadastrar_disciplina', aluno_id:estado.aluno.id, nome }) }).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); toast(data.message, 'bi-check-circle', 'success'); selecionarAlunoPlano(modulo, estado.aluno.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  const estado = planosEstado[modulo];
+  if (!estado.aluno || !['pei', 'paee'].includes(modulo)) return;
+  estado.disciplina = null;
+  estado.registro = null;
+  estado.novaDisciplina = true;
+  estado.etapa = 'documento';
+  document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · nova disciplina`;
+  editarPlano(modulo, 0);
 }
 
 function selecionarDisciplinaPlano(modulo, disciplinaId) {
-  const estado = planosEstado[modulo]; estado.disciplina = { id: disciplinaId }; estado.registro = null; estado.etapa = 'documento'; estado.token += 1; const token = estado.token; const alvo = document.getElementById(`plano-${modulo}-conteudo`);
-  fetch(`controllers/recurso_planos.php?action=historico&modulo=${modulo}&aluno_id=${estado.aluno.id}&disciplina_id=${disciplinaId}`, { cache: 'no-store' }).then(r=>r.json()).then(data => { if (estado.token !== token) return; if (!data.success) throw new Error(data.message); const historico = data.registros || []; const recente = historico[0]; estado.registro = recente || null; document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · ${recente?.disciplina_nome || 'Disciplina selecionada'}`; alvo.innerHTML = renderDocumentoPlano(modulo, recente, historico); }).catch(error => { alvo.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`; });
+  const estado = planosEstado[modulo];
+  const disciplina = estado.disciplinas.find(item => Number(item.id) === Number(disciplinaId));
+  estado.disciplina = { id: Number(disciplinaId), nome: disciplina?.nome || '' };
+  estado.registro = null; estado.novaDisciplina = false; estado.etapa = 'documento'; estado.token += 1; const token = estado.token; const alvo = document.getElementById(`plano-${modulo}-conteudo`);
+  fetch(`controllers/recurso_planos.php?action=historico&modulo=${modulo}&aluno_id=${estado.aluno.id}&disciplina_id=${disciplinaId}`, { cache: 'no-store' }).then(r=>r.json()).then(data => {
+    if (estado.token !== token) return;
+    if (!data.success) throw new Error(data.message);
+    const historico = data.registros || [];
+    const recente = historico[0];
+    estado.registro = recente || null;
+    document.getElementById(`plano-${modulo}-contexto`).textContent = `${estado.aluno.nome} · ${recente?.disciplina_nome || 'Disciplina selecionada'}`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    const conteudoModal = document.getElementById('plan-document-modal-content');
+    if (!recente && window.usuarioTipo !== 'apoio') editarPlano(modulo, 0);
+    else if (modulo === 'paee' && recente && !recente.data_elaboracao && window.usuarioTipo !== 'apoio') editarPlano(modulo, Number(recente.id));
+    else {
+      conteudoModal.innerHTML = recente
+        ? renderDocumentoPlano(modulo, recente, historico)
+        : '<div class="empty" style="padding:24px 0"><i class="bi bi-file-earmark-text"></i><span>Este documento ainda não foi cadastrado.</span></div>';
+      openM('plan-document-modal');
+    }
+  }).catch(error => {
+    const destino = document.getElementById('plan-document-modal-content');
+    destino.innerHTML = `<div class="empty" style="padding:30px 0"><i class="bi bi-exclamation-circle"></i><span>${escaparPlano(error.message)}</span></div>`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    openM('plan-document-modal');
+  });
 }
 
 function renderDocumentoPlano(modulo, registro, historico) {
@@ -2149,13 +2297,13 @@ function renderDocumentoPlano(modulo, registro, historico) {
   const rascunhoPaee = modulo === 'paee' && registro && !registro.data_elaboracao;
   const campos = modulo === 'pei'
     ? [['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']]
-    : [['nome_documento','Matéria escolar'],['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']];
+    : [['nome_documento','Nome do documento'],['data_elaboracao','Data de elaboração'],['responsavel_preenchimento','Responsável pelo preenchimento'],['objetivos_pedagogicos','Objetivos pedagógicos'],['habilidades_desenvolver','Habilidades a desenvolver'],['estrategias_ensino','Estratégias de ensino'],['recursos_acessibilidade','Recursos de acessibilidade'],['adaptacoes_curriculares','Adaptações curriculares'],['criterios_avaliacao','Critérios de avaliação'],['observacoes','Observações']];
   const form = rascunhoPaee
     ? '<div class="empty" style="padding:20px 0"><i class="bi bi-file-earmark-text"></i><span>Este documento PAEE ainda não foi preenchido.</span></div>'
     : registro
       ? campos.map(([campo, label]) => `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" style="min-height:42px;white-space:pre-wrap">${escaparPlano(registro[campo] || '—')}</div></div>`).join('')
       : '<div class="empty" style="padding:20px 0"><i class="bi bi-file-earmark-text"></i><span>Este plano ainda não foi cadastrado.</span></div>';
-  const historicoHtml = historico.length > 1 ? `<div style="margin-top:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">Documentos anteriores</div>${historico.slice(1).map(item => `<button type="button" class="btn-g" style="margin:0 6px 6px 0" onclick="abrirHistoricoPlano('${modulo}',${Number(item.id)})">${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} #${Number(item.id)}</button>`).join('')}</div>` : '';
+  const historicoHtml = modulo === 'pei' && historico.length > 1 ? `<div style="margin-top:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">Documentos anteriores</div>${historico.slice(1).map(item => `<button type="button" class="btn-g" style="margin:0 6px 6px 0" onclick="abrirHistoricoPlano('${modulo}',${Number(item.id)})">${escaparPlano(formatDateBR(item.data_elaboracao || item.data_atendimento))} #${Number(item.id)}</button>`).join('')}</div>` : '';
   const estado = planosEstado[modulo];
   const contexto = modulo === 'paee'
     ? 'Documento PAEE'
@@ -2168,25 +2316,68 @@ function editarPlano(modulo, id) {
   const estado = planosEstado[modulo]; const registro = id ? estado.registro : null;
   const campos = modulo === 'pei'
     ? [['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']]
-    : [['nome_documento','Matéria escolar','text'],['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']];
-  const camposHtml = campos.map(([campo, label, tipo]) => `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(registro?.[campo] || '')}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(registro?.[campo] || '')}">`}</div>`).join('');
-  document.getElementById(`plano-${modulo}-conteudo`).innerHTML = `<div style="font-size:14px;font-weight:700;margin-bottom:14px">${registro ? 'Editar documento' : 'Novo documento'} · ${escaparPlano(estado.aluno.nome)}</div>${camposHtml}<button type="button" class="btn-p" onclick="salvarPlanoModulo('${modulo}',${id})"><i class="bi bi-save2"></i> Salvar</button>`;
+    : [['nome_documento','Nome do documento','text'],['data_elaboracao','Data de elaboração','date'],['responsavel_preenchimento','Responsável pelo preenchimento','text'],['objetivos_pedagogicos','Objetivos pedagógicos','textarea'],['habilidades_desenvolver','Habilidades a desenvolver','textarea'],['estrategias_ensino','Estratégias de ensino','textarea'],['recursos_acessibilidade','Recursos de acessibilidade','textarea'],['adaptacoes_curriculares','Adaptações curriculares','textarea'],['criterios_avaliacao','Critérios de avaliação','textarea'],['observacoes','Observações','textarea']];
+  if (estado.novaDisciplina) campos.unshift(['nome_disciplina',modulo === 'pei' ? 'Nome da disciplina' : 'Nome do documento','text']);
+  const camposHtml = campos.map(([campo, label, tipo]) => {
+    if (campo === 'data_elaboracao') {
+      const data = registro?.data_elaboracao || window.pcdDataHoje;
+      return `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(formatDateBR(data))}</div></div>`;
+    }
+    if (modulo === 'paee' && campo === 'nome_documento') {
+      if (estado.novaDisciplina) return '';
+      const materia = estado.disciplina?.nome || registro?.disciplina_nome || registro?.nome_documento || 'Nome do documento';
+      return `<div style="margin-bottom:12px"><label class="lbl">Nome do documento</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(materia)}</div></div>`;
+    }
+    if (campo === 'responsavel_preenchimento') {
+      const responsavel = window.usuarioNome || registro?.[campo] || '';
+      return `<div style="margin-bottom:12px"><label class="lbl">${label}</label><div class="inp" aria-readonly="true" style="min-height:42px;display:flex;align-items:center">${escaparPlano(responsavel || '—')}</div><input type="hidden" class="plano-campo" data-campo="${campo}" value="${escaparPlano(responsavel)}"></div>`;
+    }
+    const valor = registro?.[campo] || '';
+    return `<div style="margin-bottom:12px"><label class="lbl">${label}</label>${tipo === 'textarea' ? `<textarea class="inp plano-campo" data-campo="${campo}" rows="3">${escaparPlano(valor)}</textarea>` : `<input class="inp plano-campo" data-campo="${campo}" type="${tipo}" value="${escaparPlano(valor)}">`}</div>`;
+  }).join('');
+  const conteudo = `<div class="plan-document-modal__form"><div style="font-size:14px;font-weight:700;margin-bottom:14px">${registro ? 'Editar documento' : 'Novo documento'} · ${escaparPlano(estado.aluno.nome)}</div>${camposHtml}<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button type="button" class="btn-g" onclick="closeM('plan-document-modal')">Cancelar</button><button type="button" class="btn-p" onclick="salvarPlanoModulo('${modulo}',${id})"><i class="bi bi-save2"></i> Salvar</button></div></div>`;
+  document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+  document.getElementById('plan-document-modal-content').innerHTML = conteudo;
+  openM('plan-document-modal');
+  const primeiroCampo = estado.novaDisciplina ? 'nome_disciplina' : 'objetivos_pedagogicos';
+  setTimeout(() => document.querySelector(`#plan-document-modal-content [data-campo="${primeiroCampo}"]`)?.focus(), 50);
 }
 
 function salvarPlanoModulo(modulo, id) {
   const estado = planosEstado[modulo]; const payload = { action:'salvar', modulo, id, aluno_id:estado.aluno.id, disciplina_id:estado.disciplina?.id || 0 };
-  if (modulo === 'paee') {
-    const nome = document.querySelector('#page-paee-conteudo [data-campo="nome_documento"]')?.value.trim();
-    const data = document.querySelector('#page-paee-conteudo [data-campo="data_elaboracao"]')?.value;
-    const responsavel = document.querySelector('#page-paee-conteudo [data-campo="responsavel_preenchimento"]')?.value.trim();
-    if (!nome || !data || !responsavel) return toast('Informe a matéria escolar, a data de elaboração e o responsável pelo preenchimento.', 'bi-exclamation-triangle', 'amber');
+  const nomeDisciplina = document.querySelector('#plan-document-modal-content [data-campo="nome_disciplina"]')?.value.trim();
+  const responsavel = document.querySelector('#plan-document-modal-content [data-campo="responsavel_preenchimento"]')?.value.trim();
+  if (estado.novaDisciplina && (!nomeDisciplina || nomeDisciplina.length > 150)) {
+    return toast(`Informe um nome válido para ${modulo === 'pei' ? 'a disciplina' : 'o documento'}.`, 'bi-exclamation-triangle', 'amber');
   }
-  document.querySelectorAll(`#plano-${modulo}-conteudo .plano-campo`).forEach(campo => { payload[campo.dataset.campo] = campo.value; });
-  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); toast(data.message, 'bi-check-circle', 'success'); if (modulo === 'paee') carregarPaeesDoAluno(estado, estado.token, document.getElementById('plano-paee-conteudo')).then(() => { if (data.id) abrirDocumentoPaee(data.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger')); else selecionarDisciplinaPlano(modulo, estado.disciplina.id); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  if (!responsavel) {
+    return toast('Informe o responsável pelo preenchimento.', 'bi-exclamation-triangle', 'amber');
+  }
+  const formulario = '#plan-document-modal-content';
+  document.querySelectorAll(`${formulario} .plano-campo`).forEach(campo => { payload[campo.dataset.campo] = campo.value; });
+  fetch('controllers/recurso_planos.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }).then(r=>r.json()).then(data => {
+    if (!data.success) throw new Error(data.message);
+    toast(data.message, 'bi-check-circle', 'success');
+    estado.novaDisciplina = false;
+    closeM('plan-document-modal');
+    selecionarAlunoPlano(modulo, estado.aluno.id);
+  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
 }
 
 function abrirHistoricoPlano(modulo, id) {
-  fetch(`controllers/recurso_planos.php?action=abrir&modulo=${modulo}&id=${Number(id)}`).then(r=>r.json()).then(data => { if (!data.success) throw new Error(data.message); const estado = planosEstado[modulo]; estado.aluno = { id: Number(data.registro.aluno_id), nome: data.registro.aluno_nome }; estado.disciplina = data.registro.disciplina_id ? { id: Number(data.registro.disciplina_id), nome: data.registro.disciplina_nome } : null; estado.registro = data.registro; estado.etapa = 'documento'; document.getElementById(`plano-${modulo}-contexto`).textContent = modulo === 'paee' ? `${estado.aluno.nome} · documento PAEE` : `${estado.aluno.nome} · ${data.registro.disciplina_nome || 'Disciplina selecionada'}`; document.getElementById(`plano-${modulo}-conteudo`).innerHTML = renderDocumentoPlano(modulo, data.registro, [data.registro]); }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
+  fetch(`controllers/recurso_planos.php?action=abrir&modulo=${modulo}&id=${Number(id)}`).then(r=>r.json()).then(data => {
+    if (!data.success) throw new Error(data.message);
+    const estado = planosEstado[modulo];
+    estado.aluno = { id: Number(data.registro.aluno_id), nome: data.registro.aluno_nome };
+    estado.disciplina = data.registro.disciplina_id ? { id: Number(data.registro.disciplina_id), nome: data.registro.disciplina_nome } : null;
+    estado.registro = data.registro;
+    estado.novaDisciplina = false;
+    estado.etapa = 'documento';
+    document.getElementById(`plano-${modulo}-contexto`).textContent = modulo === 'paee' ? `${estado.aluno.nome} · documento PAEE` : `${estado.aluno.nome} · ${data.registro.disciplina_nome || 'Disciplina selecionada'}`;
+    document.getElementById('plan-document-modal-title').textContent = `${modulo.toUpperCase()} · ${estado.aluno.nome}`;
+    document.getElementById('plan-document-modal-content').innerHTML = renderDocumentoPlano(modulo, data.registro, [data.registro]);
+    openM('plan-document-modal');
+  }).catch(error => toast(error.message, 'bi-x-circle', 'danger'));
 }
 
 function planoVoltar(modulo) {
@@ -2730,7 +2921,7 @@ function handleAlunoSaveResponse(data, nome) {
 
   function atualizarAvataresPerfil(foto) {
     const inicial = (document.getElementById('perfil-nome')?.textContent || 'U').trim().charAt(0).toUpperCase();
-    ['topbar-avatar', 'perfil-avatar'].forEach(id => {
+    ['sidebar-avatar', 'perfil-avatar'].forEach(id => {
       const avatar = document.getElementById(id);
       if (!avatar) return;
       avatar.innerHTML = foto ? `<img src="${escaparUsuario(foto)}?v=${Date.now()}" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : inicial;
@@ -2951,16 +3142,48 @@ function handleAlunoSaveResponse(data, nome) {
     const li=document.getElementById('notif-list');
     const em=li.querySelector('.empty'); if(em) em.remove();
     const div=document.createElement('div');
-    div.style.cssText='display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:8px;font-size:12px;margin-bottom:4px;background:rgba(76,175,80,0.05);border:1px solid rgba(76,175,80,0.12)';
-    div.innerHTML=`<i class="bi bi-bell-fill" style="color:var(--c3);font-size:12px;flex-shrink:0"></i><span>${msg}</span>`;
+    div.className='notif-item';
+    const titulo=document.createElement('strong');
+    titulo.className='notif-item-title';
+    titulo.textContent='Atualização do sistema';
+    const mensagem=document.createElement('div');
+    mensagem.className='notif-item-message';
+    mensagem.textContent=msg;
+    const data=document.createElement('time');
+    data.dateTime=new Date().toISOString();
+    data.textContent=new Intl.DateTimeFormat('pt-BR', {
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+    }).format(new Date());
+    div.append(titulo, mensagem, data);
     li.prepend(div);
   }
 
-  function toggleDD() {
+  function toggleDD(forceOpen) {
     const dd=document.getElementById('notif-dd');
-    const open=dd.style.display==='block';
-    dd.style.display=open?'none':'block';
-    if(!open){notifCount=0;document.getElementById('notif-badge').style.display='none';}
+    const button=document.getElementById('bell-btn');
+    const currentlyOpen=dd.style.display==='block';
+    const open=typeof forceOpen === 'boolean' ? forceOpen : !currentlyOpen;
+    if(open && button) {
+      const desktopPanel=window.innerWidth >= 600;
+      const width=desktopPanel
+        ? Math.min(320, window.innerWidth - 280)
+        : Math.min(320, window.innerWidth - 24);
+      const left=desktopPanel ? 266 : Math.max(12, (window.innerWidth - width) / 2);
+      dd.style.left=`${left}px`;
+      dd.style.width=`${width}px`;
+      dd.style.bottom='5.25rem';
+      dd.style.maxHeight=desktopPanel
+        ? `${Math.max(120, window.innerHeight - 112)}px`
+        : `${Math.max(120, window.innerHeight - 32)}px`;
+      dd.style.transform=desktopPanel ? 'none' : 'translateX(0)';
+    }
+    dd.style.display=open?'block':'none';
+    button?.setAttribute('aria-expanded', String(open));
+    if(open) {
+      notifCount=0;
+      document.getElementById('notif-badge').style.display='none';
+    }
   }
 
   // ===== GLOBAL CLICKS =====
@@ -2991,7 +3214,7 @@ function handleAlunoSaveResponse(data, nome) {
   document.addEventListener('click', e => {
     const dd=document.getElementById('notif-dd');
     const btn=document.getElementById('bell-btn');
-    if(!dd.contains(e.target)&&!btn.contains(e.target)) dd.style.display='none';
+    if(!dd.contains(e.target)&&!btn.contains(e.target)) toggleDD(false);
     const modal = e.target.closest('.modal-bg');
     if (modal && e.target === modal) modal.classList.remove('open');
     const seletor = document.getElementById('diag-multiselect');
@@ -3003,7 +3226,7 @@ function handleAlunoSaveResponse(data, nome) {
   document.addEventListener('keydown', e => {
     if(e.key==='Escape'){
       document.querySelectorAll('.modal-bg.open').forEach(modal => modal.classList.remove('open'));
-      document.getElementById('notif-dd').style.display='none';
+      toggleDD(false);
     }
   });
 
@@ -3012,4 +3235,21 @@ function handleAlunoSaveResponse(data, nome) {
 
 carregarAlunos();
 loadEventos();
-go('dashboard');
+go('dashboard', undefined, false);
+if (navegacaoInicialSalva) {
+  if (navegacaoInicialSalva.page === 'aluno') {
+    if (navegacaoInicialSalva.sid == null) navegacaoInicialSalva = null;
+  } else {
+    const paginaSalva = document.getElementById('page-' + navegacaoInicialSalva.page);
+    if (paginaSalva) {
+      go(navegacaoInicialSalva.page, navegacaoInicialSalva.sid, false);
+    } else {
+      try {
+        sessionStorage.removeItem(navegacaoStorageKey);
+      } catch (error) {
+        console.warn('Não foi possível limpar a última tela salva:', error);
+      }
+    }
+    navegacaoInicialSalva = null;
+  }
+}

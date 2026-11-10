@@ -180,25 +180,89 @@
     }
     .nav-item.active .ni { background:rgba(255,176,0,0.13); }
     .sidebar-footer { padding:12px 0; border-top:1px solid rgba(255,255,255,0.10); }
+    .sidebar-user-controls { display:flex; align-items:stretch; gap:8px; padding:0 12px 10px; }
+    .sidebar-profile {
+      display:flex; flex:1; min-width:0; align-items:center; gap:9px; padding:7px 10px;
+      border:1px solid rgba(255,255,255,.14); border-radius:11px;
+      background:rgba(255,255,255,.06); color:#fff; text-align:left; cursor:pointer;
+      transition:background .2s,border-color .2s;
+    }
+    .sidebar-profile:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.24); }
+    .sidebar-profile-copy { min-width:0; }
+    .sidebar-profile-name { overflow:hidden; font-size:12px; font-weight:700; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+    .sidebar-profile-role { margin-top:2px; color:rgba(255,255,255,.68); font-size:10px; line-height:1.2; }
+    .sidebar-profile-avatar {
+      display:grid; width:38px; height:38px; flex:0 0 38px; place-items:center;
+      overflow:hidden; border:3px solid #ffbd52; border-radius:50%;
+      background:#ffcf72; color:#064f2d; font-size:13px; font-weight:700;
+    }
+    .sidebar-profile-avatar img { width:100%; height:100%; object-fit:cover; }
+    .sidebar-bell {
+      position:relative; display:grid; align-self:center; width:44px; height:44px; flex:0 0 44px;
+      place-items:center; border:1px solid rgba(255,255,255,.12); border-radius:11px;
+      background:#f7faf6; color:#075b2d; cursor:pointer;
+      transition:transform .2s,background .2s;
+    }
+    .sidebar-bell:hover { transform:translateY(-1px); background:#fff; }
+    .sidebar-bell > i { font-size:16px; }
     .sidebar-logout { color:#ff927f; }
     .sidebar-logout .ni { color:inherit; }
     .sidebar-logout:hover { color:#ffad9e; background:rgba(255,255,255,0.08); }
-
-    /* MAIN */
-    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-
-    /* TOPBAR */
-    .topbar {
-      padding:13px 30px;
-      border-bottom:1px solid var(--border);
-      background:rgba(234,244,231,0.92);
-      backdrop-filter:blur(14px);
-      display:flex; align-items:center; justify-content:space-between;
-      position:sticky; top:0; z-index:20;
+    #notif-dd {
+      position:fixed; top:auto; right:auto; bottom:5.25rem; left:266px;
+      width:min(320px, calc(100vw - 280px)); max-height:calc(100dvh - 7rem); overflow-y:auto;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:22px; padding:16px; z-index:10002;
+      box-shadow:0 16px 48px rgba(0,0,0,.35); display:none;
+    }
+    .notif-panel-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .notif-panel-title { color:var(--text); font-size:14px; font-weight:700; }
+    .notif-panel-close { padding:3px 0; border:0; background:transparent; color:var(--text-muted); font:inherit; font-size:13px; cursor:pointer; }
+    .notif-panel-close:hover { color:var(--text); }
+    #notif-list { display:grid; gap:8px; }
+    .notif-item {
+      padding:12px; border:1px solid rgba(31,174,90,.32); border-radius:17px;
+      background:rgba(31,174,90,.10); color:var(--text);
+    }
+    .notif-item-title { display:block; font-size:13px; font-weight:700; line-height:1.4; }
+    .notif-item-message { margin-top:3px; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+    .notif-item time { display:block; margin-top:8px; color:var(--text-muted); font-size:10px; }
+    #notif-list .empty { padding:18px 8px; font-size:12px; }
+    #notif-list .empty i { margin:0 0 6px; font-size:24px; }
+    @media (max-width:599px) {
+      #notif-dd {
+        left:50%;
+        width:min(320px, calc(100vw - 24px));
+        max-height:calc(100dvh - 2rem);
+        transform:translateX(-50%);
+      }
     }
 
+    /* MAIN */
+    .main { flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+
     /* CONTENT */
-    .content { flex:1; overflow-y:auto; padding:26px 30px; }
+    .content { flex:1; min-height:0; overflow-y:auto; padding:26px 30px 5rem; }
+    .entryexit-footer {
+      position:fixed; z-index:80; right:0; bottom:0; left:258px;
+      display:flex; min-height:3.5rem; align-items:center; justify-content:center;
+      gap:.75rem; padding:.65rem 1rem; background:#fff; color:var(--text-muted);
+      box-shadow:0 -4px 18px rgba(0,0,0,.1); font-size:.75rem;
+    }
+    .entryexit-footer::before {
+      position:absolute; inset:0 0 auto; height:4px;
+      background:linear-gradient(90deg,#006b35,#f6c400 48%,#ed8500 70%,#006b35);
+      content:"";
+    }
+    .entryexit-footer__developers { display:flex; flex-wrap:wrap; justify-content:center; gap:.4rem 1rem; }
+    .entryexit-footer a {
+      display:inline-flex; align-items:center; gap:.35rem; color:var(--text);
+      font-weight:600; text-decoration:none; transition:color .2s ease,transform .2s ease;
+    }
+    .entryexit-footer a:hover,
+    .entryexit-footer a:focus-visible { transform:translateY(-3px); color:var(--c2); }
+    .entryexit-footer a i { color:var(--c2); }
+    body.sidebar-collapsed .entryexit-footer { left:0; }
 
     /* PAGES */
     .page { display:none; animation: pgIn 0.28s ease; }
@@ -228,6 +292,24 @@
       .student-profile-block__label { color:var(--text-muted); font-size:10px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
       .student-profile-block__details strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font-size:12px; }
       .student-profile-block__empty-value { color:var(--text-muted); font-size:12px; }
+      .plan-discipline-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(245px,300px)); justify-content:start; gap:14px; }
+      .plan-discipline-card { width:100%; min-width:0; color:var(--text); font:inherit; text-align:left; }
+      .plan-discipline-card__delete {
+        display:flex; width:34px; height:34px; flex:0 0 34px; align-items:center;
+        justify-content:center; border:1px solid rgba(198,40,40,.18); border-radius:10px;
+        background:rgba(198,40,40,.06); color:#c62828; cursor:pointer;
+        transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+      }
+      .plan-discipline-card__delete:hover,
+      .plan-discipline-card__delete:focus-visible {
+        transform:translateY(-1px); border-color:rgba(198,40,40,.4);
+        background:rgba(198,40,40,.12); outline:none;
+      }
+      .plan-discipline-card__delete i { font-size:15px; }
+      .plan-discipline-card__avatar { display:flex; width:42px; height:42px; flex:0 0 42px; align-items:center; justify-content:center; border-radius:50%; background:linear-gradient(135deg,var(--c1),var(--c3)); color:#fff; font-size:15px; font-weight:700; }
+      .plan-discipline-card__status { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-bottom:13px; border-bottom:1px solid var(--border); }
+      .plan-discipline-card__badge { flex-shrink:0; padding:4px 10px; border:1px solid rgba(211,154,0,.32); border-radius:999px; background:rgba(211,154,0,.1); color:#9a6b00; font-size:10px; font-weight:700; }
+      .plan-discipline-card__badge.is-complete { border-color:rgba(0,166,81,.3); background:rgba(0,166,81,.08); color:var(--c1); }
       .document-summary-block { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.02); }
       .document-summary-block:hover { border-color:rgba(0,166,81,.35); }
       .apoio-quesito-trigger { display:flex; align-items:center; justify-content:space-between; gap:14px; width:100%; padding:14px 16px; border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,.02); color:var(--text); text-align:left; cursor:pointer; font-family:inherit; }
@@ -267,6 +349,18 @@
       .avaliacao-conteudo { min-width:0; }
       .avaliacao-cabecalho { padding:0 0 8px; margin:0; border-left:0; }
       .avaliacao-cabecalho-data { flex-shrink:0; }
+      .avaliacao-data-seletor {
+        min-width:150px;
+        padding:5px 8px;
+        border:1px solid var(--border);
+        border-radius:8px;
+        background:var(--surface);
+        color:var(--text);
+        font:inherit;
+        font-size:12px;
+        font-weight:700;
+      }
+      .avaliacao-data-seletor:focus-visible { outline:3px solid rgba(0,166,81,.22); outline-offset:2px; }
       .avaliacao-dia-secao {
         overflow:hidden;
         padding:20px;
@@ -668,6 +762,24 @@
       border-radius:20px; padding:26px; width:100%; max-width:450px; margin:16px;
       animation:mslide 0.22s cubic-bezier(.4,0,.2,1);
     }
+    #confirm-modal { padding-left:258px; }
+    body.sidebar-collapsed #confirm-modal { padding-left:0; }
+    .plan-document-modal {
+      z-index:10000; padding-left:258px; background:rgba(5,20,12,.58);
+    }
+    body.sidebar-collapsed .plan-document-modal { padding-left:0; }
+    .plan-document-modal .modal-box {
+      width:min(820px, calc(100vw - 32px)); max-width:820px;
+      max-height:min(820px, calc(100dvh - 48px)); overflow-y:auto;
+      padding:22px; box-shadow:0 28px 90px rgba(0,0,0,.34);
+    }
+    .plan-document-modal__header {
+      position:sticky; top:-22px; z-index:2; display:flex; align-items:center;
+      justify-content:space-between; gap:12px; margin:-22px -22px 18px;
+      padding:16px 22px; background:var(--surface2); border-bottom:1px solid var(--border);
+    }
+    .plan-document-modal__title { font-size:15px; font-weight:700; }
+    .plan-document-modal__form textarea.inp { min-height:76px; }
     @keyframes mslide { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
 
     /* TOAST */
@@ -705,12 +817,34 @@
       padding:52px 20px; color:var(--text-muted); text-align:center; gap:4px;
     }
     .evolucao-relatorio-grid { display:grid; grid-template-columns:260px minmax(0,1fr); gap:18px; align-items:start; }
+    .evolucao-filtros-coluna { display:flex; flex-direction:column; gap:12px; }
     .evolucao-filtros { display:grid; gap:12px; }
-    .evolucao-grafico-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; align-items:stretch; }
-    .evolucao-grafico-box { width:100%; max-width:900px; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
+    .evolucao-grafico-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; align-items:stretch; min-width:0; }
+    .evolucao-grafico-layout > div:first-child { min-width:0; }
+    .evolucao-grafico-box { display:flex; flex-direction:column; width:100%; height:400px; min-width:0; max-width:none; padding:14px 16px 8px; border:1px solid rgba(7,91,45,.16); border-radius:8px; background:#fff; }
     .evolucao-grafico-titulo { color:#59675e; font-size:19px; font-weight:500; text-align:center; margin-bottom:4px; }
-    .evolucao-grafico-box svg { width:100%; height:auto; aspect-ratio:760 / 320; display:block; }
+    html[data-theme="dark"] .evolucao-grafico-titulo { color:#f3f4f6; font-weight:600; }
+    .evolucao-grafico-box svg { display:block; flex:1; width:100%; min-height:0; }
     .evolucao-grafico-eixo { color:#718077; font-size:10px; text-align:center; margin-top:2px; }
+    .evolucao-tabela-controles { display:flex; align-items:center; justify-content:flex-start; gap:12px; margin-top:16px; flex-wrap:wrap; }
+    .evolucao-tabela-titulo { color:var(--text); font-size:13px; font-weight:700; }
+    .evolucao-tabela-alternador-wrap { display:flex; width:100%; min-width:0; margin-top:10px; }
+    #page-relatorios #evolucao-tabela .evolucao-mensagem-vazia {
+      padding:12px 10px !important;
+      color:var(--text-muted);
+      font-size:12px !important;
+      text-align:center;
+      vertical-align:middle;
+    }
+    .evolucao-tabela-alternador { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; min-width:0; gap:3px; padding:4px; border:1px solid rgba(0,143,69,.28); border-radius:12px; background:rgba(0,166,81,.07); box-shadow:0 3px 10px rgba(7,91,45,.08); }
+    .evolucao-tabela-alternador button { display:inline-flex; align-items:center; justify-content:center; gap:4px; min-width:0; min-height:34px; padding:6px 4px; border:1px solid transparent; border-radius:8px; background:transparent; color:var(--c1); font:700 10px 'Poppins',sans-serif; white-space:nowrap; cursor:pointer; transition:background .16s,color .16s,box-shadow .16s,transform .16s; }
+    .evolucao-tabela-alternador button:hover { border-color:rgba(0,143,69,.2); background:rgba(0,166,81,.1); transform:translateY(-1px); }
+    .evolucao-tabela-alternador button:focus-visible { outline:3px solid rgba(0,166,81,.28); outline-offset:2px; }
+    .evolucao-tabela-alternador button.is-active { border-color:var(--c3); background:var(--c3); color:#fff; box-shadow:0 3px 8px rgba(0,143,69,.24); }
+    .evolucao-tabela-alternador button.is-active:hover { background:var(--c1); color:#fff; }
+    html[data-theme="dark"] .evolucao-tabela-alternador { border-color:rgba(118,216,158,.28); background:rgba(31,174,90,.1); }
+    html[data-theme="dark"] .evolucao-tabela-alternador button { color:#b9c9be; }
+    html[data-theme="dark"] .evolucao-tabela-alternador button.is-active { border-color:#1fae5a; background:#1fae5a; color:#fff; }
     .evolucao-grafico-legenda {
       padding:12px 14px 10px;
       border:1px solid rgba(7,91,45,0.08);
@@ -726,10 +860,10 @@
       flex-direction:column;
       gap:8px;
       margin-bottom:10px;
-      flex:1;
+      flex:0 0 auto;
     }
     #evolucao-tendencia {
-      margin-top:auto;
+      margin-top:14px;
       padding:12px 14px;
       border-radius:10px;
       background:rgba(72, 151, 98, 0.10);
@@ -738,8 +872,73 @@
       line-height:1.5;
       color:var(--text);
     }
-    .perfil-aluno-relatorio { height:calc(100vh - 156px); max-height:calc(100vh - 156px); overflow-y:auto; scrollbar-gutter:stable; }
-    .perfil-aluno-relatorio > .tab-row { position:sticky; top:0; z-index:12; background:#f7faf6 !important; box-shadow:0 2px 8px rgba(7,91,45,.08); }
+    @media (min-width:769px) {
+      .content.content--reports {
+        display:flex;
+        flex-direction:column;
+        min-height:0;
+        overflow:hidden;
+        padding:12px 20px calc(3.5rem + 12px);
+      }
+      #page-relatorios.active { display:flex; flex:1 1 0; min-height:0; }
+      #page-relatorios .evolucao-relatorio-grid {
+        flex:1 1 0;
+        grid-template-rows:minmax(0,1fr);
+        height:100%;
+        min-height:0;
+        align-items:stretch;
+      }
+      #page-relatorios .evolucao-relatorio-grid > .card {
+        display:flex;
+        flex-direction:column;
+        min-width:0;
+        min-height:0;
+        height:100%;
+        overflow:hidden;
+        padding:12px !important;
+      }
+      #page-relatorios .evolucao-grafico-layout {
+        flex:0 0 auto;
+        grid-template-columns:minmax(0,1fr) 210px;
+        gap:12px;
+      }
+      #page-relatorios .evolucao-grafico-layout > div:first-child,
+      #page-relatorios .evolucao-grafico-legenda { min-height:0; height:100%; }
+      #page-relatorios .evolucao-grafico-box { flex:0 0 400px; height:400px; }
+      #page-relatorios .evolucao-grafico-legenda { padding:10px; }
+      #page-relatorios #evolucao-legenda { gap:5px; }
+      #page-relatorios #evolucao-legenda > div { margin-bottom:0 !important; }
+      #page-relatorios #evolucao-tendencia { padding:8px 10px !important; line-height:1.35 !important; }
+      #page-relatorios .evolucao-tabela-controles { flex:0 0 auto; margin-top:10px; }
+      #page-relatorios .table-scroll { flex:1 1 0; min-height:0; overflow-x:auto; overflow-y:hidden; }
+      #page-relatorios .table-scroll table { height:100%; }
+      #page-relatorios .table-scroll--empty { flex:0 0 auto; }
+      #page-relatorios .table-scroll--empty table { height:auto; }
+      #page-relatorios .table-scroll--empty #evolucao-tabela tr { height:auto; }
+      #page-relatorios #evolucao-tabela-cabecalho tr,
+      #page-relatorios #evolucao-tabela-cabecalho th { height:34px; }
+      #page-relatorios #evolucao-tabela tr { height:25%; }
+      #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
+      #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
+      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
+      #page-relatorios #evolucao-paginacao .btn-g { min-height:32px; padding:6px 10px; font-size:11px; }
+    }
+    .perfil-aluno-grid { align-items:stretch; }
+    .perfil-aluno-sidebar { min-width:0; }
+    .perfil-aluno-relatorio { display:flex; flex-direction:column; min-height:0; max-height:none; overflow:hidden; scrollbar-gutter:auto; }
+    .perfil-aluno-relatorio > .tab-row { flex:0 0 auto; position:sticky; top:0; z-index:12; background:#f7faf6 !important; box-shadow:0 2px 8px rgba(7,91,45,.08); }
+    .perfil-aluno-relatorio > .perfil-tab-content {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      overscroll-behavior-y:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(7,91,45,.28) transparent;
+    }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar { width:8px; }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar-thumb { background:rgba(7,91,45,.22); border-radius:8px; }
+    .perfil-aluno-relatorio > .perfil-tab-content::-webkit-scrollbar-track { background:transparent; }
+    .perfil-document-history { max-height:none; overflow:visible; padding-right:0; }
 
     @media (max-width: 768px) {
       html, body { height:auto; overflow:auto; }
@@ -775,7 +974,6 @@
         margin-left:auto;
       }
       .main { min-height:100vh; }
-      .topbar { padding:13px 16px; flex-wrap:wrap; gap:10px; }
       .content { padding:16px; overflow:visible; }
       #page-dashboard > div[style*="grid-template-columns:repeat(3,1fr)"] {
         grid-template-columns:1fr !important;
@@ -788,7 +986,7 @@
         grid-template-columns:1fr !important;
       }
       .dashboard-secondary-grid { grid-template-columns:1fr !important; }
-      #page-aluno > div[style*="display:grid;grid-template-columns:270px 1fr;gap:18px"] {
+      #page-aluno > .perfil-aluno-grid {
         grid-template-columns:1fr !important;
       }
       [style*="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"],
@@ -812,7 +1010,9 @@
       .evolucao-grafico-layout { grid-template-columns:1fr; gap:14px; }
       .evolucao-grafico-box { max-width:none; }
       .evolucao-grafico-titulo { font-size:16px; }
-      .perfil-aluno-relatorio { height:auto; max-height:none; overflow:visible; }
+      .perfil-aluno-relatorio { display:block; height:auto !important; max-height:none; overflow:visible; }
+      .perfil-aluno-relatorio > .perfil-tab-content { overflow:visible; }
+      .perfil-document-history { max-height:none; overflow:visible; }
       .perfil-aluno-relatorio > .tab-row { top:64px; }
       .modal-box { margin:12px; padding:20px; }
       .avaliacao-periodos { grid-template-columns:1fr; }
@@ -833,15 +1033,6 @@
     .srch i { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.33); font-size:14px; }
     .srch input { padding-left:40px; }
 
-    /* NOTIF DROPDOWN */
-    #notif-dd {
-      position:absolute; top:60px; right:24px; width:290px;
-      background:var(--surface2); border:1px solid var(--border);
-      border-radius:14px; padding:14px; z-index:30;
-      box-shadow:0 16px 48px rgba(0,0,0,0.55);
-      display:none;
-    }
-
     /* PROGRESS */
     .pb { background:rgba(255,255,255,0.07); border-radius:9999px; overflow:hidden; }
     .pf { height:100%; border-radius:9999px; transition:width 0.7s ease; }
@@ -859,7 +1050,6 @@
     .sidebar [style*="color:#fff"] { color:#fff !important; }
     .sidebar .nav-item.active { color:#ffb000 !important; }
     .sidebar .nav-item.active .ni { color:#ffb000 !important; }
-    .topbar [style*="color:rgba(255,255,255"] { color:#64766a !important; }
     .profile-banner .profile-copy { color:#fff !important; }
 
     /* Mobile layout: keep every workflow usable without horizontal page overflow. */
@@ -867,11 +1057,12 @@
       html, body { width:100%; min-width:0; height:auto !important; min-height:100%; overflow-x:hidden !important; }
       body { display:block !important; }
       .main { width:100%; min-width:0; min-height:100vh; overflow:visible; }
-      .content { width:100%; min-width:0; padding:78px 12px 28px !important; overflow:visible; }
-      .topbar { position:fixed !important; top:0; left:0; right:0; width:100%; min-height:64px; padding:10px 12px !important; align-items:center; background:rgba(234,244,231,.98); box-shadow:0 2px 12px rgba(7,91,45,.10); z-index:100; }
-      .topbar > div:last-child { max-width:calc(100% - 50px); }
-      .topbar > div:last-child > div:last-child { max-width:calc(100vw - 105px); overflow:hidden; }
-      .topbar > div:last-child > div:last-child > div:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .content { width:100%; min-width:0; padding:78px 12px 7rem !important; overflow:visible; }
+      .mobile-menu-btn {
+        position:fixed; top:12px; left:12px; z-index:1001;
+        width:42px; height:42px; border-radius:11px;
+        background:var(--surface2); box-shadow:0 4px 16px rgba(0,0,0,.14);
+      }
       .sidebar-brand { padding:22px 22px 15px; }
       .page { width:100%; min-width:0; }
       .card, .stat-card, .dashboard-panel { max-width:100%; min-width:0; }
@@ -975,17 +1166,14 @@
       .btn-p, .btn-g { min-height:42px; }
       .btn-p { white-space:normal; }
       .toast { left:12px; right:12px; bottom:12px; }
-      #notif-dd { position:fixed !important; top:74px !important; left:10px !important; right:10px !important; width:auto !important; max-width:none !important; max-height:70vh; overflow-y:auto; z-index:1000 !important; }
       .cal-cell { min-height:64px; padding:4px; }
       .cal-cell > * { max-width:100%; }
       .ev-chip { font-size:9px; }
     }
 
     @media (max-width: 420px) {
-      .content { padding:78px 8px 28px !important; }
-      .topbar { padding-left:8px !important; padding-right:8px !important; }
+      .content { padding:78px 8px 7rem !important; }
       .sidebar { width: min(280px, 88vw); min-width: min(280px, 88vw); }
-      .topbar > div:last-child > div:last-child { display:none !important; }
       .profile-banner { padding:18px 14px !important; }
       .profile-banner > div:first-child { gap:12px; }
       .perfil-avatar-ring { width:68px !important; height:68px !important; font-size:25px !important; }
@@ -1049,24 +1237,12 @@
       /* Solicitações vazias não reservam uma faixa de cabeçalho desktop. */
       #page-usuarios > .card:first-child .table-scroll:has(tbody:empty) { display:none; }
 
-      /* Dropdown sempre cabe na viewport, inclusive quando o cabeçalho está comprimido. */
-      .topbar #notif-dd,
-      #notif-dd {
-        position:fixed !important;
-        inset:74px 10px auto 10px !important;
-        width:auto !important;
-        max-width:none !important;
-        min-width:0 !important;
-        max-height:calc(100dvh - 90px) !important;
-        overflow-y:auto !important;
-        transform:none !important;
-      }
     }
 
     .theme-toggle {
       position:fixed;
       right:1.5rem;
-      bottom:1.5rem;
+      bottom:4.25rem;
       z-index:1100;
       display:inline-flex;
       align-items:center;
@@ -1114,7 +1290,6 @@
     html[data-theme="dark"] .main {
       color:var(--text);
     }
-    html[data-theme="dark"] .topbar { background:rgba(18,18,18,.94); }
     html[data-theme="dark"] .content { background:#121212; }
     html[data-theme="dark"] .card,
     html[data-theme="dark"] .modal-box,
@@ -1125,6 +1300,11 @@
     html[data-theme="dark"] .evolucao-grafico-box,
     html[data-theme="dark"] .multi-select-menu,
     html[data-theme="dark"] .apoio-quesito-leitura-item { background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
+    html[data-theme="dark"] .plan-discipline-card__badge { color:#f3c969; }
+    html[data-theme="dark"] .plan-discipline-card__badge.is-complete { color:#76d89e; }
+    html[data-theme="dark"] .plan-discipline-card__delete { border-color:rgba(248,113,113,.2); background:rgba(248,113,113,.08); color:#fca5a5; }
+    html[data-theme="dark"] .plan-discipline-card__delete:hover,
+    html[data-theme="dark"] .plan-discipline-card__delete:focus-visible { border-color:rgba(248,113,113,.42); background:rgba(248,113,113,.16); }
     html[data-theme="dark"] .btn-g { background:#262626; border-color:rgba(255,255,255,.08); color:#e5e7eb; }
     html[data-theme="dark"] .btn-g:hover { background:#333; color:#fff; }
     html[data-theme="dark"] .inp,
@@ -1200,18 +1380,80 @@
       border:0;
       box-shadow:5px 0 15px rgba(0,0,0,.36);
     }
+    html[data-theme="dark"] .entryexit-footer {
+      background:#171717; color:#d1d5db; box-shadow:0 -4px 18px rgba(0,0,0,.35);
+    }
+    html[data-theme="dark"] .entryexit-footer a { color:#f3f4f6; }
+    html[data-theme="dark"] .entryexit-footer a:hover,
+    html[data-theme="dark"] .entryexit-footer a:focus-visible,
+    html[data-theme="dark"] .entryexit-footer a i { color:#76d89e; }
     html[data-theme="dark"] .theme-toggle { border-color:rgba(255,255,255,.08); background:rgba(255,255,255,.05); color:#f3f4f6; }
     html[data-theme="dark"] .theme-toggle:hover { background:rgba(255,255,255,.08); }
     html[data-theme="dark"] .toast { right:88px; background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
     @media (max-width:768px) {
-      .theme-toggle { right:1rem; bottom:1rem; }
+      #confirm-modal.modal-bg { padding:10px; }
+      .entryexit-footer {
+        left:0; min-height:4.25rem; flex-direction:column; gap:.2rem;
+        padding:.55rem .75rem; font-size:.68rem;
+      }
+      .entryexit-footer__developers { gap:.25rem .85rem; }
+      .theme-toggle { right:1rem; bottom:5rem; }
       html[data-theme="dark"] .toast { right:12px; bottom:76px; }
+      .plan-document-modal { z-index:10000 !important; padding-left:0; }
+    }
+    #avaliacao-modal.modal-bg {
+      z-index:301;
+      inset:0;
+      padding:16px 16px calc(3.5rem + 16px) 274px;
+      overflow:hidden;
+      background:rgba(3,31,16,.48);
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+    body.sidebar-collapsed #avaliacao-modal.modal-bg { padding-left:16px; }
+    #avaliacao-modal .avaliacao-modal-box {
+      display:flex;
+      flex-direction:column;
+      width:min(600px, calc(100vw - 290px));
+      height:min(660px, 100%);
+      max-height:100% !important;
+      margin:0;
+      overflow:hidden !important;
+      box-shadow:0 18px 48px rgba(0,24,12,.22),0 4px 12px rgba(0,24,12,.12);
+    }
+    #avaliacao-modal .avaliacao-modal-header,
+    #avaliacao-modal .avaliacao-modal-footer { flex:0 0 auto; }
+    #avaliacao-modal .avaliacao-modal-conteudo {
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto !important;
+      overscroll-behavior-y:contain;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(7,91,45,.28) transparent;
+    }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar { width:8px; }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar-thumb { background:rgba(7,91,45,.22); border-radius:8px; }
+    #avaliacao-modal .avaliacao-modal-conteudo::-webkit-scrollbar-track { background:transparent; }
+    @media (max-width:768px) {
+      #avaliacao-modal.modal-bg {
+        inset:0;
+        padding:10px 10px calc(4.25rem + 12px) !important;
+      }
+      #avaliacao-modal .avaliacao-modal-box {
+        width:min(600px, 100%);
+        height:100%;
+        max-width:600px !important;
+        padding:14px !important;
+      }
     }
   </style>
 </head>
 <body style="display:flex;height:100vh">
 <?php
 $nomeUsuario = $_SESSION['nome'] ?? 'Usuário';
+$partesNomeUsuario = preg_split('/\s+/u', trim($nomeUsuario), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+$nomeExibicaoUsuario = implode(' ', array_slice($partesNomeUsuario, 0, 2));
+if ($nomeExibicaoUsuario === '') $nomeExibicaoUsuario = 'Usuário';
 $tipoUsuario = strtolower(trim($_SESSION['tipo'] ?? 'responsavel'));
 $rotulosUsuario = [
   'master' => 'Master do Sistema',
@@ -1225,6 +1467,8 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 ?>
 <script>
   window.usuarioTipo = <?php echo json_encode($tipoUsuario ?? 'responsavel'); ?>;
+  window.usuarioNome = <?php echo json_encode($nomeUsuario, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+  window.pcdDataHoje = <?php echo json_encode(date('Y-m-d')); ?>;
 </script>
 <div class="overlay" onclick="fecharMenu()"></div>
 
@@ -1236,6 +1480,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
       <div class="sidebar-brand-title">Sistema <span>PCD</span></div>
       <div class="sidebar-brand-subtitle">Gestão de alunos e<br>acompanhamento escolar</div>
     </div>
+    <button type="button" class="sidebar-close-btn" onclick="fecharMenu()" aria-label="Fechar menu">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
   </div>
 
   <nav>
@@ -1298,59 +1545,49 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     <?php endif; ?>
   </nav>
   <div class="sidebar-footer">
+    <div class="sidebar-user-controls">
+      <button type="button" class="sidebar-profile" onclick="go('perfil')" title="Abrir perfil">
+        <span class="sidebar-profile-avatar" id="sidebar-avatar">
+          <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>">
+          <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
+        </span>
+        <span class="sidebar-profile-copy">
+          <span class="sidebar-profile-name" title="<?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($nomeExibicaoUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="sidebar-profile-role"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></span>
+        </span>
+      </button>
+      <button type="button" id="bell-btn" class="sidebar-bell" onclick="toggleDD()" aria-label="Abrir notificações" aria-controls="notif-dd" aria-expanded="false" title="Notificações">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
+      </button>
+    </div>
     <div class="nav-item sidebar-logout"
       onclick="window.location.href='../../../../main/views/subsystems.php'">
       <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
     </div>
   </div>
 </aside>
+<section id="notif-dd" aria-label="Notificações">
+  <div class="notif-panel-header">
+    <span class="notif-panel-title">Notificações</span>
+    <button type="button" class="notif-panel-close" onclick="toggleDD(false)">Fechar</button>
+  </div>
+  <div id="notif-list">
+    <div class="empty" style="padding:20px 0">
+      <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
+      <span style="font-size:12px">Nenhuma notificação</span>
+    </div>
+  </div>
+</section>
 <button type="button" class="sidebar-collapse-toggle" aria-label="Ocultar menu lateral" aria-expanded="true" title="Ocultar menu lateral">
   <i class="bi bi-chevron-left" aria-hidden="true"></i>
 </button>
 
 <!-- ======================== MAIN ======================== -->
 <div class="main">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="mobile-menu-btn" onclick="abrirMenu()" aria-label="Abrir menu">
-        <i class="bi bi-list" style="font-size:20px"></i>
-      </button>
-      <div>
-        <div style="font-size:17px;font-weight:700" id="pg-title">Dashboard</div>
-        <div style="font-size:11.5px;color:var(--text-muted)" id="pg-sub">Visão geral do sistema</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;position:relative">
-      <!-- Bell -->
-      <button id="bell-btn" onclick="toggleDD()" style="width:37px;height:37px;border-radius:10px;background:#f7faf6;border:1px solid rgba(7,91,45,0.14);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:background 0.2s,border-color 0.2s" onmouseenter="this.style.background='#eaf4e7';this.style.borderColor='rgba(0,166,81,0.28)'" onmouseleave="this.style.background='#f7faf6';this.style.borderColor='rgba(7,91,45,0.14)'">
-        <i class="bi bi-bell-fill" style="font-size:14px;color:#557064"></i>
-        <span id="notif-badge" style="position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--amber);color:#000;font-size:9px;font-weight:800;display:none;align-items:center;justify-content:center">0</span>
-      </button>
-      <!-- Notif dropdown -->
-      <div id="notif-dd">
-        <div style="font-size:12.5px;font-weight:700;margin-bottom:10px;color:rgba(255,255,255,0.6)"><i class="bi bi-bell me-1"></i> Notificações</div>
-        <div id="notif-list">
-          <div class="empty" style="padding:20px 0">
-            <i class="bi bi-bell-slash" style="font-size:28px;margin-bottom:6px"></i>
-            <span style="font-size:12px">Nenhuma notificação</span>
-          </div>
-        </div>
-      </div>
-      <!-- User -->
-      <div onclick="go('perfil')" title="Abrir perfil" style="display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);cursor:pointer">
-        <div class="av" id="topbar-avatar" style="width:28px;height:28px;font-size:12px;background-size:cover;background-position:center">
-          <?php if ($fotoUsuario): ?><img src="<?= htmlspecialchars($fotoUsuario, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?>" style="width:100%;height:100%;object-fit:cover;border-radius:50%">
-          <?php else: ?><?= htmlspecialchars($inicialUsuario, ENT_QUOTES, 'UTF-8') ?><?php endif; ?>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:600;line-height:1.1"><?= htmlspecialchars($nomeUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-          <div style="font-size:10px;color:var(--text-muted)"><?= htmlspecialchars($rotuloUsuario, ENT_QUOTES, 'UTF-8') ?></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <button type="button" class="mobile-menu-btn" onclick="abrirMenu()" aria-label="Abrir menu">
+    <i class="bi bi-list" style="font-size:20px"></i>
+  </button>
 
   <!-- CONTENT -->
   <div class="content">
@@ -1501,7 +1738,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <div class="card avaliacao-dia-secao">
           <div class="avaliacao-cabecalho">
             <div class="avaliacao-cabecalho-titulo"><i class="bi bi-clipboard2-check"></i><span>Avaliação do dia</span></div>
-            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><span id="avaliacao-data-atual">Hoje</span></div>
+            <div class="avaliacao-cabecalho-data avaliacao-cabecalho-subtitle"><i class="bi bi-calendar3"></i><input type="date" id="avaliacao-data-selecionada" class="avaliacao-data-seletor" max="<?= htmlspecialchars(date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>" aria-label="Selecionar data da avaliação"></div>
           </div>
 
           <div id="avaliacao-dia" class="avaliacao-dia-lista avaliacao-periodos">
@@ -1555,19 +1792,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
     <!-- ============= RELATÓRIOS ============= -->
     <div class="page" id="page-relatorios">
-      <div class="card" style="padding:20px;margin-bottom:18px;border-left:4px solid var(--gold)">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-          <div>
-            <div style="font-size:17px;font-weight:700"><i class="bi bi-graph-up-arrow" style="color:var(--gold);margin-right:7px"></i>Relatórios de evolução</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:5px">Acompanhe avaliações, presenças e faltas registradas para cada aluno.</div>
-          </div>
-          <button type="button" class="btn-p" onclick="gerarRelatorioEvolucao()" title="Gerar relatório dos filtros atuais">
-            <i class="bi bi-file-earmark-pdf"></i> Gerar relatório
-          </button>
-        </div>
-      </div>
       <div class="evolucao-relatorio-grid">
-      <div class="card evolucao-filtros" style="padding:18px;margin-bottom:18px">
+      <div class="evolucao-filtros-coluna">
+        <div class="card evolucao-filtros" style="padding:18px">
           <?php if ($tipoUsuario === 'apoio'): ?>
           <div><label class="lbl">Aluno acompanhado</label><div id="evolucao-aluno-nome-filtro" class="inp" style="background:#f7faf6">Carregando aluno...</div><input id="evolucao-aluno" type="hidden"></div>
           <?php else: ?>
@@ -1590,6 +1817,10 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
           </div>
           <div><label class="lbl" for="evolucao-inicio">De</label><input id="evolucao-inicio" type="date" class="inp"></div>
           <div><label class="lbl" for="evolucao-fim">Até</label><input id="evolucao-fim" type="date" class="inp"></div>
+        </div>
+        <button type="button" class="btn-p" onclick="gerarRelatorioEvolucao()" title="Gerar relatório dos filtros atuais" style="width:100%;justify-content:center">
+          <i class="bi bi-file-earmark-pdf"></i> Gerar relatório
+        </button>
       </div>
       <div class="card" style="padding:20px">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
@@ -1613,24 +1844,24 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <div style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:10px">Linhas por quesito</div>
             <div id="evolucao-legenda"></div>
             <div id="evolucao-tendencia" style="margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(0,166,81,.08);font-size:11px;line-height:1.5"></div>
+            <div class="evolucao-tabela-alternador-wrap">
+              <div class="evolucao-tabela-alternador" role="group" aria-label="Tipo de registro exibido">
+                <button type="button" class="is-active" data-evolucao-tabela-tipo="avaliacoes" aria-pressed="true" onclick="alternarTabelaEvolucao('avaliacoes')"><i class="bi bi-clipboard2-check"></i> Avaliações</button>
+                <button type="button" data-evolucao-tabela-tipo="frequencia" aria-pressed="false" onclick="alternarTabelaEvolucao('frequencia')"><i class="bi bi-calendar-check"></i> Frequência</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="table-scroll" style="margin-top:20px">
+        <div class="evolucao-tabela-controles">
+          <div class="evolucao-tabela-titulo">Registros do aluno</div>
+        </div>
+        <div class="table-scroll" style="margin-top:8px">
           <table style="width:100%;border-collapse:collapse;min-width:650px">
-            <thead><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO / TIPO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO / FREQUÊNCIA</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO / REGISTRADO POR</th></tr></thead>
+            <thead id="evolucao-tabela-cabecalho"><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PERÍODO</th><th style="text-align:left;padding:11px;font-size:10px">QUESITO</th><th style="text-align:left;padding:11px;font-size:10px">AVALIAÇÃO</th><th style="text-align:left;padding:11px;font-size:10px">OBSERVAÇÃO</th></tr></thead>
             <tbody id="evolucao-tabela"></tbody>
           </table>
         </div>
-        <div id="evolucao-paginacao" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px"></div>
-        <div style="margin-top:24px">
-          <div style="font-size:14px;font-weight:700;margin-bottom:10px">Frequência do aluno</div>
-          <div class="table-scroll">
-            <table style="width:100%;border-collapse:collapse;min-width:0">
-              <thead><tr style="background:rgba(7,91,45,.06)"><th style="text-align:left;padding:11px;font-size:10px">DATA</th><th style="text-align:left;padding:11px;font-size:10px">PRESENÇA</th><th style="text-align:left;padding:11px;font-size:10px">REGISTRADO POR</th></tr></thead>
-              <tbody id="frequencia-tabela"></tbody>
-            </table>
-          </div>
-        </div>
+        <div id="evolucao-paginacao" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px"></div>
       </div>
       </div>
     </div>
@@ -1959,9 +2190,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         <input type="file" id="input-foto-aluno" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
       <?php endif; ?>
-      <div style="display:grid;grid-template-columns:270px 1fr;gap:18px">
+      <div class="perfil-aluno-grid" style="display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px">
         <!-- Informaçoes -->
-        <div>
+        <div class="perfil-aluno-sidebar" id="perfil-aluno-sidebar">
           <div class="card" style="padding:22px;text-align:center;margin-bottom:12px">
             <div class="av" id="a-av" style="width:70px;height:70px;font-size:26px;margin:0 auto 14px;box-shadow:0 0 0 3px rgba(255,215,0,0.28),0 0 0 6px rgba(255,215,0,0.08);background-size:cover;background-position:center">?</div>
             <div style="font-size:17px;font-weight:700;margin-bottom:5px" id="a-nome">—</div>
@@ -2004,7 +2235,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         </div>
 
         <!-- Conteúdo dos acompanhantes -->
-        <div class="card perfil-aluno-relatorio" style="overflow-x:hidden">
+        <div class="card perfil-aluno-relatorio" id="perfil-aluno-documentos">
           <div class="tab-row" style="display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02);flex-wrap:nowrap">
             <?php if (in_array($tipoUsuario, ['master', 'aee', 'apoio'], true)): ?><button class="tab-btn active" id="tb-apoio" onclick="swTab('apoio',this)"><i class="bi bi-clipboard2-pulse"></i> Quesitos do aluno</button><?php endif; ?>
             <button class="tab-btn" id="tb-pei" onclick="swTab('pei',this)"><i class="bi bi-journal-text"></i> PEI</button>
@@ -2012,7 +2243,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
             <button class="tab-btn" id="tb-lau" onclick="swTab('lau',this)"><i class="bi bi-file-earmark-medical"></i> Laudo</button>
           </div>
           <!-- Registro de apoio -->
-          <div id="tc-apoio" style="padding:18px">
+          <div id="tc-apoio" class="perfil-tab-content" style="padding:18px">
             <?php if (in_array($tipoUsuario, ['master', 'aee', 'apoio'], true)): ?>
             <div id="apoio-config-quesitos" style="margin-bottom:16px">
               <div style="padding:14px;border:1px solid var(--border);border-radius:10px;background:rgba(0,166,81,.04)">
@@ -2024,23 +2255,23 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
           </div>
 
           <!-- PEI -->
-          <div id="tc-pei" style="padding:18px;display:none">
+          <div id="tc-pei" class="perfil-tab-content" style="padding:18px;display:none">
             <div id="pei-titulo" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">PEI - Plano Educacional Individualizado</div>
-            <div id="pei-history" style="margin-top:24px"></div>
+            <div id="pei-history" class="perfil-document-history" style="margin-top:24px"></div>
           </div>
 
           <!-- PAEE -->
-          <div id="tc-paee" style="padding:18px;display:none">
+          <div id="tc-paee" class="perfil-tab-content" style="padding:18px;display:none">
             <div id="paee-titulo" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">PAEE - Plano de Atendimento Educacional Especializado</div>
-            <div id="paee-history" style="margin-top:24px"></div>
+            <div id="paee-history" class="perfil-document-history" style="margin-top:24px"></div>
           </div>
 
           <!-- Laudo -->
-          <div id="tc-lau" style="padding:18px;display:none">
+          <div id="tc-lau" class="perfil-tab-content" style="padding:18px;display:none">
             <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.55);margin-bottom:14px">Laudo externo</div>
             <?php if ($tipoUsuario !== 'apoio'): ?><div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:15px">
               <label class="lbl">Selecionar arquivo PDF</label>
-              <input type="file" id="lau-file" accept="application/pdf" class="inp" />
+              <input type="file" id="lau-file" accept=".pdf,application/pdf" class="inp" />
               <button onclick="handleLaudoUpload()" class="btn-p" style="width:100%;justify-content:center;font-size:13px;margin-top:12px">
                 <i class="bi bi-upload"></i> Enviar arquivo
               </button>
@@ -2178,6 +2409,38 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="bi bi-check-circle-fill" id="toast-ic" style="font-size:16px;color:var(--c3);flex-shrink:0"></i>
   <span id="toast-tx">Operação realizada!</span>
 </div>
+
+<div class="modal-bg plan-document-modal" id="plan-document-modal" onclick="if(event.target===this)closeM('plan-document-modal')">
+  <section class="modal-box" role="dialog" aria-modal="true" aria-labelledby="plan-document-modal-title">
+    <div class="plan-document-modal__header">
+      <div class="plan-document-modal__title" id="plan-document-modal-title">Plano</div>
+      <button type="button" class="btn-g" onclick="closeM('plan-document-modal')" aria-label="Fechar formulário"><i class="bi bi-x-lg"></i> Fechar</button>
+    </div>
+    <div id="plan-document-modal-content"></div>
+  </section>
+</div>
+
+<footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
+  <span>Desenvolvido por</span>
+  <div class="entryexit-footer__developers">
+    <a href="https://www.instagram.com/_kauanlmx/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Kauan Cristian">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Kauan Cristian</span>
+    </a>
+    <a href="https://www.instagram.com/cassioholanda_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Cassio Holanda">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Cassio Holanda</span>
+    </a>
+    <a href="https://www.instagram.com/abraaolyncoln_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Abraão Lyncoln">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Abraão Lyncoln</span>
+    </a>
+    <a href="https://www.instagram.com/arma_ndofilho/" target="_blank" rel="noopener noreferrer" aria-label="Instagram de Armando Filho">
+      <i class="fab fa-instagram" aria-hidden="true"></i>
+      <span>Armando Filho</span>
+    </a>
+  </div>
+</footer>
 
 <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Ativar modo escuro" aria-pressed="false" title="Ativar modo escuro">
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
