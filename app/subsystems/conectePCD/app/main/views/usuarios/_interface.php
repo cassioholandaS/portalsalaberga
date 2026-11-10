@@ -109,7 +109,6 @@
     }
     body.sidebar-collapsed .sidebar-collapse-toggle { left:0; }
     body.sidebar-collapsed .sidebar-collapse-toggle i { transform:rotate(180deg); }
-    body.sidebar-collapsed .sidebar-collapse-toggle:hover i { transform:rotate(180deg); }
     @media (max-width:768px) {
       .sidebar { transition:transform .3s ease; }
       .sidebar-collapse-toggle { display:none; }

@@ -1092,20 +1092,12 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
             transition: transform .22s ease;
         }
 
-        .sidebar-collapse-toggle:hover i {
-            transform: rotate(180deg);
-        }
-
         body.sidebar-collapsed .sidebar-collapse-toggle {
             left: 0;
         }
 
         body.sidebar-collapsed .sidebar-collapse-toggle i {
             transform: rotate(180deg);
-        }
-
-        body.sidebar-collapsed .sidebar-collapse-toggle:hover i {
-            transform: rotate(0deg);
         }
 
         select.form-select:not([multiple]) {

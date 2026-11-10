@@ -172,16 +172,8 @@ body.pdt-interface {
     transition: transform .22s ease;
 }
 
-.pdt-sidebar-collapse-toggle:hover i {
-    transform: rotate(180deg);
-}
-
 body.pdt-sidebar-collapsed .pdt-sidebar-collapse-toggle i {
     transform: rotate(180deg);
-}
-
-body.pdt-sidebar-collapsed .pdt-sidebar-collapse-toggle:hover i {
-    transform: rotate(0deg);
 }
 
 .pdt-sidebar-collapse-toggle:focus-visible {

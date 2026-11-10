@@ -2001,17 +2001,12 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
             transition: transform 220ms ease;
         }
 
-        .sidebar-collapse-toggle:hover i,
         body.sidebar-collapsed .sidebar-collapse-toggle i {
             transform: rotate(180deg);
         }
 
         body.sidebar-collapsed .sidebar-collapse-toggle {
             left: 0;
-        }
-
-        body.sidebar-collapsed .sidebar-collapse-toggle:hover i {
-            transform: rotate(0deg);
         }
 
         @media (min-width: 1024px) {
