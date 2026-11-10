@@ -898,7 +898,8 @@
         align-items:stretch;
       }
       #page-avaliacao .avaliacao-aluno-card {
-        height:100%;
+        height:auto;
+        align-self:start;
         overflow:hidden;
         padding:16px;
       }
@@ -951,23 +952,23 @@
       #page-avaliacao .avaliacao-historico-data { margin-bottom:5px; font-size:12px; }
       #page-avaliacao .avaliacao-historico-periodos { gap:8px; }
       #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card {
-        min-height:88px;
+        min-height:72px;
         gap:5px;
-        padding:8px 10px;
+        padding:6px 9px;
       }
-      #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card > div:first-child { min-height:32px; }
-      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-cabecalho { min-height:36px; padding-right:26px; }
-      #page-avaliacao .avaliacao-historico-periodos .avaliacao-periodo-icone { width:25px; height:25px; font-size:12px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card > div:first-child { min-height:28px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-cabecalho { min-height:30px; padding-right:26px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-periodo-icone { width:23px; height:23px; font-size:11px; }
       #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-titulo { font-size:12px; }
-      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-rodape { min-height:26px; margin-top:2px; }
-      #page-avaliacao .avaliacao-historico-periodos .avaliacao-acao-principal { min-height:28px !important; padding:5px 9px !important; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-rodape { min-height:22px; margin-top:1px; }
+      #page-avaliacao .avaliacao-historico-periodos .avaliacao-acao-principal { min-height:24px !important; padding:4px 8px !important; }
       #page-avaliacao .avaliacao-historico-paginacao { flex:0 0 auto; margin-top:auto; padding-top:7px; }
       #page-avaliacao .avaliacao-historico-paginacao .btn-g { min-height:30px; padding:5px 9px; }
       @media (max-height:760px) {
         #page-avaliacao .avaliacao-conteudo { gap:8px; }
         #page-avaliacao .avaliacao-dia-secao { padding:9px; }
         #page-avaliacao .avaliacao-dia-secao .avaliacao-dia-card,
-        #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card { min-height:78px; padding:6px 8px; }
+        #page-avaliacao .avaliacao-historico-periodos .avaliacao-dia-card { min-height:64px; padding:5px 7px; }
         #page-avaliacao .avaliacao-dia-secao .avaliacao-card-cabecalho,
         #page-avaliacao .avaliacao-historico-periodos .avaliacao-card-cabecalho { min-height:32px; }
         #page-avaliacao .avaliacao-historico-topo { margin-bottom:5px; }
@@ -2628,7 +2629,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   <i class="theme-toggle__icon fas fa-moon" aria-hidden="true"></i>
 </button>
 
-<script src="js/app.js?v=20261110-avaliacao-sem-rolagem-1">
+<script src="js/app.js?v=20261110-avaliacao-historico-quatro-1">
 
 </script>
 </body>

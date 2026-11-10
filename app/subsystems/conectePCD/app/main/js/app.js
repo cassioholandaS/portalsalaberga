@@ -5,7 +5,7 @@ let avaliacaoDados = { aluno: null, quesitos: [], avaliacoes: [] };
 let avaliacaoModalAtual = null;
 let avaliacaoFrequenciaRequest = 0;
 let avaliacaoHistoricoPagina = 1;
-const avaliacaoHistoricoItensPorPagina = 2;
+const avaliacaoHistoricoItensPorPagina = 4;
 function carregarAlunos() {
   fetch('controllers/listar_alunos.php')
     .then(async response => {
