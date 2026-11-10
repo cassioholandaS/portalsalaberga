@@ -930,7 +930,7 @@
       #page-relatorios #evolucao-tabela-cabecalho tr { height:34px; }
       #page-relatorios .table-scroll th { padding:7px 9px !important; font-size:9px !important; }
       #page-relatorios .table-scroll td { padding:5px 9px !important; font-size:11px !important; }
-      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:8px !important; }
+      #page-relatorios #evolucao-paginacao { flex:0 0 auto; margin-top:auto !important; padding-top:8px; }
       #page-relatorios #evolucao-paginacao .btn-g { min-height:32px; padding:6px 10px; font-size:11px; }
     }
     .perfil-aluno-grid { align-items:stretch; }
