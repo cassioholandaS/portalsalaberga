@@ -597,6 +597,7 @@ if (($_POST['acao'] ?? '') === 'editar_registro_consulta') {
 if (($_POST['acao'] ?? '') === 'validar_justificativa_atraso') {
     exigirSessaoOuAcessoLocal();
     exigirPermissaoRecepcao(true);
+    unset($_SESSION['aviso_recusa_atraso']);
 
     $redirect = '../views/inicio.php?section=atrasos&validacao=erro';
     $agoraSaoPaulo = new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'));
@@ -615,7 +616,8 @@ if (($_POST['acao'] ?? '') === 'validar_justificativa_atraso') {
     $idRegistro = filter_var($_POST['id_registro_entrada'] ?? null, FILTER_VALIDATE_INT);
     $idMotivo = filter_var($_POST['id_motivo'] ?? null, FILTER_VALIDATE_INT);
     $decisao = $_POST['decisao'] ?? '';
-    $responsavel = is_string($_SESSION['nome'] ?? null) ? trim($_SESSION['nome']) : '';
+    $usuarioSessao = (new sessions())->obterDadosUsuarioAtual();
+    $responsavel = $usuarioSessao['nome'] ?? '';
     $justificativa = is_string($_POST['justificativa_atraso'] ?? null) ? trim($_POST['justificativa_atraso']) : '';
     if (!$idRegistro || !$idMotivo || !in_array($decisao, ['aprovada', 'recusada'], true) || $responsavel === '' || strlen($responsavel) > 100 || $justificativa === '' || strlen($justificativa) > 2000) {
         header('Location: ' . $redirect);
@@ -632,7 +634,12 @@ if (($_POST['acao'] ?? '') === 'validar_justificativa_atraso') {
         $agoraSaoPaulo->format('Y-m-d')
     );
     $resultado = $atualizado ? $decisao : 'ja_processada';
-    header('Location: ../views/inicio.php?section=atrasos&validacao=' . $resultado);
+    if ($atualizado && $decisao === 'recusada' && $usuarioSessao) {
+        $_SESSION['aviso_recusa_atraso'] = [
+            'usuario_id' => $usuarioSessao['id']
+        ];
+    }
+    header('Location: ../views/inicio.php?section=atrasos&validacao=' . $resultado, true, 303);
     exit();
 }
 
