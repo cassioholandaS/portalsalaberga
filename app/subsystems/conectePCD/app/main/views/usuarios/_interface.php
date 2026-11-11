@@ -759,6 +759,19 @@
       z-index:50; display:none; align-items:center; justify-content:center;
     }
     .modal-bg.open { display:flex; animation:mfade 0.2s ease; }
+    #editar-perfil-aluno-modal {
+      padding:12px 16px calc(3.5rem + 16px);
+      overflow-y:auto;
+      overscroll-behavior:contain;
+    }
+    #editar-perfil-aluno-modal .modal-box {
+      box-sizing:border-box;
+      max-height:calc(100dvh - 6rem) !important;
+      margin:0;
+      overflow-y:auto !important;
+      overscroll-behavior:contain;
+      scrollbar-width:thin;
+    }
     @keyframes mfade { from{opacity:0} to{opacity:1} }
     .modal-box {
       background:var(--surface2); border:1px solid rgba(76,175,80,0.22);
@@ -1235,6 +1248,12 @@
       .tab-row { max-width:100%; padding-bottom:7px !important; }
       .modal-bg { padding:10px; overflow-y:auto; align-items:center !important; justify-content:center; z-index:300 !important; }
       .modal-box { width:100%; max-width:none !important; max-height:calc(100dvh - 20px) !important; margin:0; padding:18px !important; border-radius:14px; overflow-y:auto; }
+      #editar-perfil-aluno-modal {
+        padding:10px 10px calc(4.25rem + 12px) !important;
+      }
+      #editar-perfil-aluno-modal .modal-box {
+        max-height:calc(100dvh - 4.25rem - 22px) !important;
+      }
       .modal-box button[onclick*="fecharEditorUsuario"],
       .modal-box button[onclick*="fecharQuesitoEditor"],
       .modal-box button[onclick*="fecharModalOpcaoAluno"],
@@ -2468,7 +2487,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
 <?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
 <div class="modal-bg" id="editar-perfil-aluno-modal" onclick="if(event.target===this)closeM('editar-perfil-aluno-modal')">
-  <div class="modal-box" style="position:relative;width:min(680px,calc(100vw - 24px));max-height:92vh;overflow-y:auto;padding:24px">
+  <div class="modal-box" style="position:relative;width:min(680px,calc(100vw - 24px));padding:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div>
         <div style="font-size:18px;font-weight:700">Editar perfil do aluno</div>
