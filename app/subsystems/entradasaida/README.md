@@ -28,7 +28,7 @@ Para uma instalação nova, crie o banco configurado em `DB_NAME` e importe `app
 
 O dump também contém os dados presentes na exportação. Confira se deseja copiá-los para a nova máquina antes de importá-lo. Não importe esse arquivo sobre um banco em uso: ele é destinado à criação de uma instalação nova.
 
-Para atualizar uma instalação existente que ainda não possui a coluna `justificativa_atraso` em `registro_entrada`, execute `app/main/docs/migrations/2026-10-23-justificativa-atraso-manual.sql` no banco configurado em `DB_NAME`. A migração verifica se a coluna já existe antes de alterá-la.
+Para atualizar uma instalação existente, execute `app/main/docs/migrations/2026-11-11-validacao-atrasos.sql` no banco configurado em `DB_NAME`. Essa migração idempotente cria as colunas de justificativa e validação necessárias para habilitar a análise de atrasos na hospedagem; pode ser executada novamente sem duplicar colunas.
 
 ## Manual de instruções da recepção
 

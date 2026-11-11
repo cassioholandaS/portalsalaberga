@@ -36,6 +36,20 @@ $ehRecepcao = $session->usuarioAtualEhRecepcao();
 $tiposUsuario = $_SESSION['tipos_usuario_permitidos'] ?? [];
 $ehAdminEntradaSaida = is_array($tiposUsuario) && in_array('Admin_entrada_saida', $tiposUsuario, true);
 $podeExcluirAtraso = $ehAdminEntradaSaida || $ehRecepcao;
+$mostrarAvisoRecusaAtraso = false;
+$avisoRecusaAtraso = $_SESSION['aviso_recusa_atraso'] ?? null;
+unset($_SESSION['aviso_recusa_atraso']);
+$usuarioIdAtual = is_string($_SESSION['id'] ?? null) || is_int($_SESSION['id'] ?? null)
+    ? trim((string) $_SESSION['id'])
+    : '';
+if (
+    is_array($avisoRecusaAtraso)
+    && $usuarioIdAtual !== ''
+    && is_string($avisoRecusaAtraso['usuario_id'] ?? null)
+    && hash_equals($usuarioIdAtual, $avisoRecusaAtraso['usuario_id'])
+) {
+    $mostrarAvisoRecusaAtraso = true;
+}
 $sectionRetorno = $ehAdminEntradaSaida ? 'entrada' : 'inicio';
 $permiteTemaPt = strtolower(trim((string) ($_SESSION['email'] ?? ''))) === 'otavio.ce@gmail.com';
 $select = new select_model();
@@ -391,7 +405,7 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
 .main-content{min-height:100vh;margin-left:256px;padding:34px clamp(20px,4vw,60px);}.page-section{display:none;max-width:1200px;margin:0 auto}.page-section.active{display:block}.section-title{margin:0 0 22px;color:#08723a;font-size:25px}.section-lead{margin:-14px 0 22px;color:var(--salaberga-muted);font-size:13px}.page-section [class*="max-w-"]{max-width:100%}.page-section .container{width:100%;max-width:100%;margin-left:auto;margin-right:auto}.page-section .fixed{z-index:900}
 #atrasos{max-width:none;width:100%;margin:0}.delays-shell{position:relative;min-height:calc(100dvh - 68px);padding:16px;border-radius:12px;background:#fff;box-shadow:0 2px 8px #143b2114}.delays-heading{text-align:center;margin:14px 0 30px}.delays-topline{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}.delays-back{position:absolute;top:16px;left:16px;display:inline-flex;align-items:center;gap:9px;padding:9px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#53615a;box-shadow:0 2px 6px #00000012;font:500 13px 'Inter',sans-serif;cursor:pointer}.delays-back i{color:#008c45}.delays-title{margin:0;font-size:30px;font-weight:700}.delays-clock{padding:8px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#344254;box-shadow:0 1px 3px #0000000c;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}.delays-note{margin:14px 0 0;color:#64736a;font-size:13px}.delays-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.delay-card{min-height:350px;overflow:hidden;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-shadow:0 2px 6px #143b2118}.delay-card-header{min-height:99px;padding:16px;color:white}.delay-card-header.turma-3a{background:#cf2035}.delay-card-header.turma-3b{background:#3854d9}.delay-card-header.turma-3c{background:#0db5d0}.delay-card-header.turma-3d{background:#59636b}.delay-card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.delay-card-heading h2{display:flex;align-items:center;gap:8px;margin:0;font-size:17px;font-weight:700}.delay-count{width:34px;height:28px;border-radius:18px;background:#fff}.delay-search{width:min(100%,200px);height:32px;padding:0 12px;border:1px solid #ffffff70;border-radius:6px;background:#ffffff30;color:#fff;font:400 13px 'Inter',sans-serif}.delay-search::placeholder{color:#ffffffc9}.delay-search:focus{outline:2px solid #fff;outline-offset:1px}.delay-empty{padding:44px 14px;color:#64748b;text-align:center;font-size:15px;font-style:italic}
 #relatorio-entrada > .main-content{width:100%;min-height:0;margin-left:0;padding:0}
-.delay-list{min-height:230px;max-height:420px;overflow-y:auto;padding:8px 12px}.delay-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid #edf0ee}.delay-entry:last-child{border-bottom:0}.delay-entry-name-group,.delay-history-entry-name-group{display:flex;min-width:0;align-items:center;gap:7px}.delay-entry-name-group{flex:1}.delay-entry-name{flex:1;overflow:hidden;color:#26352c;font-size:13px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.delay-entry-meta{display:flex;align-items:center;gap:10px;color:#64736a;font-size:12px;white-space:nowrap}.delay-detail-button{border:0;background:transparent;color:#08723a;font:600 12px 'Inter',sans-serif;cursor:pointer}.delay-detail-button:hover{text-decoration:underline}.delay-print-button{display:inline-grid;flex:none;width:28px;height:28px;place-items:center;border:1px solid #d5e3d9;border-radius:6px;background:#f2f8f3;color:#08723a;cursor:pointer}.delay-print-button:hover{background:#e4f1e7}.delay-print-button:focus-visible{outline:2px solid #008c45;outline-offset:2px}.delay-count{display:grid;place-items:center;color:#23352a;font-size:12px;font-weight:700}.delay-search:disabled{opacity:1;cursor:not-allowed}.delay-history{margin-top:30px;padding-top:20px;border-top:1px solid #e7ece8}.delay-history h2{margin:0;color:#08723a;font-size:21px;font-weight:700}.delay-history-note{margin:6px 0 14px;color:#64736a;font-size:13px}.delay-history-table{width:100%;border-collapse:collapse;background:#fff}.delay-history-table th,.delay-history-table td{padding:11px 12px;border-bottom:1px solid #e7ece8;text-align:left;font-size:13px}.delay-history-table th{background:#f4f8f3;color:#53615a;font-weight:700}.delay-history-empty{padding:24px 12px;border:1px solid #e7ece8;border-radius:8px;color:#64736a;text-align:center;font-size:14px}.delay-dialog{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:10px;box-shadow:0 16px 48px #102b1c40}.delay-dialog::backdrop{background:#10251bb0}.delay-dialog-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e7ece8}.delay-dialog-header h2{margin:0;color:#08723a;font-size:19px}.delay-dialog-close{width:34px;height:34px;border:0;border-radius:6px;background:#f1f5f2;color:#43534a;cursor:pointer}.delay-dialog-content{padding:18px 20px}.delay-dialog-row{display:grid;grid-template-columns: minmax(130px, 1fr) 2fr;gap:12px;padding:9px 0;border-bottom:1px solid #edf0ee;font-size:14px}.delay-dialog-row:last-child{border-bottom:0}.delay-dialog-label{color:#64736a}.delay-dialog-value{color:#203128;font-weight:600;overflow-wrap:anywhere}
+.delay-list{min-height:230px;max-height:420px;overflow-y:auto;padding:8px 12px}.delay-entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid #edf0ee}.delay-entry:last-child{border-bottom:0}.delay-entry-name-group,.delay-history-entry-name-group{display:flex;min-width:0;align-items:center;gap:7px}.delay-entry-name-group{flex:1}.delay-entry-name{flex:1;overflow:hidden;color:#26352c;font-size:13px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.delay-entry-meta{display:flex;align-items:center;gap:10px;color:#64736a;font-size:12px;white-space:nowrap}.delay-detail-button{border:0;background:transparent;color:#08723a;font:600 12px 'Inter',sans-serif;cursor:pointer}.delay-detail-button:hover{text-decoration:underline}.delay-print-button{display:inline-flex;flex:none;align-items:center;justify-content:center;gap:5px;width:auto;height:28px;padding:0 7px;border:1px solid #d5e3d9;border-radius:6px;background:#f2f8f3;color:#08723a;font:600 10px 'Inter',sans-serif;white-space:nowrap;cursor:pointer}.delay-print-button:hover{background:#e4f1e7}.delay-print-button:focus-visible{outline:2px solid #008c45;outline-offset:2px}.delay-count{display:grid;place-items:center;color:#23352a;font-size:12px;font-weight:700}.delay-search:disabled{opacity:1;cursor:not-allowed}.delay-history{margin-top:30px;padding-top:20px;border-top:1px solid #e7ece8}.delay-history h2{margin:0;color:#08723a;font-size:21px;font-weight:700}.delay-history-note{margin:6px 0 14px;color:#64736a;font-size:13px}.delay-history-table{width:100%;border-collapse:collapse;background:#fff}.delay-history-table th,.delay-history-table td{padding:11px 12px;border-bottom:1px solid #e7ece8;text-align:left;font-size:13px}.delay-history-table th{background:#f4f8f3;color:#53615a;font-weight:700}.delay-history-empty{padding:24px 12px;border:1px solid #e7ece8;border-radius:8px;color:#64736a;text-align:center;font-size:14px}.delay-dialog{width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:10px;box-shadow:0 16px 48px #102b1c40}.delay-dialog::backdrop{background:#10251bb0}.delay-dialog-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #e7ece8}.delay-dialog-header h2{margin:0;color:#08723a;font-size:19px}.delay-dialog-close{width:34px;height:34px;border:0;border-radius:6px;background:#f1f5f2;color:#43534a;cursor:pointer}.delay-dialog-content{padding:18px 20px}.delay-dialog-row{display:grid;grid-template-columns: minmax(130px, 1fr) 2fr;gap:12px;padding:9px 0;border-bottom:1px solid #edf0ee;font-size:14px}.delay-dialog-row:last-child{border-bottom:0}.delay-dialog-label{color:#64736a}.delay-dialog-value{color:#203128;font-weight:600;overflow-wrap:anywhere}
 #relatorio-estagio > .main-content{width:100%;min-height:0;margin-left:0;padding:0}
 #ultimas-saidas{width:calc(100% + min(16px,1.5vw) - 40px);max-width:none;margin-left:12px;margin-right:calc(-1 * min(16px,1.5vw))}
 #ultimas-saidas .main-container{width:100%;max-width:none}
@@ -7696,7 +7710,9 @@ $(document).ready(function() {
             erro: 'Não foi possível enviar a validação. Confira os dados e tente novamente.'
         };
         if (mensagensValidacao[statusValidacao]) {
-            setTimeout(() => showToast(mensagensValidacao[statusValidacao], statusValidacao === 'erro' || statusValidacao === 'ja_processada' || statusValidacao === 'encerrada'), 100);
+            if (statusValidacao !== 'recusada') {
+                setTimeout(() => showToast(mensagensValidacao[statusValidacao], statusValidacao === 'erro' || statusValidacao === 'ja_processada' || statusValidacao === 'encerrada'), 100);
+            }
             urlParams.delete('validacao');
             const queryString = urlParams.toString();
             window.history.replaceState(
@@ -9747,6 +9763,19 @@ class TurmaSelector {
             <button class="delay-validation-submit" id="delay-validation-submit" type="submit" disabled><i class="fas fa-check" aria-hidden="true"></i><span id="delay-validation-submit-label">Escolha uma avaliação</span></button>
         </form>
     </dialog>
+    <dialog class="delay-dialog" id="delay-rejection-warning" aria-labelledby="delay-rejection-warning-title" aria-describedby="delay-rejection-warning-message">
+        <div class="delay-dialog-header">
+            <div class="delay-dialog-heading">
+                <h2 id="delay-rejection-warning-title">⚠️ ATENÇÃO</h2>
+            </div>
+        </div>
+        <div class="delay-dialog-content" id="delay-rejection-warning-message">
+            <p>Como a justificativa apresentada para o atraso foi considerada inválida, o estudante ficará impedido de realizar suas atividades de estágio nesta data. A ocorrência deverá ser comunicada à Coordenação Pedagógica e ao coordenador do respectivo curso.</p>
+        </div>
+        <form method="dialog" class="border-t border-gray-200 px-5 py-4">
+            <button type="submit" class="delay-validation-submit">OK</button>
+        </form>
+    </dialog>
     <dialog class="delay-dialog delay-print-dialog" id="delay-print-dialog" aria-labelledby="delay-print-dialog-title">
         <div class="delay-dialog-header">
             <div class="delay-dialog-heading"><div><h2 id="delay-print-dialog-title">Impressão</h2><p>Escolha o documento que deseja imprimir.</p></div></div>
@@ -9910,6 +9939,10 @@ class TurmaSelector {
             });
 
             const dialog = document.getElementById('delay-details-dialog');
+            const rejectionWarning = document.getElementById('delay-rejection-warning');
+            if (<?= json_encode($mostrarAvisoRecusaAtraso) ?> && rejectionWarning) {
+                rejectionWarning.showModal();
+            }
             const dialogContent = document.getElementById('delay-dialog-content');
             const validationForm = document.getElementById('delay-validation-form');
             const motiveField = document.getElementById('delay-validation-motive-field');
