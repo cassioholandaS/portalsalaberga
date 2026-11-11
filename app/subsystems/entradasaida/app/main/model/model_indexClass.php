@@ -415,7 +415,7 @@ class MainModel extends connect
         }
     }
 
-    public function validarJustificativaAtraso($idRegistro, $decisao, $nomeValidador, $justificativaAtraso, $idMotivo)
+    public function validarJustificativaAtraso($idRegistro, $decisao, $nomeValidador, $justificativaAtraso, $idMotivo, $dataAtual)
     {
         if (!in_array($decisao, ['aprovada', 'recusada'], true)
             || !is_string($justificativaAtraso)
@@ -461,6 +461,7 @@ class MainModel extends connect
                     r.validado_em = NOW()
                 WHERE r.id_registro_entrada = :id_registro
                   AND r.status_justificativa = 'pendente'
+                  AND DATE(r.date_time) = :data_atual
                   AND (
                       (TIME(r.date_time) >= '07:40:00' AND TIME(r.date_time) < '11:40:00')
                       {$condicaoAtrasoSemResponsavel}
@@ -472,7 +473,8 @@ class MainModel extends connect
             'id_motivo' => (int) $idMotivo,
             'justificativa_atraso' => trim($justificativaAtraso) !== '' ? trim($justificativaAtraso) : null,
             'validador' => trim($nomeValidador),
-            'id_registro' => $idRegistro
+            'id_registro' => $idRegistro,
+            'data_atual' => $dataAtual
         ]);
 
         return $stmt->rowCount() === 1;

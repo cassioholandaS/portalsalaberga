@@ -599,6 +599,12 @@ if (($_POST['acao'] ?? '') === 'validar_justificativa_atraso') {
     exigirPermissaoRecepcao(true);
 
     $redirect = '../views/inicio.php?section=atrasos&validacao=erro';
+    $agoraSaoPaulo = new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'));
+    if ($agoraSaoPaulo->format('H:i:s') >= '17:00:00') {
+        header('Location: ../views/inicio.php?section=atrasos&validacao=encerrada', true, 303);
+        exit();
+    }
+
     $csrfToken = $_SESSION['csrf_token'] ?? '';
     $postedToken = $_POST['csrf_token'] ?? '';
     if (!is_string($csrfToken) || !is_string($postedToken) || !hash_equals($csrfToken, $postedToken)) {
@@ -617,7 +623,14 @@ if (($_POST['acao'] ?? '') === 'validar_justificativa_atraso') {
     }
 
     $model = new MainModel();
-    $atualizado = $model->validarJustificativaAtraso($idRegistro, $decisao, $responsavel, $justificativa, $idMotivo);
+    $atualizado = $model->validarJustificativaAtraso(
+        $idRegistro,
+        $decisao,
+        $responsavel,
+        $justificativa,
+        $idMotivo,
+        $agoraSaoPaulo->format('Y-m-d')
+    );
     $resultado = $atualizado ? $decisao : 'ja_processada';
     header('Location: ../views/inicio.php?section=atrasos&validacao=' . $resultado);
     exit();

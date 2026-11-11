@@ -447,6 +447,23 @@ class select_model extends connect
         return is_string($dateTime) ? $dateTime : null;
     }
 
+    public function atrasoFoiValidado(int $idRegistro): bool
+    {
+        if (!$this->suportaValidacaoAtrasos()) {
+            return false;
+        }
+
+        $query = $this->connect->prepare(
+            'SELECT status_justificativa
+             FROM registro_entrada
+             WHERE id_registro_entrada = :id_registro'
+        );
+        $query->bindValue(':id_registro', $idRegistro, PDO::PARAM_INT);
+        $query->execute();
+
+        return in_array($query->fetchColumn(), ['aprovada', 'recusada'], true);
+    }
+
     public function historicoAtrasos()
     {
         $condicaoHistorico = $this->suportaValidacaoAtrasos()

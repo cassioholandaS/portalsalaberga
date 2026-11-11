@@ -114,6 +114,9 @@ try {
         if ($dateTimeRegistro === null) {
             responderErroComprovante('Registro de atraso não encontrado.', 404);
         }
+        if (!$select->atrasoFoiValidado($idRegistro)) {
+            responderErroComprovante('A impressão está disponível somente após a validação do atraso.', 403);
+        }
 
         $chegada = new DateTimeImmutable($dateTimeRegistro, new DateTimeZone('America/Sao_Paulo'));
         $aula = aulaAutorizada($chegada);

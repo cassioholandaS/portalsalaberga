@@ -20,7 +20,7 @@ O tipo de usuário `usuario_recepcao`, atribuído à pessoa para o sistema Entra
 
 O perfil da recepção terá acesso a registrar atrasos, registrar saídas antecipadas, registrar saídas para estágio, consultar ausências registradas e excluir atrasos pendentes ou do histórico, assim como o administrador.
 
-Ao registrar um atraso, é possível imprimir separadamente o comprovante do atraso (ocorrência e justificativa) e a permissão para entrar em sala (horário e aula autorizada). Ambos correspondem ao mesmo registro, sem criar um segundo atraso.
+Os atrasos podem ser validados até as 17h do mesmo dia; depois desse horário, a validação fica desabilitada. Após a validação, a opção `Impressão` reúne o registro do atraso (ocorrência e justificativa) e a autorização para entrar em sala (horário e aula autorizada), sem criar um segundo atraso.
 
 ## Banco de dados
 

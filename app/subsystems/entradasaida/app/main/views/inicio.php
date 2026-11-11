@@ -56,6 +56,14 @@ try {
     error_log('Não foi possível carregar restrições: ' . $e->getMessage());
 }
 $validacaoAtrasosDisponivel = $select->suportaValidacaoAtrasos();
+$fusoSaoPaulo = new DateTimeZone('America/Sao_Paulo');
+$agoraSaoPaulo = new DateTimeImmutable('now', $fusoSaoPaulo);
+$hojeSaoPaulo = $agoraSaoPaulo->format('Y-m-d');
+$prazoValidacaoAtrasosAberto = $agoraSaoPaulo->format('H:i:s') < '17:00:00';
+$limiteValidacaoAtrasos = new DateTimeImmutable($hojeSaoPaulo . ' 17:00:00', $fusoSaoPaulo);
+$segundosAteLimiteValidacao = $prazoValidacaoAtrasosAberto
+    ? max(0, $limiteValidacaoAtrasos->getTimestamp() - $agoraSaoPaulo->getTimestamp())
+    : 0;
 $sectionInicial = $_GET['section'] ?? ($ehRecepcao ? 'inicio' : 'entrada');
 $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'cadastro'];
 if ($ehRecepcao) {
@@ -7684,10 +7692,11 @@ $(document).ready(function() {
             aprovada: 'A justificativa foi aprovada e o histórico foi atualizado.',
             recusada: 'A justificativa foi recusada e o histórico foi atualizado.',
             ja_processada: 'Este atraso já foi validado ou não está mais disponível.',
+            encerrada: 'O prazo para validar atrasos encerra às 17h.',
             erro: 'Não foi possível enviar a validação. Confira os dados e tente novamente.'
         };
         if (mensagensValidacao[statusValidacao]) {
-            setTimeout(() => showToast(mensagensValidacao[statusValidacao], statusValidacao === 'erro' || statusValidacao === 'ja_processada'), 100);
+            setTimeout(() => showToast(mensagensValidacao[statusValidacao], statusValidacao === 'erro' || statusValidacao === 'ja_processada' || statusValidacao === 'encerrada'), 100);
             urlParams.delete('validacao');
             const queryString = urlParams.toString();
             window.history.replaceState(
@@ -9633,10 +9642,29 @@ class TurmaSelector {
                                     <div class="delay-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="delay-entry-meta">
                                         <time><?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time>
-                                            <?php $statusAtraso = $registroAtraso['status_justificativa'] ?? 'pendente'; $acaoAtraso = $statusAtraso === 'pendente' && $validacaoAtrasosDisponivel ? 'Validar' : 'Detalhes'; ?>
-                                            <button type="button" class="delay-detail-button <?= $acaoAtraso === 'Detalhes' ? 'delay-detail-button-secondary' : '' ?>" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $validacaoAtrasosDisponivel && $statusAtraso === 'pendente' ? '1' : '0' ?>"><?= $acaoAtraso === 'Validar' ? '<i class="fas fa-check" aria-hidden="true"></i>' : '<i class="fas fa-eye" aria-hidden="true"></i>' ?><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
-                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button>
-                                            <button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button>
+                                            <?php
+                                            $statusAtraso = $registroAtraso['status_justificativa'] ?? 'pendente';
+                                            $dataAtraso = (new DateTimeImmutable((string) $registroAtraso['date_time'], $fusoSaoPaulo))->format('Y-m-d');
+                                            $podeValidarAtraso = $validacaoAtrasosDisponivel
+                                                && $statusAtraso === 'pendente'
+                                                && $dataAtraso === $hojeSaoPaulo
+                                                && $prazoValidacaoAtrasosAberto;
+                                            $validacaoAtrasoExpirada = $validacaoAtrasosDisponivel
+                                                && $statusAtraso === 'pendente'
+                                                && !$podeValidarAtraso;
+                                            $dadosAtrasoHtml = htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8');
+                                            $idAtraso = (int) ($registroAtraso['id_registro_entrada'] ?? 0);
+                                            ?>
+                                            <?php if ($validacaoAtrasoExpirada) { ?>
+                                                <button type="button" class="delay-detail-button delay-validation-expired" disabled aria-label="Prazo para validar atraso encerrado"><i class="fas fa-lock" aria-hidden="true"></i>Prazo encerrado</button>
+                                                <button type="button" class="delay-detail-button delay-detail-button-secondary delay-history-entry-action" data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i>Detalhes</button>
+                                            <?php } else { ?>
+                                                <?php $acaoAtraso = $podeValidarAtraso ? 'Validar' : 'Detalhes'; ?>
+                                                <button type="button" class="delay-detail-button <?= $podeValidarAtraso ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarAtraso ? 'data-delay-validation' : '' ?> data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarAtraso ? '1' : '0' ?>"><i class="fas <?= $podeValidarAtraso ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
+                                            <?php } ?>
+                                            <?php if ($statusAtraso !== 'pendente') { ?>
+                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" aria-label="Impressão do registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Impressão"><i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span></button>
+                                            <?php } ?>
                                     </div>
                                 </div>
                             <?php } ?>
@@ -9667,11 +9695,30 @@ class TurmaSelector {
                                 <?php foreach ($historicoPorTurma[$idTurma] as $registroAtraso) { ?>
                                     <?php $jsonDetalhes = json_encode($detalhesAtraso($registroAtraso), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_INVALID_UTF8_SUBSTITUTE); $statusHistorico = $registroAtraso['status_justificativa'] ?? 'pendente'; ?>
                                     <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
-                                        <div class="delay-history-entry-name-group"><div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="atraso" aria-label="Imprimir comprovante de atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir comprovante de atraso"><i class="fas fa-print" aria-hidden="true"></i></button><button type="button" class="delay-print-button" data-delay-print="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-receipt-type="permissao" aria-label="Imprimir permissão para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir permissão para entrar em sala"><i class="fas fa-door-open" aria-hidden="true"></i></button></div>
+                                        <div class="delay-history-entry-name-group">
+                                            <div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div>
+                                            <?php if ($statusHistorico !== 'pendente') { ?>
+                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Impressão do registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Impressão"><i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span></button>
+                                            <?php } ?>
+                                        </div>
                                         <div class="delay-history-entry-meta"><time datetime="<?= date('Y-m-d\TH:i:s', strtotime($registroAtraso['date_time'])) ?>"><?= date('d/m/Y', strtotime($registroAtraso['date_time'])) ?> às <?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time><span class="delay-status delay-status-<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(['pendente' => 'Pendente', 'aprovada' => 'Aprovada', 'recusada' => 'Recusada'][$statusHistorico] ?? 'Pendente', ENT_QUOTES, 'UTF-8') ?></span></div>
                                         <div class="delay-history-entry-actions">
-                                            <?php $podeValidarHistorico = $validacaoAtrasosDisponivel && $statusHistorico === 'pendente'; ?>
-                                            <button type="button" class="delay-detail-button delay-history-entry-action <?= $podeValidarHistorico ? '' : 'delay-detail-button-secondary' ?>" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarHistorico ? '1' : '0' ?>"><i class="fas <?= $podeValidarHistorico ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i> <?= $podeValidarHistorico ? 'Validar' : 'Ver detalhes' ?></button>
+                                            <?php
+                                            $dataHistorico = (new DateTimeImmutable((string) $registroAtraso['date_time'], $fusoSaoPaulo))->format('Y-m-d');
+                                            $podeValidarHistorico = $validacaoAtrasosDisponivel
+                                                && $statusHistorico === 'pendente'
+                                                && $dataHistorico === $hojeSaoPaulo
+                                                && $prazoValidacaoAtrasosAberto;
+                                            $prazoHistoricoExpirado = $validacaoAtrasosDisponivel
+                                                && $statusHistorico === 'pendente'
+                                                && !$podeValidarHistorico;
+                                            ?>
+                                            <?php if ($prazoHistoricoExpirado) { ?>
+                                                <button type="button" class="delay-detail-button delay-history-entry-action delay-validation-expired" disabled aria-label="Prazo para validar atraso encerrado"><i class="fas fa-lock" aria-hidden="true"></i> Prazo encerrado</button>
+                                                <button type="button" class="delay-detail-button delay-history-entry-action delay-detail-button-secondary" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i> Ver detalhes</button>
+                                            <?php } else { ?>
+                                                <button type="button" class="delay-detail-button delay-history-entry-action <?= $podeValidarHistorico ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarHistorico ? 'data-delay-validation' : '' ?> data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarHistorico ? '1' : '0' ?>"><i class="fas <?= $podeValidarHistorico ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i> <?= $podeValidarHistorico ? 'Validar' : 'Ver detalhes' ?></button>
+                                            <?php } ?>
                                         </div>
                                     </article>
                                 <?php } ?>
@@ -9700,15 +9747,83 @@ class TurmaSelector {
             <button class="delay-validation-submit" id="delay-validation-submit" type="submit" disabled><i class="fas fa-check" aria-hidden="true"></i><span id="delay-validation-submit-label">Escolha uma avaliação</span></button>
         </form>
     </dialog>
+    <dialog class="delay-dialog delay-print-dialog" id="delay-print-dialog" aria-labelledby="delay-print-dialog-title">
+        <div class="delay-dialog-header">
+            <div class="delay-dialog-heading"><div><h2 id="delay-print-dialog-title">Impressão</h2><p>Escolha o documento que deseja imprimir.</p></div></div>
+            <button type="button" class="delay-dialog-close" data-close-delay-print aria-label="Fechar"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+        </div>
+        <div class="delay-print-options">
+            <button type="button" class="delay-print-choice" data-delay-receipt-type="atraso"><i class="fas fa-print" aria-hidden="true"></i><span>Registro de Atraso</span></button>
+            <button type="button" class="delay-print-choice" data-delay-receipt-type="permissao"><i class="fas fa-door-open" aria-hidden="true"></i><span>Autorização para entrar em sala</span></button>
+        </div>
+    </dialog>
     <script>
         (() => {
             const clock = document.getElementById('atrasos-relogio');
+            const prazoValidacaoPorBanco = <?= $validacaoAtrasosDisponivel ? 'true' : 'false' ?>;
+            const limiteValidacaoNoCliente = Date.now() + <?= $segundosAteLimiteValidacao ?> * 1000;
+            window.atrasosPodemSerValidados = () => prazoValidacaoPorBanco && Date.now() < limiteValidacaoNoCliente;
+            const atualizarBotoesValidacao = () => {
+                const prazoAberto = window.atrasosPodemSerValidados();
+                document.querySelectorAll('[data-delay-validation]').forEach((button) => {
+                    if (prazoAberto || button.disabled) return;
+                    button.disabled = true;
+                    button.dataset.canValidate = '0';
+                    button.classList.add('delay-validation-expired');
+                    button.innerHTML = '<i class="fas fa-lock" aria-hidden="true"></i>Prazo encerrado';
+                    const detailsButton = button.cloneNode(true);
+                    detailsButton.disabled = false;
+                    detailsButton.className = 'delay-detail-button delay-detail-button-secondary';
+                    if (button.closest('[data-history-entry]')) detailsButton.classList.add('delay-history-entry-action');
+                    detailsButton.removeAttribute('data-delay-validation');
+                    detailsButton.dataset.canValidate = '0';
+                    detailsButton.dataset.readonlyDetails = '1';
+                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Detalhes';
+                    button.insertAdjacentElement('afterend', detailsButton);
+                    button.removeAttribute('data-delay-validation');
+                });
+            };
             const updateClock = () => {
                 const now = new Date();
                 clock.textContent = `${now.toLocaleDateString('pt-BR')} | ${now.toLocaleTimeString('pt-BR')}`;
+                atualizarBotoesValidacao();
             };
             updateClock();
             window.setInterval(updateClock, 1000);
+            let atrasoSelecionadoParaImpressao = null;
+            const dialogImpressao = document.getElementById('delay-print-dialog');
+            document.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-delay-print-options]');
+                if (!button) return;
+                event.preventDefault();
+                event.stopPropagation();
+                try {
+                    const details = JSON.parse(button.dataset.delayPrintOptions);
+                    if (!details || typeof details !== 'object' || Array.isArray(details)) {
+                        throw new Error('Os dados deste registro de atraso estão em um formato inválido.');
+                    }
+                    atrasoSelecionadoParaImpressao = {details, recordId: button.dataset.recordId};
+                    if (!dialogImpressao.open) dialogImpressao.showModal();
+                } catch (error) {
+                    console.error('Não foi possível abrir as opções de impressão.', error);
+                    showToast('Não foi possível abrir as opções de impressão.', true);
+                }
+            });
+            dialogImpressao.addEventListener('click', (event) => {
+                if (event.target === dialogImpressao || event.target.closest('[data-close-delay-print]')) {
+                    dialogImpressao.close();
+                    return;
+                }
+                const button = event.target.closest('[data-delay-receipt-type]');
+                if (!button || !atrasoSelecionadoParaImpressao) return;
+                window.printDelayReceipt(
+                    atrasoSelecionadoParaImpressao.details,
+                    atrasoSelecionadoParaImpressao.recordId,
+                    button.dataset.delayReceiptType
+                );
+                atrasoSelecionadoParaImpressao = null;
+                dialogImpressao.close();
+            });
 
             document.querySelectorAll('[data-delay-search]').forEach((input) => {
                 input.addEventListener('input', () => {
@@ -9761,24 +9876,6 @@ class TurmaSelector {
                     filterHistory();
                 });
                 filterHistory();
-            });
-
-            document.addEventListener('click', (event) => {
-                const button = event.target.closest('[data-delay-print]');
-                if (!button) return;
-
-                event.preventDefault();
-                event.stopPropagation();
-                try {
-                    const details = JSON.parse(button.dataset.delayPrint);
-                    if (!details || typeof details !== 'object' || Array.isArray(details)) {
-                        throw new Error('Os dados deste registro de atraso estão em um formato inválido.');
-                    }
-                    window.printDelayReceipt(details, button.dataset.recordId, button.dataset.receiptType || 'atraso');
-                } catch (error) {
-                    console.error('Não foi possível imprimir este registro de atraso.', error);
-                    window.alert('Não foi possível preparar a impressão deste registro de atraso.');
-                }
             });
 
             document.addEventListener('click', (event) => {
@@ -9845,7 +9942,6 @@ class TurmaSelector {
             document.addEventListener('click', (event) => {
                 const button = event.target.closest('[data-delay-details]');
                 if (!button) return;
-                if (button.closest('[data-history-entry]') && <?= $podeExcluirAtraso ? 'true' : 'false' ?>) return;
 
                 try {
                     const details = JSON.parse(button.dataset.delayDetails);
@@ -12156,7 +12252,10 @@ function normalizeStudentSearch(value) {
                 const validateButton = document.createElement('button');
                 validateButton.type = 'button';
                 const status = registro.status_justificativa || 'pendente';
-                const canValidate = validacaoAtrasosDisponivel && status === 'pendente';
+                const canValidate = validacaoAtrasosDisponivel
+                    && status === 'pendente'
+                    && window.atrasosPodemSerValidados();
+                const validationExpired = validacaoAtrasosDisponivel && status === 'pendente' && !canValidate;
                 validateButton.className = `delay-detail-button ${canValidate ? '' : 'delay-detail-button-secondary'}`;
                 validateButton.dataset.delayDetails = JSON.stringify(detalhes);
                 validateButton.dataset.recordId = String(registro.id_registro_entrada);
@@ -12164,10 +12263,41 @@ function normalizeStudentSearch(value) {
                 validateButton.dataset.status = status;
                 validateButton.dataset.canValidate = canValidate ? '1' : '0';
                 const icon = document.createElement('i');
-                icon.className = `fas ${canValidate ? 'fa-check' : 'fa-eye'}`;
+                icon.className = `fas ${validationExpired ? 'fa-lock' : canValidate ? 'fa-check' : 'fa-eye'}`;
                 icon.setAttribute('aria-hidden', 'true');
-                validateButton.append(icon, document.createTextNode(canValidate ? 'Validar' : 'Detalhes'));
+                if (canValidate) validateButton.dataset.delayValidation = '';
+                if (validationExpired) {
+                    validateButton.disabled = true;
+                    validateButton.classList.add('delay-validation-expired');
+                    validateButton.setAttribute('aria-label', 'Prazo para validar atraso encerrado');
+                    validateButton.append(icon, document.createTextNode('Prazo encerrado'));
+                } else {
+                    validateButton.append(icon, document.createTextNode(canValidate ? 'Validar' : 'Detalhes'));
+                }
                 meta.append(time, validateButton);
+                if (validationExpired) {
+                    const detailsButton = document.createElement('button');
+                    detailsButton.type = 'button';
+                    detailsButton.className = 'delay-detail-button delay-detail-button-secondary';
+                    detailsButton.dataset.delayDetails = JSON.stringify(detalhes);
+                    detailsButton.dataset.recordId = String(registro.id_registro_entrada);
+                    detailsButton.dataset.motiveId = String(registro.id_motivo || '');
+                    detailsButton.dataset.status = status;
+                    detailsButton.dataset.canValidate = '0';
+                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Detalhes';
+                    meta.appendChild(detailsButton);
+                }
+                if (status !== 'pendente') {
+                    const printButton = document.createElement('button');
+                    printButton.type = 'button';
+                    printButton.className = 'delay-print-button';
+                    printButton.dataset.delayPrintOptions = JSON.stringify(detalhes);
+                    printButton.dataset.recordId = String(registro.id_registro_entrada);
+                    printButton.setAttribute('aria-label', `Impressão do registro de ${registro.nome || 'aluno'}`);
+                    printButton.title = 'Impressão';
+                    printButton.innerHTML = '<i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span>';
+                    meta.appendChild(printButton);
+                }
                 entry.append(name, meta);
                 return entry;
             });
@@ -13480,9 +13610,102 @@ html[data-theme="lula"] .entryexit-footer a i {
     }
 }
 
-html[data-theme="dark"] .delay-history-entry-action:not(.delay-detail-button-secondary),
-html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-secondary) {
+html[data-theme="dark"] .delay-history-entry-action:not(.delay-detail-button-secondary):not(.delay-validation-expired),
+html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-secondary):not(.delay-validation-expired) {
     color: #fff !important;
+}
+
+.delay-validation-expired,
+.delay-validation-expired:disabled {
+    border: 1px solid #d5d9d6;
+    background: #edf0ee;
+    color: #737b75 !important;
+    opacity: 1;
+    cursor: not-allowed;
+    text-decoration: none !important;
+}
+
+.delay-print-button {
+    width: auto;
+    min-height: 30px;
+    gap: 7px;
+    padding: 0 10px;
+    font: 600 12px 'Inter', sans-serif;
+}
+
+.delay-print-button span { white-space: nowrap; }
+
+.delay-print-dialog {
+    width: min(440px, calc(100vw - 32px));
+    overflow: hidden;
+}
+
+#delay-print-dialog[open] {
+    left: calc(50vw + var(--sidebar-width, 0px) / 2);
+    margin: 0;
+    transform: translate(-50%, -50%);
+}
+
+@media (max-width: 760px) {
+    #delay-print-dialog[open] {
+        left: 50vw;
+        width: min(440px, calc(100vw - 32px));
+        max-width: calc(100vw - 32px);
+    }
+}
+
+.delay-print-dialog .delay-dialog-heading p {
+    margin: 4px 0 0;
+    color: #64736a;
+    font-size: 13px;
+}
+
+.delay-print-options {
+    display: grid;
+    gap: 10px;
+    padding: 18px 20px 20px;
+}
+
+.delay-print-choice {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 13px;
+    border: 1px solid #d5e3d9;
+    border-radius: 8px;
+    background: #f7fbf8;
+    color: #08723a;
+    font: 600 13px 'Inter', sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.delay-print-choice:hover {
+    transform: translateY(-1px);
+    border-color: #9dc9aa;
+    background: #eaf5ed;
+}
+
+.delay-print-choice:focus-visible {
+    outline: 2px solid #008c45;
+    outline-offset: 2px;
+}
+
+.delay-print-choice i {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    place-items: center;
+    border-radius: 7px;
+    background: #e3f1e7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .delay-print-choice { transition: none; }
+    .delay-print-choice:hover { transform: none; }
 }
 </style>
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
