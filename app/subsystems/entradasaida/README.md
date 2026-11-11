@@ -30,4 +30,6 @@ O dump também contém os dados presentes na exportação. Confira se deseja cop
 
 Para atualizar uma instalação existente que ainda não possui a coluna `justificativa_atraso` em `registro_entrada`, execute `app/main/docs/migrations/2026-10-23-justificativa-atraso-manual.sql` no banco configurado em `DB_NAME`. A migração verifica se a coluna já existe antes de alterá-la.
 
-// Leia toda a pasta do subsistema de `entradasaida` e, analisando todo o seu funcionamento e estrutura - obs: somente a tela mais simples com os cards, correspondente do usuário com o tipo `usuario_recepcao` - produza um manual de instruções tipo storyboard, com prints de cada interface, trazendo setas que apontem para cada botão, campo, interface, etc com explicação detalhada. Se baseie no modelo de manual presente no subsistema de `biblioteca` que pertence a mesma hierarquia de pastas aqui no workspace, com a diferença de que deve agora ter a aparencia de um storyboard com prints das telas
+## Manual de instruções da recepção
+
+O [guia visual do perfil de recepção](app/main/docs/Guia_de_instrucoes_entradasaida_recepcao.pdf) apresenta os atalhos, formulários e consultas disponíveis para `usuario_recepcao`, com capturas anotadas e orientações de uso. Para regenerar o PDF com as capturas incluídas em `app/main/docs/storyboard_recepcao`, execute `php app/main/docs/gerar_guia_recepcao.php` em um ambiente PHP com GD habilitado.
