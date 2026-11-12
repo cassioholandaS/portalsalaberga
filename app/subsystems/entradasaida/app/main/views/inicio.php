@@ -5672,6 +5672,10 @@ input[type="radio"] {
         color: #9ca3af;
     }
 
+    html[data-theme="dark"] .reception-interface .menu-card:hover p {
+        color: #475569 !important;
+    }
+
     html[data-theme="dark"] .reception-header,
     html[data-theme="dark"] .reception-footer {
         background: #171717;
@@ -8622,7 +8626,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <header class="absence-header">
             <div class="absence-title">
                 <span class="absence-title-mark" aria-hidden="true"><i class="fas fa-user-xmark"></i></span>
-                <div><p class="absence-print-title">Comprovante de ausências</p><p class="absence-school-name">ESCOLA SALABERGA</p><h1>Ausências Registradas</h1><p class="absence-lead">Alunos sem saída por QR Code registrada até 13h20.</p><p class="absence-report-date" data-absence-report-date></p></div>
+                <div><p class="absence-print-title">Comprovante de ausências</p><p class="absence-school-name">ESCOLA SALABERGA</p><h1>Ausências Registradas</h1><p class="absence-lead">A apuração de hoje é liberada após 13h20; uma saída registrada na data consultada remove o aluno da lista.</p><p class="absence-report-date" data-absence-report-date></p></div>
             </div>
             <div class="absence-count" aria-live="polite"><i class="fas fa-list-check" aria-hidden="true"></i><strong data-absence-count>0</strong><span data-absence-count-label>ausentes</span></div>
         </header>
@@ -8738,6 +8742,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dateInput.addEventListener('change', consultarAusencias);
     classInput.addEventListener('change', consultarAusencias);
+    document.addEventListener('stage-exit-recorded', consultarAusencias);
     printButton.addEventListener('click', () => {
         document.body.classList.add('printing-absence-report');
         window.addEventListener('afterprint', () => document.body.classList.remove('printing-absence-report'), {once: true});
@@ -9679,7 +9684,7 @@ class TurmaSelector {
                                                 <button type="button" class="delay-detail-button <?= $podeValidarAtraso ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarAtraso ? 'data-delay-validation' : '' ?> data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarAtraso ? '1' : '0' ?>"><i class="fas <?= $podeValidarAtraso ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
                                             <?php } ?>
                                             <?php if ($statusAtraso !== 'pendente') { ?>
-                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" aria-label="Imprimir registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
+                                                <button type="button" class="delay-print-button" data-delay-print-authorization="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" aria-label="Imprimir autorização para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir autorização para entrar em sala"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
                                             <?php } ?>
                                     </div>
                                 </div>
@@ -9717,7 +9722,7 @@ class TurmaSelector {
                                         <div class="delay-history-entry-meta"><time datetime="<?= date('Y-m-d\TH:i:s', strtotime($registroAtraso['date_time'])) ?>"><?= date('d/m/Y', strtotime($registroAtraso['date_time'])) ?> às <?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time><span class="delay-status delay-status-<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(['pendente' => 'Pendente', 'aprovada' => 'Aprovada', 'recusada' => 'Recusada'][$statusHistorico] ?? 'Pendente', ENT_QUOTES, 'UTF-8') ?></span></div>
                                         <div class="delay-history-entry-actions">
                                             <?php if ($statusHistorico !== 'pendente') { ?>
-                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Imprimir registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
+                                                <button type="button" class="delay-print-button" data-delay-print-authorization="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Imprimir autorização para entrar em sala de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir autorização para entrar em sala"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
                                             <?php } ?>
                                             <?php
                                             $dataHistorico = (new DateTimeImmutable((string) $registroAtraso['date_time'], $fusoSaoPaulo))->format('Y-m-d');
@@ -9776,16 +9781,6 @@ class TurmaSelector {
             <button type="submit" class="delay-validation-submit">OK</button>
         </form>
     </dialog>
-    <dialog class="delay-dialog delay-print-dialog" id="delay-print-dialog" aria-labelledby="delay-print-dialog-title">
-        <div class="delay-dialog-header">
-            <div class="delay-dialog-heading"><div><h2 id="delay-print-dialog-title">Impressão</h2><p>Escolha o documento que deseja imprimir.</p></div></div>
-            <button type="button" class="delay-dialog-close" data-close-delay-print aria-label="Fechar"><i class="fas fa-xmark" aria-hidden="true"></i></button>
-        </div>
-        <div class="delay-print-options">
-            <button type="button" class="delay-print-choice" data-delay-receipt-type="atraso"><i class="fas fa-print" aria-hidden="true"></i><span>Registro de Atraso</span></button>
-            <button type="button" class="delay-print-choice" data-delay-receipt-type="permissao"><i class="fas fa-door-open" aria-hidden="true"></i><span>Autorização para entrar em sala</span></button>
-        </div>
-    </dialog>
     <script>
         (() => {
             const clock = document.getElementById('atrasos-relogio');
@@ -9819,39 +9814,21 @@ class TurmaSelector {
             };
             updateClock();
             window.setInterval(updateClock, 1000);
-            let atrasoSelecionadoParaImpressao = null;
-            const dialogImpressao = document.getElementById('delay-print-dialog');
             document.addEventListener('click', (event) => {
-                const button = event.target.closest('[data-delay-print-options]');
+                const button = event.target.closest('[data-delay-print-authorization]');
                 if (!button) return;
                 event.preventDefault();
                 event.stopPropagation();
                 try {
-                    const details = JSON.parse(button.dataset.delayPrintOptions);
-                    if (!details || typeof details !== 'object' || Array.isArray(details)) {
+                    const details = JSON.parse(button.dataset.delayPrintAuthorization);
+                    if (!details || typeof details !== 'object' || Array.isArray(details) || !button.dataset.recordId) {
                         throw new Error('Os dados deste registro de atraso estão em um formato inválido.');
                     }
-                    atrasoSelecionadoParaImpressao = {details, recordId: button.dataset.recordId};
-                    if (!dialogImpressao.open) dialogImpressao.showModal();
+                    window.printDelayReceipt(details, button.dataset.recordId, 'permissao');
                 } catch (error) {
-                    console.error('Não foi possível abrir as opções de impressão.', error);
-                    showToast('Não foi possível abrir as opções de impressão.', true);
+                    console.error('Não foi possível gerar a autorização para entrar em sala.', error);
+                    showToast('Não foi possível gerar a autorização para entrar em sala.', true);
                 }
-            });
-            dialogImpressao.addEventListener('click', (event) => {
-                if (event.target === dialogImpressao || event.target.closest('[data-close-delay-print]')) {
-                    dialogImpressao.close();
-                    return;
-                }
-                const button = event.target.closest('[data-delay-receipt-type]');
-                if (!button || !atrasoSelecionadoParaImpressao) return;
-                window.printDelayReceipt(
-                    atrasoSelecionadoParaImpressao.details,
-                    atrasoSelecionadoParaImpressao.recordId,
-                    button.dataset.delayReceiptType
-                );
-                atrasoSelecionadoParaImpressao = null;
-                dialogImpressao.close();
             });
 
             document.querySelectorAll('[data-delay-search]').forEach((input) => {
@@ -12324,10 +12301,10 @@ function normalizeStudentSearch(value) {
                     const printButton = document.createElement('button');
                     printButton.type = 'button';
                     printButton.className = 'delay-print-button';
-                    printButton.dataset.delayPrintOptions = JSON.stringify(detalhes);
+                    printButton.dataset.delayPrintAuthorization = JSON.stringify(detalhes);
                     printButton.dataset.recordId = String(registro.id_registro_entrada);
-                    printButton.setAttribute('aria-label', `Imprimir registro de ${registro.nome || 'aluno'}`);
-                    printButton.title = 'Imprimir';
+                    printButton.setAttribute('aria-label', `Imprimir autorização para entrar em sala de ${registro.nome || 'aluno'}`);
+                    printButton.title = 'Imprimir autorização para entrar em sala';
                     printButton.innerHTML = '<i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span>';
                     meta.appendChild(printButton);
                 }
@@ -13694,78 +13671,6 @@ html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-sec
     color: #fff;
 }
 
-.delay-print-dialog {
-    width: min(440px, calc(100vw - 32px));
-    overflow: hidden;
-}
-
-#delay-print-dialog[open] {
-    left: calc(50vw + var(--sidebar-width, 0px) / 2);
-    margin: 0;
-    transform: translate(-50%, -50%);
-}
-
-@media (max-width: 760px) {
-    #delay-print-dialog[open] {
-        left: 50vw;
-        width: min(440px, calc(100vw - 32px));
-        max-width: calc(100vw - 32px);
-    }
-}
-
-.delay-print-dialog .delay-dialog-heading p {
-    margin: 4px 0 0;
-    color: #64736a;
-    font-size: 13px;
-}
-
-.delay-print-options {
-    display: grid;
-    gap: 10px;
-    padding: 18px 20px 20px;
-}
-
-.delay-print-choice {
-    display: flex;
-    min-height: 48px;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 13px;
-    border: 1px solid #d5e3d9;
-    border-radius: 8px;
-    background: #f7fbf8;
-    color: #08723a;
-    font: 600 13px 'Inter', sans-serif;
-    text-align: left;
-    cursor: pointer;
-    transition: background .18s ease, border-color .18s ease, transform .18s ease;
-}
-
-.delay-print-choice:hover {
-    transform: translateY(-1px);
-    border-color: #9dc9aa;
-    background: #eaf5ed;
-}
-
-.delay-print-choice:focus-visible {
-    outline: 2px solid #008c45;
-    outline-offset: 2px;
-}
-
-.delay-print-choice i {
-    display: grid;
-    width: 30px;
-    height: 30px;
-    flex: 0 0 30px;
-    place-items: center;
-    border-radius: 7px;
-    background: #e3f1e7;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .delay-print-choice { transition: none; }
-    .delay-print-choice:hover { transform: none; }
-}
 </style>
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
     <span>Desenvolvido por</span>
