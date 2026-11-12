@@ -24,6 +24,17 @@ class GuiaRecepcaoPDF extends FPDF
 {
     public function Header(): void
     {
+        if ($this->PageNo() === 1) {
+            $this->SetFillColor(239, 244, 238);
+            $this->Rect(0, 0, 297, 55, 'F');
+            $this->Image($this->faixaInstitucional, 10, 3, 244);
+            $this->Image($this->logoAreaDev, 260, 8, 27);
+            $this->SetDrawColor(21, 128, 61);
+            $this->SetLineWidth(1);
+            $this->Line(9, 54, 288, 54);
+            return;
+        }
+
         $this->SetFillColor(5, 82, 50);
         $this->Rect(0, 0, 297, 7, 'F');
         $this->SetTextColor(255, 255, 255);
@@ -42,6 +53,18 @@ class GuiaRecepcaoPDF extends FPDF
 
     public function Footer(): void
     {
+        if ($this->PageNo() === 1) {
+            $this->SetDrawColor(21, 128, 61);
+            $this->SetLineWidth(0.7);
+            $this->Line(10, 198, 287, 198);
+            $this->SetTextColor(107, 114, 128);
+            $this->SetFont('Arial', '', 8);
+            $this->SetXY(14, 201);
+            $this->Cell(220, 4, textoPdf('SISTEMA SALABERGA  |  ENTRADAS E SAÍDAS'));
+            $this->Cell(59, 4, textoPdf('Página 1/{nb}'), 0, 0, 'R');
+            return;
+        }
+
         $this->SetDrawColor(21, 128, 61);
         $this->SetLineWidth(0.7);
         $this->Line(9, 197, 288, 197);
@@ -140,12 +163,13 @@ $paginas = [
             ['Atrasos registrados', 'Acompanha os atrasos do dia, consulta o histórico por turma e permite as ações disponíveis para cada registro.'],
             ['Ausências registradas', 'Consulta os alunos sem saída por QR Code registrada até o horário definido para a apuração.'],
             ['Últimas saídas', 'Mostra a frequência de saídas do dia organizada por turma.'],
+            ['Guia do usuário', 'Abre este guia em uma nova aba. O cartão aparece apenas no painel do perfil da recepção.'],
             ['Tema e sessão', 'O controle de tema alterna a aparência. “Sair” encerra a sessão; os dois ficam agrupados na barra superior.']
         ],
-        'nota' => 'Escolha um dos seis cards para abrir a operação correspondente. O quadrado verde no canto de cada card repete o número da explicação ao lado.'
+        'nota' => 'Escolha um card para abrir a operação correspondente. O cartão “Guia do usuário” abre este PDF em uma nova aba.'
     ],
     [
-        'titulo' => 'Registrar um atraso',
+        'titulo' => 'Registrar atraso',
         'imagem' => '02-atraso.png',
         'marcadores' => [[1, 606, 313], [2, 1148, 313], [3, 1148, 482], [4, 1142, 636]],
         'itens' => [
@@ -157,7 +181,7 @@ $paginas = [
         'nota' => 'Os campos obrigatórios estão identificados com asterisco. Confirme o aluno e o motivo antes de registrar.'
     ],
     [
-        'titulo' => 'Registrar uma saída antecipada',
+        'titulo' => 'Registrar saída antecipada',
         'imagem' => '03-saida-antecipada.png',
         'marcadores' => [[1, 608, 296], [2, 1150, 296], [3, 608, 408], [4, 1150, 408], [5, 1150, 578], [6, 1148, 649]],
         'itens' => [
@@ -223,6 +247,41 @@ $pdf->SetMargins(9, 9, 9);
 $pdf->SetAutoPageBreak(false);
 $pdf->SetTitle(textoPdf('Guia visual - Entrada e Saída - Recepção'));
 $pdf->SetAuthor(textoPdf('Sistema Salaberga'));
+
+$pdf->pageTitle = 'Guia visual de uso';
+$pdf->AddPage('L');
+$pdf->Image($logoSalaberga, 103.5, 57, 90);
+$pdf->SetTextColor(21, 128, 61);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->SetXY(14, 99);
+$pdf->Cell(269, 5, textoPdf('MATERIAL DE APOIO  |  EDIÇÃO 2026'), 0, 0, 'C');
+$pdf->SetTextColor(31, 41, 55);
+$pdf->SetFont('Arial', 'B', 24);
+$pdf->SetXY(14, 108);
+$pdf->Cell(269, 11, textoPdf('GUIA RÁPIDO'), 0, 0, 'C');
+$pdf->SetTextColor(21, 128, 61);
+$pdf->SetFont('Arial', 'B', 16);
+$pdf->SetXY(14, 121);
+$pdf->Cell(269, 8, textoPdf('Sistema de Entradas e Saídas'), 0, 0, 'C');
+$pdf->SetTextColor(75, 85, 99);
+$pdf->SetFont('Arial', '', 10);
+$pdf->SetXY(35, 134);
+$pdf->MultiCell(227, 6, textoPdf('Um roteiro prático para registrar e acompanhar atrasos, saídas antecipadas, estágio, ausências e frequência dos estudantes.'), 0, 'C');
+$pdf->SetTextColor(55, 65, 81);
+$pdf->SetFont('Arial', 'B', 8);
+$pdf->SetXY(14, 153);
+$pdf->MultiCell(269, 5, textoPdf('ATRASOS  •  SAÍDAS ANTECIPADAS  •  ESTÁGIO  •  AUSÊNCIAS  •  HISTÓRICO'), 0, 'C');
+$pdf->SetDrawColor(21, 128, 61);
+$pdf->SetLineWidth(0.7);
+$pdf->Line(45, 165, 252, 165);
+$pdf->SetTextColor(31, 75, 49);
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->SetXY(14, 171);
+$pdf->Cell(269, 5, textoPdf('ESCOLA ESTADUAL DE EDUCAÇÃO PROFISSIONAL'), 0, 0, 'C');
+$pdf->SetTextColor(107, 114, 128);
+$pdf->SetFont('Arial', '', 8);
+$pdf->SetXY(14, 179);
+$pdf->Cell(269, 5, textoPdf('SALABERGA TORQUATO GOMES DE MATOS  |  PERFIL: RECEPÇÃO'), 0, 0, 'C');
 
 foreach ($paginas as $pagina) {
     $pdf->pageTitle = $pagina['titulo'];
