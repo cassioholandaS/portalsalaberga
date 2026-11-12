@@ -81,7 +81,7 @@ $segundosAteLimiteValidacao = $prazoValidacaoAtrasosAberto
 $sectionInicial = $_GET['section'] ?? ($ehRecepcao ? 'inicio' : 'entrada');
 $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'cadastro'];
 if ($ehRecepcao) {
-    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'ultimas-saidas'];
+    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'relatorio-dia', 'ultimas-saidas'];
 }
 if ($ehAdminEntradaSaida) {
     $sectionsPermitidas = array_values(array_diff($sectionsPermitidas, ['inicio']));
@@ -5551,6 +5551,12 @@ input[type="radio"] {
         --reception-card-tint: #edf8f0;
     }
 
+    .reception-card-delay-report {
+        --reception-card-color: #008c45;
+        --reception-card-border: #c7e3d1;
+        --reception-card-tint: #edf8f0;
+    }
+
     .reception-card-latest-exits {
         --reception-card-color: #0891b2;
         --reception-card-border: #c5e8ef;
@@ -6189,8 +6195,18 @@ input[type="radio"] {
             <i class="fas fa-clock-rotate-left text-xl"></i>
           </div>
           <div>
-            <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Atrasos registrados</h3>
+            <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Consultar Atrasos</h3>
             <p class="text-sm text-gray-500">Valide atrasos, consulte o histórico por turma e imprima os registros</p>
+          </div>
+        </a>
+
+        <a href="#" data-section-target="relatorio-dia" class="menu-card reception-card-delay-report p-6 flex items-center gap-4 group">
+          <div class="menu-icon">
+            <i class="fas fa-file-export text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Relatório de Atrasos</h3>
+            <p class="text-sm text-gray-500">Gere relatórios por aluno, ano ou turma</p>
           </div>
         </a>
 
