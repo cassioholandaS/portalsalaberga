@@ -5557,6 +5557,12 @@ input[type="radio"] {
         --reception-card-tint: #ecfbff;
     }
 
+    .reception-card-guide {
+        --reception-card-color: #008c45;
+        --reception-card-border: #c7e3d1;
+        --reception-card-tint: #edf8f0;
+    }
+
     .reception-interface .menu-card h3 {
         margin: 0 0 3px;
         color: #1c2d23;
