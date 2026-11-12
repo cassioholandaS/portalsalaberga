@@ -5557,6 +5557,12 @@ input[type="radio"] {
         --reception-card-tint: #ecfbff;
     }
 
+    .reception-card-guide {
+        --reception-card-color: #475569;
+        --reception-card-border: #d7dee8;
+        --reception-card-tint: #f1f5f9;
+    }
+
     .reception-interface .menu-card h3 {
         margin: 0 0 3px;
         color: #1c2d23;
@@ -6201,6 +6207,16 @@ input[type="radio"] {
           <div>
             <h3 class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Últimas saídas</h3>
             <p class="text-sm text-gray-500">Acompanhe as últimas saídas registradas</p>
+          </div>
+        </a>
+
+        <a href="../docs/Guia_de_instrucoes_entradasaida_recepcao.pdf" target="_blank" rel="noopener" class="menu-card reception-card-guide p-6 flex items-center gap-4 group" aria-label="Abrir o guia visual do perfil da recepção em uma nova aba">
+          <div class="menu-icon">
+            <i class="fas fa-book-open text-xl" aria-hidden="true"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-slate-600 transition-colors">Guia visual de uso</h3>
+            <p class="text-sm text-gray-500">Acesse o passo a passo ilustrado do perfil da recepção</p>
           </div>
         </a>
         <?php } ?>
