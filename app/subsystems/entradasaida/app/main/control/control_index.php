@@ -974,8 +974,12 @@ else if (isset($_POST['id_aluno']) && !empty($_POST['id_aluno']) && isset($_POST
 
 //relatorios 
 else if (isset($_POST['GerarRelatorio']) && isset($_POST['tipo_relatorio'])) {
-    exigirPermissaoRecepcao(false);
     $gerar_relatorio = $_POST['GerarRelatorio'];
+    exigirPermissaoRecepcao(in_array($gerar_relatorio, [
+        'atrasos_por_aluno',
+        'atrasos_por_turma',
+        'atrasos_por_ano'
+    ], true));
     $tipoRelatorio = $_POST['tipo_relatorio'];
     $id_aluno = $_POST['id_aluno'] ?? 0;
     $id_turma = $_POST['Turma'] ?? 0;

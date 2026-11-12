@@ -11,36 +11,44 @@ class connect
 
     function connect_database()
     {
-        $ambienteConfigurado = getenv('APP_ENV');
-        $hostHttp = strtolower((string) parse_url('http://' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST));
-        $hostLocal = in_array($hostHttp, ['localhost', '127.0.0.1', '::1'], true);
-        $emProducao = strtolower((string) $ambienteConfigurado) === 'production'
-            || (($ambienteConfigurado === false || trim($ambienteConfigurado) === '') && $hostHttp !== '' && !$hostLocal);
-        $host = getenv('DB_HOST');
-        $database = getenv('DB_NAME');
-        $user = getenv('DB_USER');
-        $password = getenv('DB_PASSWORD');
-        $port = getenv('DB_PORT');
+        $production = strtolower(trim((string) getenv('APP_ENV'))) === 'production';
+        $environmentKeys = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
+        $databaseConfig = [];
 
-        if ($emProducao && (!$host || !$database || !$user || $password === false || $password === '')) {
-            error_log('Conexão recusada: configure DB_HOST, DB_NAME, DB_USER e DB_PASSWORD em produção.');
-            throw new RuntimeException('Configuração de conexão com o banco de dados incompleta.');
+        foreach ($environmentKeys as $key) {
+            $value = getenv($key);
+            if ($production && ($value === false || $value === '')) {
+                error_log('Entrada/Saida database configuration is missing ' . $key . '.');
+                die('Erro! A configuração do banco de dados está incompleta.');
+            }
+            $databaseConfig[$key] = $value;
         }
 
-        $host = $host ?: 'localhost';
-        $database = $database ?: 'entradasaida';
-        $user = $user ?: 'root';
-        $password = $password === false ? '' : $password;
-        $dsn = 'mysql:host=' . $host . ';dbname=' . $database . ($port ? ';port=' . (int) $port : '') . ';charset=utf8mb4';
+        $host = $databaseConfig['DB_HOST'] === false || $databaseConfig['DB_HOST'] === ''
+            ? 'localhost'
+            : $databaseConfig['DB_HOST'];
+        $database = $databaseConfig['DB_NAME'] === false || $databaseConfig['DB_NAME'] === ''
+            ? 'entradasaida'
+            : $databaseConfig['DB_NAME'];
+        $user = $databaseConfig['DB_USER'] === false || $databaseConfig['DB_USER'] === ''
+            ? 'root'
+            : $databaseConfig['DB_USER'];
+        $password = $databaseConfig['DB_PASSWORD'] === false ? '' : $databaseConfig['DB_PASSWORD'];
+        $port = getenv('DB_PORT');
+
+        $dsn = 'mysql:host=' . $host;
+        if ($port !== false && $port !== '') {
+            $dsn .= ';port=' . $port;
+        }
+        $dsn .= ';dbname=' . $database . ';charset=utf8mb4';
 
         try {
             $this->connect = new PDO($dsn, $user, $password, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
             ]);
         } catch (PDOException $e) {
-            error_log('Erro ao conectar ao banco de dados: ' . $e->getMessage());
-            throw new RuntimeException('Não foi possível conectar ao banco de dados.', 0, $e);
+            error_log('Entrada/Saida MySQL connection failed: ' . $e->getMessage());
+            die('Erro! O sistema não possui conexão com o banco de dados.');
         }
     }
 

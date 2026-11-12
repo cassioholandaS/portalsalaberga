@@ -120,7 +120,6 @@ class select_model extends connect
                     LEFT JOIN saida_estagio s
                         ON s.id_aluno = a.id_aluno
                        AND DATE(s.dae) = :data_saida
-                       AND TIME(s.dae) <= '13:20:00'
                     WHERE a.id_turma IN (9, 10, 11, 12)
                       AND s.id_saida IS NULL";
             $parametros = ['data_saida' => $data];
