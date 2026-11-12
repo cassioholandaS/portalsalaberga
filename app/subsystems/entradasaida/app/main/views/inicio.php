@@ -6215,7 +6215,7 @@ input[type="radio"] {
             <i class="fas fa-book-open text-xl" aria-hidden="true"></i>
           </div>
           <div>
-            <h3 class="font-semibold text-gray-900 group-hover:text-slate-600 transition-colors">Guia visual de uso</h3>
+            <h3 class="font-semibold text-gray-900 group-hover:text-slate-600 transition-colors">Guia do usuário</h3>
             <p class="text-sm text-gray-500">Acesse o passo a passo ilustrado do perfil da recepção</p>
           </div>
         </a>
