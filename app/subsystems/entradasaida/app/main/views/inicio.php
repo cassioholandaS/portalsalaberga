@@ -6214,7 +6214,7 @@ input[type="radio"] {
           </div>
         </a>
 
-        <a href="../docs/Guia_de_instrucoes_entradasaida_recepcao.pdf" target="_blank" rel="noopener" class="menu-card reception-card-guide p-6 flex items-center gap-4 group" aria-label="Abrir o guia visual do perfil da recepção em uma nova aba">
+        <a href="../docs/Guia_de_instrucoes_entradasaida_recepcao.pdf?v=<?= filemtime(__DIR__ . '/../docs/Guia_de_instrucoes_entradasaida_recepcao.pdf') ?>" target="_blank" rel="noopener" class="menu-card reception-card-guide p-6 flex items-center gap-4 group" aria-label="Abrir o guia visual do perfil da recepção em uma nova aba">
           <div class="menu-icon">
             <i class="fas fa-book-open text-xl" aria-hidden="true"></i>
           </div>

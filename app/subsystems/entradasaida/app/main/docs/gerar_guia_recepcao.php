@@ -7,10 +7,10 @@ function textoPdf(string $texto): string
     return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $texto);
 }
 
-function marcador(FPDF $pdf, float $imagemX, float $imagemY, float $imagemW, float $imagemH, int $numero, float $px, float $py, int $capturaAltura): void
+function marcador(FPDF $pdf, float $imagemX, float $imagemY, float $imagemW, float $imagemH, int $numero, float $px, float $py, int $capturaLargura, int $capturaAltura): void
 {
     $lado = 3.5;
-    $x = $imagemX + ($px / 1280) * $imagemW;
+    $x = $imagemX + ($px / $capturaLargura) * $imagemW;
     $y = $imagemY + ($py / $capturaAltura) * $imagemH;
     $pdf->SetFillColor(21, 128, 61);
     $pdf->Rect($x, $y, $lado, $lado, 'F');
@@ -22,6 +22,17 @@ function marcador(FPDF $pdf, float $imagemX, float $imagemY, float $imagemW, flo
 
 class GuiaRecepcaoPDF extends FPDF
 {
+    private string $faixaInstitucional;
+    private string $logoAreaDev;
+
+    public function __construct(string $faixaInstitucional, string $logoAreaDev)
+    {
+        parent::__construct('L', 'mm', 'A4');
+        $this->faixaInstitucional = $faixaInstitucional;
+        $this->logoAreaDev = $logoAreaDev;
+        $this->AliasNbPages();
+    }
+
     public function Header(): void
     {
         if ($this->PageNo() === 1) {
@@ -154,8 +165,8 @@ limparDadosAusencias($capturaAusencias);
 $paginas = [
     [
         'titulo' => 'Painel principal',
-        'imagem' => '01-dashboard.png',
-        'marcadores' => [[1, 260, 171], [2, 652, 171], [3, 260, 307], [4, 652, 307], [5, 260, 443], [6, 652, 443], [7, 1097, 13]],
+        'imagem' => '08-guia-dashboard.png',
+        'marcadores' => [[1, 200, 179], [2, 592, 179], [3, 200, 315], [4, 592, 315], [5, 200, 451], [6, 592, 451], [7, 200, 587], [8, 978, 12]],
         'itens' => [
             ['Registrar atraso', 'Abre o formulário para registrar a entrada atrasada de um aluno.'],
             ['Saída antecipada', 'Abre o registro de saída antes do horário regular, com responsável e justificativa.'],
@@ -206,16 +217,69 @@ $paginas = [
         'nota' => 'Confirme os dados da saída antes de registrar. O ícone de olho abre a consulta de saídas para estágio.'
     ],
     [
-        'titulo' => 'Atrasos do dia e histórico',
-        'imagem' => '05-atrasos-registrados.png',
-        'marcadores' => [[1, 245, 274], [1, 539, 274], [1, 833, 274], [1, 1127, 274], [2, 232, 311], [2, 526, 311], [2, 820, 311], [2, 1114, 311], [3, 540, 741], [4, 850, 221]],
+        'titulo' => 'Atrasos registrados',
+        'imagem' => '10-atrasos-do-dia.png',
+        'marcadores' => [[1, 177, 270], [2, 37, 315], [3, 278, 379]],
         'itens' => [
-            ['Turmas e contadores', 'Cada painel representa uma turma. O contador mostra os atrasos do dia; os registros e suas ações aparecem quando existem lançamentos.'],
-            ['Buscar aluno', 'Use o campo no topo de cada turma para localizar um estudante na lista do dia.'],
-            ['Histórico', 'Role a página até os cartões de histórico. Filtre por aluno, situação e data; “Limpar” remove os filtros. Repete-se para cada turma.'],
-            ['Leitor e horário', 'O aviso informa a faixa horária considerada atraso e o estado do leitor QR. O leitor físico pode continuar disponível mesmo se a câmera do navegador estiver indisponível.']
+            ['Turmas e contadores', 'Cada cartão representa uma turma. O contador mostra quantos atrasos foram registrados hoje.'],
+            ['Busca por aluno', 'O campo de busca filtra os registros do cartão correspondente sem alterar as demais turmas.'],
+            ['Validar', 'O botão abre a análise da justificativa. A validação fica disponível somente no mesmo dia, até as 17h.']
         ],
-        'nota' => 'A validação de atrasos fica disponível até as 17h do mesmo dia. Depois da validação, “Impressão” reúne o comprovante da ocorrência e a autorização de entrada. Role a página para acessar todo o histórico.'
+        'nota' => 'Clique no registro fora do botão “Validar” para abrir a confirmação de exclusão. Atrasos são considerados entre 07:40 e 11:40; o leitor físico pode funcionar mesmo com a câmera indisponível.'
+    ],
+    [
+        'titulo' => 'Confirmar a exclusão de um atraso',
+        'imagem' => '14-confirmar-exclusao-atraso.png',
+        'marcadores' => [[1, 236, 124], [2, 292, 281], [3, 500, 281]],
+        'itens' => [
+            ['Conferir o registro', 'Revise aluno, matrícula, turma, data e horário antes de decidir.'],
+            ['Manter registro', 'Fecha a confirmação sem alterar o histórico.'],
+            ['Excluir atraso', 'Remove o registro após a confirmação. A exclusão não pode ser desfeita.']
+        ],
+        'nota' => 'A confirmação é aberta ao clicar no registro fora dos botões do card ou do histórico. Só confirme após revisar os dados; a exclusão não pode ser desfeita.'
+    ],
+    [
+        'titulo' => 'Analisar e validar um atraso',
+        'imagem' => '11-validar-atraso.png',
+        'imagemLargura' => 120,
+        'legendaX' => 137,
+        'legendaLargura' => 151,
+        'notaAltura' => 9,
+        'marcadores' => [[1, 508, 114], [2, 508, 224], [3, 508, 315], [4, 508, 474], [5, 508, 568], [6, 508, 619]],
+        'itens' => [
+            ['Resumo do registro', 'Confira aluno, turma, data e horário antes de avaliar.'],
+            ['Motivo', 'Selecione a classificação adequada quando ela ainda não estiver definida no registro.'],
+            ['Justificativa', 'Informe o motivo do atraso. O campo é obrigatório quando a justificativa não veio preenchida.'],
+            ['Avaliação', 'Escolha “Aprovar” ou “Recusar”. A recusa exige atenção às orientações exibidas pelo sistema.'],
+            ['Responsável', 'O sistema identifica automaticamente a pessoa autenticada que está avaliando o registro.'],
+            ['Confirmar', 'O botão só é habilitado após preencher os campos exigidos. Revise tudo antes de confirmar.']
+        ],
+        'nota' => 'A análise deve ocorrer no mesmo dia e até as 17h. A captura usa dados inteiramente fictícios; nenhuma validação foi enviada.'
+    ],
+    [
+        'titulo' => 'Consultar o histórico de atrasos',
+        'imagem' => '12-historico-atrasos.png',
+        'marcadores' => [[1, 183, 58], [2, 321, 58], [3, 466, 58], [4, 552, 69], [5, 381, 120], [6, 478, 120]],
+        'itens' => [
+            ['Aluno', 'Pesquise pelo nome para localizar registros e atualizar o contador do cartão.'],
+            ['Situação', 'Filtre por pendente, aprovada, recusada ou mantenha “Todas”.'],
+            ['Data', 'Restringe a lista à data selecionada, sem aceitar datas futuras.'],
+            ['Limpar', 'Remove os filtros e restaura a consulta completa da turma.'],
+            ['Imprimir', 'Imprime a autorização para entrar em sala referente ao registro validado.'],
+            ['Ver e excluir', '“Ver” consulta os detalhes do registro. Clicar no registro fora dos botões abre a confirmação de exclusão.']
+        ],
+        'nota' => 'O histórico é separado por turma. Use os filtros antes de consultar; confira os dados do registro antes de imprimir ou confirmar uma exclusão.'
+    ],
+    [
+        'titulo' => 'Imprimir os documentos do atraso',
+        'imagem' => '13-opcoes-impressao.png',
+        'marcadores' => [[1, 508, 110], [2, 508, 173]],
+        'itens' => [
+            ['Registro de Atraso', 'Imprime os dados da ocorrência e a justificativa registrada.'],
+            ['Autorização para entrar em sala', 'Imprime o horário e a aula autorizada após a validação, sem criar um segundo atraso.'],
+            ['Conferência final', 'A opção “Impressão” fica disponível nos registros validados. Confira aluno, turma e data antes de escolher o documento.']
+        ],
+        'nota' => 'A escolha abre a janela de impressão do navegador. Se necessário, selecione “Salvar como PDF” em vez de uma impressora.'
     ],
     [
         'titulo' => 'Consultar ausências',
@@ -242,7 +306,17 @@ $paginas = [
     ]
 ];
 
-$pdf = new GuiaRecepcaoPDF('L', 'mm', 'A4');
+$assetsInstitucionais = dirname(__DIR__, 6) . '/app/subsystems/biblioteca/app/main/assets/img';
+$faixaInstitucional = $assetsInstitucionais . '/cabeçalho_relatorios.jpg';
+$logoAreaDev = $assetsInstitucionais . '/logo_area_dev.png';
+$logoSalaberga = $assetsInstitucionais . '/logo_salaberga.png';
+foreach ([$faixaInstitucional, $logoAreaDev, $logoSalaberga] as $imagemInstitucional) {
+    if (!is_file($imagemInstitucional)) {
+        throw new RuntimeException('Imagem institucional não encontrada: ' . $imagemInstitucional);
+    }
+}
+
+$pdf = new GuiaRecepcaoPDF($faixaInstitucional, $logoAreaDev);
 $pdf->SetMargins(9, 9, 9);
 $pdf->SetAutoPageBreak(false);
 $pdf->SetTitle(textoPdf('Guia visual - Entrada e Saída - Recepção'));
@@ -292,19 +366,19 @@ foreach ($paginas as $pagina) {
         throw new RuntimeException('Captura não encontrada: ' . $pagina['imagem']);
     }
 
-    $imagemX = 9;
+    $imagemX = $pagina['imagemX'] ?? 9;
     $imagemY = 31;
-    $imagemW = 170;
+    $imagemW = $pagina['imagemLargura'] ?? 170;
     $dimensoes = getimagesize($imagem);
     $imagemH = $imagemW * ($dimensoes[1] / $dimensoes[0]);
     $pdf->Image($imagem, $imagemX, $imagemY, $imagemW, $imagemH, 'PNG');
 
     foreach ($pagina['marcadores'] as [$numero, $px, $py]) {
-        marcador($pdf, $imagemX, $imagemY, $imagemW, $imagemH, $numero, $px, $py, $dimensoes[1]);
+        marcador($pdf, $imagemX, $imagemY, $imagemW, $imagemH, $numero, $px, $py, $dimensoes[0], $dimensoes[1]);
     }
 
-    $xLegenda = 183;
-    $larguraLegenda = 105;
+    $xLegenda = $pagina['legendaX'] ?? 183;
+    $larguraLegenda = $pagina['legendaLargura'] ?? 105;
     $yLegenda = 31;
     foreach ($pagina['itens'] as $indice => [$titulo, $texto]) {
         $altura = itemLegenda($pdf, $xLegenda, $yLegenda, $larguraLegenda, $indice + 1, $titulo, $texto);
@@ -314,11 +388,12 @@ foreach ($paginas as $pagina) {
     $yNota = max($imagemY + $imagemH + 2.5, $yLegenda + 1);
     $pdf->SetFillColor(254, 249, 235);
     $pdf->SetDrawColor(245, 223, 166);
-    $pdf->Rect(9, $yNota, 279, 13, 'DF');
+    $alturaNota = $pagina['notaAltura'] ?? 13;
+    $pdf->Rect(9, $yNota, 279, $alturaNota, 'DF');
     $pdf->SetTextColor(92, 70, 24);
     $pdf->SetFont('Arial', '', 8);
-    $pdf->SetXY(12, $yNota + 2.2);
-    $pdf->MultiCell(273, 4, textoPdf($pagina['nota']));
+    $pdf->SetXY(12, $yNota + ($alturaNota === 9 ? 1 : 2.2));
+    $pdf->MultiCell(273, $alturaNota === 9 ? 3 : 4, textoPdf($pagina['nota']));
 }
 
 $destino = __DIR__ . '/Guia_de_instrucoes_entradasaida_recepcao.pdf';
