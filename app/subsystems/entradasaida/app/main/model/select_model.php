@@ -44,6 +44,13 @@ class select_model extends connect
         }
     }
 
+    public function select_alunosAtrasos()
+    {
+        $queryStr = 'SELECT * FROM aluno WHERE id_turma BETWEEN 1 AND 12 ORDER BY nome';
+        $query = $this->connect->query($queryStr);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function saida_estagio_3A()
     {
         $queryStr = "SELECT s.id_saida, s.dae, a.id_aluno, a.nome, a.matricula, a.id_turma FROM aluno a
@@ -400,7 +407,7 @@ class select_model extends connect
         $queryStr = "SELECT r.id_registro_entrada, r.date_time, r.nome_responsavel, r.nome_conducente, r.id_motivo,
                             {$camposUsuarioSessao},
                             {$camposValidacao}, {$campoJustificativa},
-                            a.id_turma, a.nome, a.matricula, t.turma AS letra_turma,
+                            a.id_turma, a.nome, a.matricula, t.ano AS ano_turma, t.turma AS letra_turma,
                             tr.tipo AS tipo_responsavel, tc.tipo AS tipo_conducente, m.motivo
                      FROM registro_entrada r
                      INNER JOIN aluno a ON a.id_aluno = r.id_aluno
@@ -410,7 +417,7 @@ class select_model extends connect
                      LEFT JOIN motivo m ON m.id_motivo = r.id_motivo
                      WHERE ({$condicaoData})
                        AND {$condicaoEscopo}
-                       AND a.id_turma IN (9, 10, 11, 12)
+                       AND a.id_turma BETWEEN 1 AND 12
                        AND (
                            (TIME(r.date_time) >= '07:40:00' AND TIME(r.date_time) < '11:40:00')
                            {$condicaoAtrasoSemResponsavel}
@@ -495,7 +502,7 @@ class select_model extends connect
         $condicoesEscopo = [
             'aluno' => 'a.id_aluno = :filtro_id',
             'turma' => 'a.id_turma = :filtro_id',
-            'ano' => 'a.id_turma IN (9, 10, 11, 12)'
+            'ano' => 't.ano = :filtro_ano'
         ];
         if (!isset($condicoesEscopo[$escopo])) {
             throw new InvalidArgumentException('Escopo de relatório de atrasos inválido.');
@@ -508,13 +515,14 @@ class select_model extends connect
         ];
         if ($escopo === 'ano') {
             $ano = filter_var($valor, FILTER_VALIDATE_INT);
-            if ($ano !== 3) {
+            if (!in_array($ano, [1, 2, 3], true)) {
                 throw new InvalidArgumentException('Ano inválido para relatório de atrasos.');
             }
+            $parametros['filtro_ano'] = $ano . ' ano';
         }
         if ($escopo !== 'ano') {
             $id = filter_var($valor, FILTER_VALIDATE_INT);
-            $idsPermitidos = $escopo === 'turma' ? [9, 10, 11, 12] : null;
+            $idsPermitidos = $escopo === 'turma' ? range(1, 12) : null;
             if (!$id || ($idsPermitidos !== null && !in_array($id, $idsPermitidos, true))) {
                 throw new InvalidArgumentException('Filtro de relatório de atrasos inválido.');
             }

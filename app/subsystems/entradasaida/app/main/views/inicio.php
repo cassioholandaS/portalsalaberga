@@ -150,7 +150,12 @@ if (isset($mensagensEdicao[$statusEdicao])) {
 } elseif (isset($mensagensRegistro[$statusRegistro]) && $statusRegistro !== '') {
     $mensagemErroToast = $mensagensRegistro[$statusRegistro];
 }
-$atrasosPorTurma = [9 => [], 10 => [], 11 => [], 12 => []];
+$turmasConsultaSaida = $select->select_turmas();
+$turmasAtraso = array_values(array_filter(
+    $turmasConsultaSaida,
+    static fn (array $turma): bool => in_array((int) $turma['id_turma'], range(1, 12), true)
+));
+$atrasosPorTurma = array_fill_keys(range(1, 12), []);
 foreach ($select->atrasosHoje() as $registroAtraso) {
     $idTurmaAtraso = (int) $registroAtraso['id_turma'];
     if (isset($atrasosPorTurma[$idTurmaAtraso])) {
@@ -160,7 +165,6 @@ foreach ($select->atrasosHoje() as $registroAtraso) {
 $historicoAtrasos = $select->historicoAtrasos();
 $saidasAntecipadas = $select->saidasAntecipadas();
 $saidasEstagio = $select->saidasEstagio();
-$turmasConsultaSaida = $select->select_turmas();
 $turmasPorId = [];
 foreach ($turmasConsultaSaida as $turmaConsulta) {
     $turmasPorId[(int) $turmaConsulta['id_turma']] = ucfirst((string) $turmaConsulta['ano']) . ' ' . strtoupper((string) $turmaConsulta['turma']);
@@ -173,7 +177,7 @@ $alunosConsultaEdicao = $select->select_alunos();
 $tiposResponsaveisEdicao = $select->select_responsavel();
 $tiposConducentesEdicao = $select->select_conducente();
 $motivosEdicao = $select->select_motivo();
-$historicoPorTurma = [9 => [], 10 => [], 11 => [], 12 => []];
+$historicoPorTurma = array_fill_keys(range(1, 12), []);
 foreach ($historicoAtrasos as $registroHistorico) {
     $idTurmaHistorico = (int) $registroHistorico['id_turma'];
     if (isset($historicoPorTurma[$idTurmaHistorico])) {
@@ -184,7 +188,7 @@ $detalhesAtraso = static function ($registro) {
     $detalhes = [
         'Aluno' => $registro['nome'],
         'Matrícula' => $registro['matricula'] ?? 'Não informada',
-        'Turma' => '3º Ano ' . strtoupper($registro['letra_turma']),
+        'Turma' => preg_replace('/\s+ano$/i', 'º Ano', (string) ($registro['ano_turma'] ?? '')) . ' ' . strtoupper($registro['letra_turma']),
         'Data e hora' => date('d/m/Y H:i', strtotime($registro['date_time'])),
         'Registrado por' => ($registro['usuario_nome'] ?? '') ?: 'Não informado',
         'Responsável' => $registro['nome_responsavel'] ?: 'Não informado',
@@ -9252,6 +9256,20 @@ document.addEventListener('DOMContentLoaded', () => {
 (() => {
 // Initialize Select2 with enhanced options
         $(document).ready(function() {
+            $('#relatorio-dia .js-example-basic-single').select2({
+                placeholder: "Buscar aluno...",
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Nenhum aluno encontrado";
+                    },
+                    searching: function() {
+                        return "Buscando...";
+                    }
+                }
+            });
+
             $('#relatorio-estagio .js-example-basic-single').select2({
                 placeholder: "Buscar aluno...",
                 allowClear: true,
@@ -9386,10 +9404,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <form target="_blank" action="../control/control_index.php" method="POST">
                         <div class="form-group">
                             <label class="form-label" for="relatorio-atrasos-id-aluno">Selecione o Aluno</label>
-                            <select id="relatorio-atrasos-id-aluno" name="id_aluno" required>
+                            <select id="relatorio-atrasos-id-aluno" class="js-example-basic-single" name="id_aluno" required>
                                 <option value="" disabled selected>Selecione o aluno</option>
                                 <?php
-                                $alunosComAtrasos = $select->select_alunosE();
+                                $alunosComAtrasos = $select->select_alunosAtrasos();
                                 foreach ($alunosComAtrasos as $alunoAtraso) {
                                 ?>
                                     <option value="<?= (int) $alunoAtraso['id_aluno'] ?>"><?= htmlspecialchars($alunoAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></option>
@@ -9415,9 +9433,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label class="form-label" for="relatorio-atrasos-ano">Selecione o Ano</label>
                             <select id="relatorio-atrasos-ano" name="Ano" required>
                                 <option value="" disabled selected>Selecione o ano</option>
+                                <option value="1">1º Ano</option>
+                                <option value="2">2º Ano</option>
                                 <option value="3">3º Ano</option>
                             </select>
-                            <p class="report-hint">Os atrasos registrados são contabilizados para as turmas do 3º ano.</p>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Período do Relatório</label>
@@ -9438,10 +9457,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label class="form-label" for="relatorio-atrasos-turma">Selecione a Turma</label>
                             <select id="relatorio-atrasos-turma" name="Turma" required>
                                 <option value="" disabled selected>Selecione a turma</option>
-                                <option value="9">3º Ano A</option>
-                                <option value="10">3º Ano B</option>
-                                <option value="11">3º Ano C</option>
-                                <option value="12">3º Ano D</option>
+                                <?php foreach ($turmasAtraso as $turmaAtraso) {
+                                    $rotuloAnoAtraso = preg_replace('/\s+ano$/i', 'º Ano', (string) $turmaAtraso['ano']);
+                                ?>
+                                    <option value="<?= (int) $turmaAtraso['id_turma'] ?>"><?= htmlspecialchars($rotuloAnoAtraso . ' ' . strtoupper((string) $turmaAtraso['turma']), ENT_QUOTES, 'UTF-8') ?></option>
+                                <?php } ?>
                             </select>
                         </div>
                         <div class="form-group">
@@ -9642,6 +9662,9 @@ class TurmaSelector {
 })();
 </script>
 
+<style>
+    #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
+</style>
 <section class="page-section" id="atrasos" aria-label="Atrasos registrados">
     <div class="delays-shell">
         <header class="delays-heading">
@@ -9656,21 +9679,26 @@ class TurmaSelector {
             <?php } ?>
         </header>
         <div class="delays-grid">
-            <?php foreach ([9 => 'A', 10 => 'B', 11 => 'C', 12 => 'D'] as $idTurma => $turma) { ?>
+            <?php foreach ($turmasAtraso as $turmaAcesso) {
+                $idTurma = (int) $turmaAcesso['id_turma'];
+                $anoTurmaAtraso = preg_replace('/\s+ano$/i', 'º Ano', (string) $turmaAcesso['ano']);
+                $letraTurmaAtraso = strtoupper((string) $turmaAcesso['turma']);
+                $rotuloTurmaAtraso = $anoTurmaAtraso . ' ' . $letraTurmaAtraso;
+            ?>
                 <?php $registrosTurma = $atrasosPorTurma[$idTurma]; ?>
-                <article class="delay-card" aria-label="Atrasos do 3º Ano <?= $turma ?>">
-                    <div class="delay-card-header turma-3<?= strtolower($turma) ?>">
+                <article class="delay-card" aria-label="Atrasos do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
+                    <div class="delay-card-header turma-<?= substr((string) $turmaAcesso['ano'], 0, 1) . strtolower($letraTurmaAtraso) ?>">
                         <div class="delay-card-heading">
-                            <h2><i class="fas fa-users" aria-hidden="true"></i><span>3º Ano <?= $turma ?></span></h2>
+                            <h2><i class="fas fa-users" aria-hidden="true"></i><span><?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?></span></h2>
                             <span class="delay-count"><?= count($registrosTurma) ?></span>
                         </div>
-                        <input class="delay-search" type="search" data-delay-search="<?= strtolower($turma) ?>" placeholder="Buscar aluno..." aria-label="Buscar aluno do 3º Ano <?= $turma ?>">
+                        <input class="delay-search" type="search" data-delay-search="<?= $idTurma ?>" placeholder="Buscar aluno..." aria-label="Buscar aluno do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
                     </div>
-                    <div class="delay-list" id="atrasos-turma-<?= strtolower($turma) ?>">
+                    <div class="delay-list" id="atrasos-turma-<?= $idTurma ?>">
                         <?php if ($registrosTurma) { ?>
                             <?php foreach ($registrosTurma as $registroAtraso) { ?>
                                 <?php $jsonDetalhes = json_encode($detalhesAtraso($registroAtraso), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_INVALID_UTF8_SUBSTITUTE); ?>
-                                <div class="delay-entry" data-delay-entry data-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" data-delay-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-delay-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-delay-turma="3º Ano <?= htmlspecialchars(strtoupper((string) $registroAtraso['letra_turma']), ENT_QUOTES, 'UTF-8') ?>" data-delay-datetime="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="button" aria-label="Opções para o atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Clique para ver as opções deste registro">
+                                <div class="delay-entry" data-delay-entry data-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" data-delay-record-id="<?= (int) ($registroAtraso['id_registro_entrada'] ?? 0) ?>" data-delay-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-delay-turma="<?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>" data-delay-datetime="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="button" aria-label="Opções para o atraso de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Clique para ver as opções deste registro">
                                     <div class="delay-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div>
                                     <div class="delay-entry-meta">
                                         <time><?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time>
@@ -9713,10 +9741,15 @@ class TurmaSelector {
             <h2 id="historico-atrasos-titulo">Histórico de atrasos</h2>
             <p class="delay-history-note">Consulte os registros anteriores por turma, aluno, data e situação.</p>
             <div class="delay-history-grid" id="delay-history-grid">
-                <?php foreach ([9 => 'A', 10 => 'B', 11 => 'C', 12 => 'D'] as $idTurma => $turma) { ?>
-                    <article class="delay-history-card turma-3<?= strtolower($turma) ?>" data-history-card="<?= $idTurma ?>">
-                        <header class="delay-history-card-header"><h3><i class="fas fa-users" aria-hidden="true"></i> 3º Ano <?= $turma ?></h3><span class="delay-history-count" data-history-count><?= count($historicoPorTurma[$idTurma]) ?></span></header>
-                        <div class="delay-history-card-filters" aria-label="Filtros do 3º Ano <?= $turma ?>">
+                <?php foreach ($turmasAtraso as $turmaAcesso) {
+                    $idTurma = (int) $turmaAcesso['id_turma'];
+                    $anoTurmaAtraso = preg_replace('/\s+ano$/i', 'º Ano', (string) $turmaAcesso['ano']);
+                    $letraTurmaAtraso = strtoupper((string) $turmaAcesso['turma']);
+                    $rotuloTurmaAtraso = $anoTurmaAtraso . ' ' . $letraTurmaAtraso;
+                ?>
+                    <article class="delay-history-card turma-<?= substr((string) $turmaAcesso['ano'], 0, 1) . strtolower($letraTurmaAtraso) ?>" data-history-card="<?= $idTurma ?>">
+                        <header class="delay-history-card-header"><h3><i class="fas fa-users" aria-hidden="true"></i> <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?></h3><span class="delay-history-count" data-history-count><?= count($historicoPorTurma[$idTurma]) ?></span></header>
+                        <div class="delay-history-card-filters" aria-label="Filtros do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
                             <label class="delay-history-filter">Aluno<input type="search" data-history-filter-name placeholder="Buscar aluno"></label>
                             <label class="delay-history-filter">Situação<select data-history-filter-status><option value="todas">Todas</option><option value="pendente">Pendente</option><option value="aprovada">Aprovada</option><option value="recusada">Recusada</option></select></label>
                             <label class="delay-history-filter">Data<input type="date" data-history-filter-date max="<?= (new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d') ?>" inputmode="none" autocomplete="off"></label>
@@ -9726,7 +9759,7 @@ class TurmaSelector {
                             <?php if ($historicoPorTurma[$idTurma]) { ?>
                                 <?php foreach ($historicoPorTurma[$idTurma] as $registroAtraso) { ?>
                                     <?php $jsonDetalhes = json_encode($detalhesAtraso($registroAtraso), JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_INVALID_UTF8_SUBSTITUTE); $statusHistorico = $registroAtraso['status_justificativa'] ?? 'pendente'; ?>
-                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="<?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
                                         <div class="delay-history-entry-name-group">
                                             <div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div>
                                             <?php if ($statusHistorico !== 'pendente') { ?>
@@ -12247,20 +12280,23 @@ function normalizeStudentSearch(value) {
     async function atualizarAtrasosHoje() {
         const validacaoAtrasosDisponivel = <?= $validacaoAtrasosDisponivel ? 'true' : 'false' ?>;
         const result = await requestApi('listar_atrasos_hoje');
-        const registrosPorTurma = new Map([[9, []], [10, []], [11, []], [12, []]]);
+        const registrosPorTurma = new Map(Array.from({length: 12}, (_, index) => [index + 1, []]));
         result.atrasos.forEach(registro => registrosPorTurma.get(Number(registro.id_turma))?.push(registro));
 
-        for (const [idTurma, letra] of [[9, 'a'], [10, 'b'], [11, 'c'], [12, 'd']]) {
-            const lista = document.getElementById(`atrasos-turma-${letra}`);
+        for (let idTurma = 1; idTurma <= 12; idTurma++) {
+            const lista = document.getElementById(`atrasos-turma-${idTurma}`);
             const card = lista?.closest('.delay-card');
             if (!lista || !card) continue;
 
             const registros = registrosPorTurma.get(idTurma) || [];
-            const busca = document.querySelector(`[data-delay-search="${letra}"]`)?.value.trim().toLocaleLowerCase('pt-BR') || '';
+            const busca = document.querySelector(`[data-delay-search="${idTurma}"]`)?.value.trim().toLocaleLowerCase('pt-BR') || '';
             const linhas = registros.map(registro => {
                 const dateTime = String(registro.date_time || '');
                 const [data, horaCompleta = ''] = dateTime.split(' ');
-                const turma = `3º Ano ${String(registro.letra_turma || letra).toUpperCase()}`;
+                const ano = String(registro.ano_turma || `${Math.ceil(idTurma / 4)} ano`)
+                    .replace(/\s+ano$/i, 'º Ano');
+                const letra = String(registro.letra_turma || '').toUpperCase();
+                const turma = `${ano} ${letra}`;
                 const detalhes = {
                     'Aluno': registro.nome || 'Aluno',
                     'Turma': turma,

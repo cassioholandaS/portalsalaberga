@@ -131,6 +131,11 @@ try {
         ];
     }
 
+    $identificacaoAluno = implode(' - ', array_filter(
+        [textoComprovante('aluno'), textoComprovante('matricula')],
+        static fn (string $valor): bool => $valor !== ''
+    ));
+
     $campos = [
         'entrada' => [
             ['Nome', textoComprovante('aluno')],
@@ -148,8 +153,7 @@ try {
             ['Justificativa do atraso', textoComprovante('justificativa')]
         ],
         'permissao' => [
-            ['Aluno', textoComprovante('aluno')],
-            ['Matrícula', textoComprovante('matricula')],
+            ['', $identificacaoAluno],
             ['Turma', textoComprovante('turma')],
             ...$camposPermissao
         ],
@@ -169,7 +173,7 @@ try {
         if ($valor === '') {
             continue;
         }
-        $texto = $rotulo . ': ' . $valor;
+        $texto = $rotulo === '' ? $valor : $rotulo . ': ' . $valor;
         foreach (explode("\n", wordwrap($texto, 42, "\n", true)) as $linha) {
             $linhasEstimadas++;
         }
@@ -218,7 +222,7 @@ try {
 
     foreach ($campos as [$rotulo, $valor]) {
         if ($valor !== '') {
-            $pdf->imprimirCampo($rotulo . ': ' . $valor);
+            $pdf->imprimirCampo($rotulo === '' ? $valor : $rotulo . ': ' . $valor);
         }
     }
 

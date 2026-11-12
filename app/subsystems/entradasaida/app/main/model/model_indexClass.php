@@ -466,7 +466,7 @@ class MainModel extends connect
                       (TIME(r.date_time) >= '07:40:00' AND TIME(r.date_time) < '11:40:00')
                       {$condicaoAtrasoSemResponsavel}
                   )
-                  AND a.id_turma IN (9, 10, 11, 12)";
+                  AND a.id_turma BETWEEN 1 AND 12";
         $stmt = $this->connect->prepare($sql);
         $stmt->execute([
             'decisao' => $decisao,
@@ -683,7 +683,7 @@ class MainModel extends connect
             }
 
             $verificarAluno = $this->connect->prepare(
-                'SELECT id_aluno FROM aluno WHERE id_aluno = :id_aluno AND id_turma IN (9, 10, 11, 12) LIMIT 1'
+                'SELECT id_aluno FROM aluno WHERE id_aluno = :id_aluno AND id_turma BETWEEN 1 AND 12 LIMIT 1'
             );
             $verificarAluno->execute(['id_aluno' => (int) $idAluno]);
             if (!$verificarAluno->fetchColumn()) {
@@ -812,7 +812,7 @@ class MainModel extends connect
                    AND r.id_aluno IN (
                        SELECT a.id_aluno
                        FROM aluno a
-                       WHERE a.id_turma IN (9, 10, 11, 12)
+                       WHERE a.id_turma BETWEEN 1 AND 12
                          AND (
                              (TIME(r.date_time) >= '07:40:00' AND TIME(r.date_time) < '11:40:00')
                              OR (
@@ -843,7 +843,7 @@ class MainModel extends connect
                  INNER JOIN aluno a ON a.id_aluno = r.id_aluno
                  WHERE r.id_registro_entrada = :id_registro
                    AND {$condicaoHistorico}
-                   AND a.id_turma IN (9, 10, 11, 12)
+                   AND a.id_turma BETWEEN 1 AND 12
                    AND (
                        (TIME(r.date_time) >= '07:40:00' AND TIME(r.date_time) < '11:40:00')
                        OR (

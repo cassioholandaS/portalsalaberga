@@ -66,16 +66,13 @@ class RelatorioAtrasosFiltrado
             return 'Por aluno';
         }
         if ($this->escopo === 'ano') {
-            return '3º ano';
+            return (int) $this->valor . 'º ano';
         }
 
-        $turmas = [
-            9 => '3º Ano A',
-            10 => '3º Ano B',
-            11 => '3º Ano C',
-            12 => '3º Ano D'
-        ];
-        return $turmas[(int) $this->valor] ?? 'Turma';
+        $idTurma = (int) $this->valor;
+        $ano = (int) ceil($idTurma / 4);
+        $letra = chr(ord('A') + (($idTurma - 1) % 4));
+        return $ano . 'º Ano ' . $letra;
     }
 
     private function larguraColunas()

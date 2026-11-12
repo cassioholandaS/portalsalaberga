@@ -118,6 +118,14 @@ class RelatorioAtrasosDia
             ? $this->select->todosAtrasos()
             : $this->select->atrasosPorData($this->data);
         $turmas = [
+            1 => ['titulo' => '1º A', 'cor' => [220, 53, 69]],
+            2 => ['titulo' => '1º B', 'cor' => [65, 105, 225]],
+            3 => ['titulo' => '1º C', 'cor' => [13, 202, 240]],
+            4 => ['titulo' => '1º D', 'cor' => [108, 117, 125]],
+            5 => ['titulo' => '2º A', 'cor' => [220, 53, 69]],
+            6 => ['titulo' => '2º B', 'cor' => [65, 105, 225]],
+            7 => ['titulo' => '2º C', 'cor' => [13, 202, 240]],
+            8 => ['titulo' => '2º D', 'cor' => [108, 117, 125]],
             9 => ['titulo' => '3º A - ENFERMAGEM', 'cor' => [220, 53, 69]],
             10 => ['titulo' => '3º B - INFORMÁTICA', 'cor' => [65, 105, 225]],
             11 => ['titulo' => '3º C - ADMINISTRAÇÃO', 'cor' => [13, 202, 240]],

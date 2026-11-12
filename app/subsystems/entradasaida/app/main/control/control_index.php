@@ -999,14 +999,14 @@ else if (isset($_POST['GerarRelatorio']) && isset($_POST['tipo_relatorio'])) {
                 $filtroAtraso = filter_var($id_turma, FILTER_VALIDATE_INT);
                 $escopoAtraso = 'turma';
                 $parametroAtraso = 'id_turma';
-                if (!in_array($filtroAtraso, [9, 10, 11, 12], true)) {
+                if (!in_array($filtroAtraso, range(1, 12), true)) {
                     $filtroAtraso = false;
                 }
             } else {
                 $filtroAtraso = filter_var($ano, FILTER_VALIDATE_INT);
                 $escopoAtraso = 'ano';
                 $parametroAtraso = 'ano';
-                if ($filtroAtraso !== 3) {
+                if (!in_array($filtroAtraso, [1, 2, 3], true)) {
                     $filtroAtraso = false;
                 }
             }
