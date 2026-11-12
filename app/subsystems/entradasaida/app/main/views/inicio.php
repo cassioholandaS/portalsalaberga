@@ -9787,14 +9787,18 @@ class TurmaSelector {
     <dialog class="delay-dialog" id="delay-rejection-warning" aria-labelledby="delay-rejection-warning-title" aria-describedby="delay-rejection-warning-message">
         <div class="delay-dialog-header">
             <div class="delay-dialog-heading">
-                <h2 id="delay-rejection-warning-title">⚠️ ATENÇÃO</h2>
+                <span class="delay-rejection-warning-icon" aria-hidden="true"><i class="fas fa-triangle-exclamation"></i></span>
+                <div>
+                    <span class="delay-rejection-warning-label">Justificativa recusada</span>
+                    <h2 id="delay-rejection-warning-title">ATENÇÃO</h2>
+                </div>
             </div>
         </div>
         <div class="delay-dialog-content" id="delay-rejection-warning-message">
             <p>Como a justificativa apresentada para o atraso foi considerada inválida, o estudante ficará impedido de realizar suas atividades de estágio nesta data. A ocorrência deverá ser comunicada à Coordenação Pedagógica e ao coordenador do respectivo curso.</p>
         </div>
-        <form method="dialog" class="border-t border-gray-200 px-5 py-4">
-            <button type="submit" class="delay-validation-submit">OK</button>
+        <form method="dialog" class="delay-rejection-actions">
+            <button type="submit" class="delay-validation-submit"><i class="fas fa-check" aria-hidden="true"></i><span>OK</span></button>
         </form>
     </dialog>
     <script>
@@ -13687,6 +13691,201 @@ html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-sec
     color: #fff;
 }
 
+.delay-print-options {
+    display: grid;
+    gap: 10px;
+    padding: 18px 20px 20px;
+}
+
+.delay-print-choice {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 13px;
+    border: 1px solid #d5e3d9;
+    border-radius: 8px;
+    background: #f7fbf8;
+    color: #08723a;
+    font: 600 13px 'Inter', sans-serif;
+    text-align: left;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.delay-print-choice:hover {
+    transform: translateY(-1px);
+    border-color: #9dc9aa;
+    background: #eaf5ed;
+}
+
+.delay-print-choice:focus-visible {
+    outline: 2px solid #008c45;
+    outline-offset: 2px;
+}
+
+.delay-print-choice i {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    place-items: center;
+    border-radius: 7px;
+    background: #e3f1e7;
+}
+
+#delay-rejection-warning {
+    width: min(410px, calc(100vw - var(--sidebar-width, 0px) - 2rem));
+    min-height: min(460px, calc(100dvh - 32px));
+    border-left: 5px solid #d97706;
+    border-radius: 22px;
+}
+
+#delay-rejection-warning[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+#delay-rejection-warning .delay-dialog-header {
+    min-height: 132px;
+    justify-content: center;
+    padding: 24px 28px 18px;
+    border-bottom: 0;
+    background: linear-gradient(180deg, #fffaf0, #fff);
+}
+
+#delay-rejection-warning .delay-dialog-heading {
+    align-items: center;
+    gap: 14px;
+}
+
+#delay-rejection-warning .delay-dialog-heading::before {
+    content: none;
+}
+
+.delay-rejection-warning-icon {
+    display: grid;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    place-items: center;
+    border: 1px solid #f5d28c;
+    border-radius: 17px;
+    background: linear-gradient(145deg, #fff1cc, #ffe2a1);
+    color: #b45309;
+    font-size: 24px;
+    box-shadow: 0 5px 14px #b453091c;
+}
+
+.delay-rejection-warning-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #a4510a;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+#delay-rejection-warning .delay-dialog-header h2 {
+    color: #26352c;
+    font-size: 1.35rem;
+    letter-spacing: .02em;
+}
+
+#delay-rejection-warning .delay-dialog-content {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    max-height: none;
+    overflow-y: auto;
+    padding: 8px 30px 28px;
+}
+
+#delay-rejection-warning .delay-dialog-content p {
+    margin: 0;
+    color: #3f4d45;
+    font-size: .96rem;
+    line-height: 1.75;
+}
+
+.delay-rejection-actions {
+    margin-top: auto;
+    padding: 18px 26px 24px;
+    border-top: 1px solid #e8eee9;
+    background: #f8faf8;
+}
+
+#delay-rejection-warning .delay-rejection-actions .delay-validation-submit {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #08723a, #07944e);
+    box-shadow: 0 5px 12px #08723a26;
+    font-size: .95rem;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+#delay-rejection-warning .delay-rejection-actions .delay-validation-submit:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #075e31, #08723a);
+    box-shadow: 0 8px 16px #08723a30;
+}
+
+#delay-rejection-warning .delay-rejection-actions .delay-validation-submit:focus-visible {
+    outline: 3px solid #08723a55;
+    outline-offset: 3px;
+}
+
+html[data-theme="dark"] #delay-rejection-warning .delay-dialog-header {
+    background: linear-gradient(180deg, #292315, #171717);
+}
+
+html[data-theme="dark"] #delay-rejection-warning .delay-dialog-header h2,
+html[data-theme="dark"] #delay-rejection-warning .delay-dialog-content p {
+    color: #f3f4f6;
+}
+
+html[data-theme="dark"] .delay-rejection-actions {
+    border-color: rgba(255, 255, 255, .1);
+    background: #1f1f1f;
+}
+
+@media (max-width: 760px) {
+    #delay-rejection-warning {
+        width: min(410px, calc(100vw - 24px));
+    }
+
+    #delay-rejection-warning .delay-dialog-header {
+        min-height: 118px;
+        padding: 20px 22px 14px;
+    }
+
+    #delay-rejection-warning .delay-dialog-content {
+        padding: 8px 24px 24px;
+    }
+
+    .delay-rejection-actions {
+        padding: 16px 20px 20px;
+    }
+}
+
+@media (max-height: 520px) {
+    #delay-rejection-warning {
+        min-height: 0;
+    }
+
+    #delay-rejection-warning .delay-dialog-header {
+        min-height: 96px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .delay-print-choice { transition: none; }
+    .delay-print-choice:hover { transform: none; }
+    #delay-rejection-warning .delay-rejection-actions .delay-validation-submit { transition: none; }
+    #delay-rejection-warning .delay-rejection-actions .delay-validation-submit:hover { transform: none; }
+}
 </style>
 <footer class="entryexit-footer" aria-label="Desenvolvedores do sistema">
     <span>Desenvolvido por</span>
