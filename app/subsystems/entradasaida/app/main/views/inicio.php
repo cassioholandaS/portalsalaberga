@@ -5311,7 +5311,7 @@ input[type="radio"] {
     accent-color: var(--salaberga-green);
 }
 .qr-input-capture{position:fixed!important;top:0!important;left:-10000px!important;width:1px!important;height:1px!important;min-width:1px!important;max-width:1px!important;margin:0!important;padding:0!important;border:0!important;opacity:0!important;pointer-events:none!important}
-.delay-history-entry-actions{display:flex;align-items:center;gap:7px}@media(max-width:600px){.delay-history-entry-actions{grid-column:1/-1;grid-row:auto}}
+.delay-history-entry-actions{display:flex;align-items:center;justify-content:flex-end;justify-self:end;gap:7px}@media(max-width:600px){.delay-history-entry-actions{grid-column:1/-1;grid-row:auto}}
 #delay-validation-motive-field{margin-bottom:20px}
 </style>
 <style>
@@ -5555,12 +5555,6 @@ input[type="radio"] {
         --reception-card-color: #0891b2;
         --reception-card-border: #c5e8ef;
         --reception-card-tint: #ecfbff;
-    }
-
-    .reception-card-guide {
-        --reception-card-color: #475569;
-        --reception-card-border: #d7dee8;
-        --reception-card-tint: #f1f5f9;
     }
 
     .reception-interface .menu-card h3 {
@@ -6207,16 +6201,6 @@ input[type="radio"] {
           <div>
             <h3 class="font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Últimas saídas</h3>
             <p class="text-sm text-gray-500">Acompanhe as últimas saídas registradas</p>
-          </div>
-        </a>
-
-        <a href="../docs/Guia_de_instrucoes_entradasaida_recepcao.pdf" target="_blank" rel="noopener" class="menu-card reception-card-guide p-6 flex items-center gap-4 group" aria-label="Abrir o guia visual do perfil da recepção em uma nova aba">
-          <div class="menu-icon">
-            <i class="fas fa-book-open text-xl" aria-hidden="true"></i>
-          </div>
-          <div>
-            <h3 class="font-semibold text-gray-900 group-hover:text-slate-600 transition-colors">Guia visual de uso</h3>
-            <p class="text-sm text-gray-500">Acesse o passo a passo ilustrado do perfil da recepção</p>
           </div>
         </a>
         <?php } ?>
@@ -9689,13 +9673,13 @@ class TurmaSelector {
                                             ?>
                                             <?php if ($validacaoAtrasoExpirada) { ?>
                                                 <button type="button" class="delay-detail-button delay-validation-expired" disabled aria-label="Prazo para validar atraso encerrado"><i class="fas fa-lock" aria-hidden="true"></i>Prazo encerrado</button>
-                                                <button type="button" class="delay-detail-button delay-detail-button-secondary delay-history-entry-action" data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i>Detalhes</button>
+                                                <button type="button" class="delay-detail-button delay-detail-button-secondary delay-history-entry-action" data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i>Ver</button>
                                             <?php } else { ?>
-                                                <?php $acaoAtraso = $podeValidarAtraso ? 'Validar' : 'Detalhes'; ?>
+                                                <?php $acaoAtraso = $podeValidarAtraso ? 'Validar' : 'Ver'; ?>
                                                 <button type="button" class="delay-detail-button <?= $podeValidarAtraso ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarAtraso ? 'data-delay-validation' : '' ?> data-delay-details="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusAtraso, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarAtraso ? '1' : '0' ?>"><i class="fas <?= $podeValidarAtraso ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i><?= htmlspecialchars($acaoAtraso, ENT_QUOTES, 'UTF-8') ?></button>
                                             <?php } ?>
                                             <?php if ($statusAtraso !== 'pendente') { ?>
-                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" aria-label="Impressão do registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Impressão"><i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span></button>
+                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= $dadosAtrasoHtml ?>" data-record-id="<?= $idAtraso ?>" aria-label="Imprimir registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
                                             <?php } ?>
                                     </div>
                                 </div>
@@ -9729,12 +9713,12 @@ class TurmaSelector {
                                     <article class="delay-history-entry" data-history-entry data-history-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-history-class="<?= (int) $registroAtraso['id_turma'] ?>" data-history-turma="3º Ano <?= htmlspecialchars($turma, ENT_QUOTES, 'UTF-8') ?>" data-history-date="<?= date('Y-m-d', strtotime($registroAtraso['date_time'])) ?>" data-history-date-time="<?= htmlspecialchars((string) $registroAtraso['date_time'], ENT_QUOTES, 'UTF-8') ?>" data-history-matricula="<?= htmlspecialchars((string) ($registroAtraso['matricula'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" data-history-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-history-name="<?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" tabindex="0" role="<?= $podeExcluirAtraso ? 'button' : 'group' ?>" aria-label="<?= $podeExcluirAtraso ? 'Opções para o atraso de ' : 'Registro histórico de atraso de ' ?><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>">
                                         <div class="delay-history-entry-name-group">
                                             <div class="delay-history-entry-name"><?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?></div>
-                                            <?php if ($statusHistorico !== 'pendente') { ?>
-                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Impressão do registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Impressão"><i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span></button>
-                                            <?php } ?>
                                         </div>
                                         <div class="delay-history-entry-meta"><time datetime="<?= date('Y-m-d\TH:i:s', strtotime($registroAtraso['date_time'])) ?>"><?= date('d/m/Y', strtotime($registroAtraso['date_time'])) ?> às <?= date('H:i', strtotime($registroAtraso['date_time'])) ?></time><span class="delay-status delay-status-<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars(['pendente' => 'Pendente', 'aprovada' => 'Aprovada', 'recusada' => 'Recusada'][$statusHistorico] ?? 'Pendente', ENT_QUOTES, 'UTF-8') ?></span></div>
                                         <div class="delay-history-entry-actions">
+                                            <?php if ($statusHistorico !== 'pendente') { ?>
+                                                <button type="button" class="delay-print-button" data-delay-print-options="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" aria-label="Imprimir registro de <?= htmlspecialchars($registroAtraso['nome'], ENT_QUOTES, 'UTF-8') ?>" title="Imprimir"><i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span></button>
+                                            <?php } ?>
                                             <?php
                                             $dataHistorico = (new DateTimeImmutable((string) $registroAtraso['date_time'], $fusoSaoPaulo))->format('Y-m-d');
                                             $podeValidarHistorico = $validacaoAtrasosDisponivel
@@ -9747,9 +9731,9 @@ class TurmaSelector {
                                             ?>
                                             <?php if ($prazoHistoricoExpirado) { ?>
                                                 <button type="button" class="delay-detail-button delay-history-entry-action delay-validation-expired" disabled aria-label="Prazo para validar atraso encerrado"><i class="fas fa-lock" aria-hidden="true"></i> Prazo encerrado</button>
-                                                <button type="button" class="delay-detail-button delay-history-entry-action delay-detail-button-secondary" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i> Ver detalhes</button>
+                                                <button type="button" class="delay-detail-button delay-history-entry-action delay-detail-button-secondary" data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="0"><i class="fas fa-eye" aria-hidden="true"></i> Ver</button>
                                             <?php } else { ?>
-                                                <button type="button" class="delay-detail-button delay-history-entry-action <?= $podeValidarHistorico ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarHistorico ? 'data-delay-validation' : '' ?> data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarHistorico ? '1' : '0' ?>"><i class="fas <?= $podeValidarHistorico ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i> <?= $podeValidarHistorico ? 'Validar' : 'Ver detalhes' ?></button>
+                                                <button type="button" class="delay-detail-button delay-history-entry-action <?= $podeValidarHistorico ? '' : 'delay-detail-button-secondary' ?>" <?= $podeValidarHistorico ? 'data-delay-validation' : '' ?> data-delay-details="<?= htmlspecialchars($jsonDetalhes, ENT_QUOTES, 'UTF-8') ?>" data-record-id="<?= (int) $registroAtraso['id_registro_entrada'] ?>" data-motive-id="<?= (int) ($registroAtraso['id_motivo'] ?? 0) ?>" data-status="<?= htmlspecialchars($statusHistorico, ENT_QUOTES, 'UTF-8') ?>" data-can-validate="<?= $podeValidarHistorico ? '1' : '0' ?>"><i class="fas <?= $podeValidarHistorico ? 'fa-check' : 'fa-eye' ?>" aria-hidden="true"></i> <?= $podeValidarHistorico ? 'Validar' : 'Ver' ?></button>
                                             <?php } ?>
                                         </div>
                                     </article>
@@ -9823,7 +9807,7 @@ class TurmaSelector {
                     detailsButton.removeAttribute('data-delay-validation');
                     detailsButton.dataset.canValidate = '0';
                     detailsButton.dataset.readonlyDetails = '1';
-                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Detalhes';
+                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Ver';
                     button.insertAdjacentElement('afterend', detailsButton);
                     button.removeAttribute('data-delay-validation');
                 });
@@ -12321,7 +12305,7 @@ function normalizeStudentSearch(value) {
                     validateButton.setAttribute('aria-label', 'Prazo para validar atraso encerrado');
                     validateButton.append(icon, document.createTextNode('Prazo encerrado'));
                 } else {
-                    validateButton.append(icon, document.createTextNode(canValidate ? 'Validar' : 'Detalhes'));
+                    validateButton.append(icon, document.createTextNode(canValidate ? 'Validar' : 'Ver'));
                 }
                 meta.append(time, validateButton);
                 if (validationExpired) {
@@ -12333,7 +12317,7 @@ function normalizeStudentSearch(value) {
                     detailsButton.dataset.motiveId = String(registro.id_motivo || '');
                     detailsButton.dataset.status = status;
                     detailsButton.dataset.canValidate = '0';
-                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Detalhes';
+                    detailsButton.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>Ver';
                     meta.appendChild(detailsButton);
                 }
                 if (status !== 'pendente') {
@@ -12342,9 +12326,9 @@ function normalizeStudentSearch(value) {
                     printButton.className = 'delay-print-button';
                     printButton.dataset.delayPrintOptions = JSON.stringify(detalhes);
                     printButton.dataset.recordId = String(registro.id_registro_entrada);
-                    printButton.setAttribute('aria-label', `Impressão do registro de ${registro.nome || 'aluno'}`);
-                    printButton.title = 'Impressão';
-                    printButton.innerHTML = '<i class="fas fa-print" aria-hidden="true"></i><span>Impressão</span>';
+                    printButton.setAttribute('aria-label', `Imprimir registro de ${registro.nome || 'aluno'}`);
+                    printButton.title = 'Imprimir';
+                    printButton.innerHTML = '<i class="fas fa-print" aria-hidden="true"></i><span>Imprimir</span>';
                     meta.appendChild(printButton);
                 }
                 entry.append(name, meta);
@@ -13683,6 +13667,32 @@ html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-sec
 }
 
 .delay-print-button span { white-space: nowrap; }
+
+#atrasos .delay-print-button {
+    border-color: #FFA500;
+    background: #FFA500;
+    color: #fff;
+}
+
+#atrasos .delay-print-button:hover {
+    border-color: #e69500;
+    background: #e69500;
+    color: #fff;
+}
+
+#atrasos .delay-entry .delay-detail-button-secondary,
+#atrasos .delay-history-entry .delay-detail-button-secondary {
+    border-color: #6b7280;
+    background: #6b7280;
+    color: #fff;
+}
+
+#atrasos .delay-entry .delay-detail-button-secondary:hover,
+#atrasos .delay-history-entry .delay-detail-button-secondary:hover {
+    border-color: #4b5563;
+    background: #4b5563;
+    color: #fff;
+}
 
 .delay-print-dialog {
     width: min(440px, calc(100vw - 32px));
