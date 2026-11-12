@@ -976,6 +976,7 @@ else if (isset($_POST['id_aluno']) && !empty($_POST['id_aluno']) && isset($_POST
 else if (isset($_POST['GerarRelatorio']) && isset($_POST['tipo_relatorio'])) {
     $gerar_relatorio = $_POST['GerarRelatorio'];
     exigirPermissaoRecepcao(in_array($gerar_relatorio, [
+        'atrasos_geral',
         'atrasos_por_aluno',
         'atrasos_por_turma',
         'atrasos_por_ano'
@@ -986,6 +987,14 @@ else if (isset($_POST['GerarRelatorio']) && isset($_POST['tipo_relatorio'])) {
     $ano = $_POST['Ano'] ?? 0;
 
     switch ($gerar_relatorio) {
+        case 'atrasos_geral':
+            if ($tipoRelatorio !== 'todos_registros') {
+                header('Location: ../views/inicio.php?section=relatorio-dia&error=invalid_period');
+                exit();
+            }
+            header('Location: ../views/relatorios/relatorio_atrasos_pdf.php?escopo=geral');
+            exit();
+
         case 'atrasos_por_aluno':
         case 'atrasos_por_turma':
         case 'atrasos_por_ano':

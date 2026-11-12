@@ -4728,6 +4728,8 @@ html,body{margin:0;min-height:100%;font-family:'Inter',sans-serif;color:var(--sa
     background: #f6faf7;
 }
 
+#relatorio-dia .tabs-nav { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
 #relatorio-entrada .tab-btn,
 #relatorio-dia .tab-btn,
 #relatorio-saida .tab-btn,
@@ -9347,18 +9349,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 const section = document.getElementById(sectionId);
                 const tabBtns = section.querySelectorAll('.tab-btn');
                 const tabContents = section.querySelectorAll('.tab-content');
+                const abasAtrasos = ['geral', 'aluno', 'ano', 'turma'];
+
+                const ativarAba = (targetTab, atualizarUrl = false) => {
+                    const selectedButton = Array.from(tabBtns).find(tabBtn => tabBtn.dataset.tab === targetTab);
+                    const selectedContent = Array.from(tabContents).find(content => content.id === sectionId + '-tab-' + targetTab);
+                    if (!selectedButton || !selectedContent) return;
+
+                    tabBtns.forEach(tabBtn => tabBtn.classList.toggle('active', tabBtn === selectedButton));
+                    tabContents.forEach(content => content.classList.toggle('active', content === selectedContent));
+
+                    if (sectionId === 'relatorio-dia' && atualizarUrl) {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('aba_atrasos', targetTab);
+                        window.history.replaceState(window.history.state, '', url);
+                    }
+                };
 
                 tabBtns.forEach(btn => {
                     btn.addEventListener('click', function() {
                         const targetTab = this.getAttribute('data-tab');
-
-                        tabBtns.forEach(tabBtn => tabBtn.classList.remove('active'));
-                        tabContents.forEach(content => content.classList.remove('active'));
-
-                        this.classList.add('active');
-                        section.querySelector('#' + sectionId + '-tab-' + targetTab).classList.add('active');
+                        ativarAba(targetTab, true);
                     });
                 });
+
+                if (sectionId === 'relatorio-dia') {
+                    const abaSalva = new URLSearchParams(window.location.search).get('aba_atrasos');
+                    ativarAba(abasAtrasos.includes(abaSalva) ? abaSalva : 'geral');
+                    document.addEventListener('atrasos:reset-report-tab', () => {
+                        ativarAba('geral');
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete('aba_atrasos');
+                        window.history.replaceState(window.history.state, '', url);
+                    });
+                }
 
                 const forms = section.querySelectorAll('form');
                 forms.forEach(form => {
@@ -9401,12 +9425,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fas fa-clock-rotate-left"></i>
                 </div>
                 <h1 class="gradient-text">Relatório de atrasos registrados</h1>
-                <p class="subtitle">Filtre por aluno, ano ou turma e acompanhe as justificativas e validações.</p>
+                <p class="subtitle">Gere o histórico completo ou filtre por aluno, ano ou turma.</p>
             </div>
 
             <div class="form-card">
                 <div class="tabs-nav">
-                    <button class="tab-btn active" type="button" data-tab="aluno">
+                    <button class="tab-btn active" type="button" data-tab="geral">
+                        <i class="fas fa-list"></i> Geral
+                    </button>
+                    <button class="tab-btn" type="button" data-tab="aluno">
                         <i class="fas fa-user"></i> Por Aluno
                     </button>
                     <button class="tab-btn" type="button" data-tab="ano">
@@ -9421,7 +9448,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="report-error" role="alert">Não foi possível gerar o relatório. Confira os filtros e tente novamente.</p>
                 <?php } ?>
 
-                <div class="tab-content active" id="relatorio-dia-tab-aluno">
+                <div class="tab-content active" id="relatorio-dia-tab-geral">
+                    <form target="_blank" action="../control/control_index.php" method="POST">
+                        <p class="report-hint">O relatório incluirá todos os atrasos registrados no sistema, de todos os alunos e turmas, sem limite de período.</p>
+                        <input type="hidden" name="GerarRelatorio" value="atrasos_geral">
+                        <input type="hidden" name="tipo_relatorio" value="todos_registros">
+                        <button type="submit" class="btn-primary"><i class="fas fa-file-export"></i> Gerar Relatório Geral</button>
+                    </form>
+                </div>
+
+                <div class="tab-content" id="relatorio-dia-tab-aluno">
                     <form target="_blank" action="../control/control_index.php" method="POST">
                         <div class="form-group">
                             <label class="form-label" for="relatorio-atrasos-id-aluno">Selecione o Aluno</label>
@@ -11437,6 +11473,9 @@ function normalizeStudentSearch(value) {
   navItems.forEach(item => item.addEventListener('click', () => activate(item.dataset.target, item)));
   document.querySelectorAll('[data-section-target]').forEach(item => item.addEventListener('click', event => {
     event.preventDefault();
+    if (item.dataset.sectionTarget === 'relatorio-dia') {
+      document.dispatchEvent(new CustomEvent('atrasos:reset-report-tab'));
+    }
     activate(item.dataset.sectionTarget, document.querySelector(`.nav-item[data-target="${item.dataset.sectionTarget}"]`));
   }));
     if (receptionMode) {

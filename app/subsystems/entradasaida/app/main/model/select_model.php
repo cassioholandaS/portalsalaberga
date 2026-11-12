@@ -486,6 +486,13 @@ class select_model extends connect
 
     public function atrasosParaRelatorio($escopo, $valor, $tipoRelatorio)
     {
+        if ($escopo === 'geral') {
+            if ($tipoRelatorio !== '') {
+                throw new InvalidArgumentException('O relatório geral não aceita período ou filtros.');
+            }
+            return $this->todosAtrasos();
+        }
+
         $periodos = [
             'dia_atual' => ['inicio' => 'today', 'fim' => 'tomorrow'],
             'ultimos_30_dias' => ['inicio' => '-30 days', 'fim' => 'tomorrow'],

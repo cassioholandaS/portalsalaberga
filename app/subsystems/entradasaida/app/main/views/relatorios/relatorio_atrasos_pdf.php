@@ -36,7 +36,13 @@ class RelatorioAtrasosFiltrado
             ? ($_GET['id_aluno'] ?? 0)
             : ($this->escopo === 'turma' ? ($_GET['id_turma'] ?? 0) : ($_GET['ano'] ?? 0));
 
-        if (!in_array($this->escopo, ['aluno', 'ano', 'turma'], true)
+        if ($this->escopo === 'geral') {
+            if ($this->periodo !== '') {
+                http_response_code(400);
+                exit('O relatório geral não aceita filtros.');
+            }
+            $this->valor = null;
+        } elseif (!in_array($this->escopo, ['aluno', 'ano', 'turma'], true)
             || !in_array($this->periodo, ['dia_atual', 'ultimos_30_dias', 'ultimos_12_meses'], true)) {
             http_response_code(400);
             exit('Parâmetros inválidos para o relatório de atrasos.');
@@ -52,6 +58,10 @@ class RelatorioAtrasosFiltrado
 
     private function nomePeriodo()
     {
+        if ($this->escopo === 'geral') {
+            return 'Todos os registros';
+        }
+
         $nomes = [
             'dia_atual' => 'Dia atual',
             'ultimos_30_dias' => 'Últimos 30 dias',
@@ -62,6 +72,9 @@ class RelatorioAtrasosFiltrado
 
     private function nomeEscopo()
     {
+        if ($this->escopo === 'geral') {
+            return 'Todos os alunos e turmas';
+        }
         if ($this->escopo === 'aluno') {
             return 'Por aluno';
         }
@@ -213,7 +226,10 @@ class RelatorioAtrasosFiltrado
         if (empty($dados)) {
             $pdf->SetFont('Arial', 'I', 10);
             $pdf->SetTextColor(145, 145, 145);
-            $pdf->Cell(0, 12, $this->textoPdf('Nenhum atraso encontrado para os filtros selecionados.'), 0, 1, 'C');
+            $mensagemVazia = $this->escopo === 'geral'
+                ? 'Nenhum atraso registrado no sistema.'
+                : 'Nenhum atraso encontrado para os filtros selecionados.';
+            $pdf->Cell(0, 12, $this->textoPdf($mensagemVazia), 0, 1, 'C');
         } else {
             foreach ($dados as $indice => $dado) {
                 $this->imprimirLinha($pdf, $dado, $colunas, $indice);
