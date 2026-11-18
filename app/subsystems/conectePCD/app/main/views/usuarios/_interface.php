@@ -641,6 +641,27 @@
     .dashboard-panel > * { position:relative; z-index:1; }
     .dashboard-panel--green { border-left-color:var(--c3); }
     .dashboard-panel--green::after { background:rgba(0,166,81,0.06); }
+    .dashboard-guide { display:flex; justify-content:flex-start; margin-top:18px; }
+    .dashboard-guide-link {
+      display:flex; align-items:center; gap:15px; width:min(100%,540px); min-height:86px;
+      padding:15px 20px; border:1px solid var(--border); border-left:5px solid var(--c3);
+      border-radius:14px; background:var(--surface2); color:var(--text); text-decoration:none;
+      box-shadow:0 5px 18px rgba(7,91,45,0.05);
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .dashboard-guide-link:hover { transform:translateY(-2px); border-color:rgba(0,166,81,.3); box-shadow:0 10px 24px rgba(7,91,45,.1); }
+    .dashboard-guide-link:focus-visible { outline:2px solid var(--c3); outline-offset:3px; }
+    .dashboard-guide-icon {
+      display:grid; place-items:center; width:48px; height:48px; flex:0 0 48px;
+      border-radius:13px; background:rgba(0,166,81,.09); color:var(--c2); font-size:20px;
+    }
+    .dashboard-guide-copy { display:flex; min-width:0; flex-direction:column; gap:2px; }
+    .dashboard-guide-title { font-size:15px; font-weight:700; line-height:1.35; }
+    .dashboard-guide-description { color:var(--text-muted); font-size:12px; line-height:1.4; }
+    .dashboard-guide-action {
+      display:inline-flex; align-items:center; gap:6px; margin-left:auto; padding-left:8px;
+      color:var(--c1); font-size:12px; font-weight:700; white-space:nowrap;
+    }
     .diag-list { display:flex; flex-direction:column; gap:15px; padding-top:2px; }
     .diag-item { position:relative; }
     .diag-item-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
@@ -1488,6 +1509,9 @@
     html[data-theme="dark"] .evolucao-grafico-box,
     html[data-theme="dark"] .multi-select-menu,
     html[data-theme="dark"] .apoio-quesito-leitura-item { background:#171717; border-color:rgba(255,255,255,.08); color:#f3f4f6; }
+    html[data-theme="dark"] .dashboard-guide-link { background:#171717; border-color:rgba(255,255,255,.08); border-left-color:#31b86a; color:#f3f4f6; }
+    html[data-theme="dark"] .dashboard-guide-icon { background:rgba(49,184,106,.14); color:#76d89e; }
+    html[data-theme="dark"] .dashboard-guide-action { color:#76d89e; }
     html[data-theme="dark"] .plan-discipline-card__badge { color:#f3c969; }
     html[data-theme="dark"] .plan-discipline-card__badge.is-complete { color:#76d89e; }
     html[data-theme="dark"] .plan-discipline-card__delete { border-color:rgba(248,113,113,.2); background:rgba(248,113,113,.08); color:#fca5a5; }
@@ -1909,6 +1933,19 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         </div>
       </div>
       </div>
+      <?php if ($tipoUsuario === 'apoio'): ?>
+      <?php $arquivoGuiaApoio = dirname(__DIR__, 2) . '/docs/Guia_usuario_conectePCD_apoio.pdf'; ?>
+      <div class="dashboard-guide">
+        <a class="dashboard-guide-link" href="docs/Guia_usuario_conectePCD_apoio.pdf?v=<?= filemtime($arquivoGuiaApoio) ?>" target="_blank" rel="noopener" aria-label="Abrir o guia do usuário do perfil Apoio em uma nova aba">
+          <span class="dashboard-guide-icon" aria-hidden="true"><i class="bi bi-book-half"></i></span>
+          <span class="dashboard-guide-copy">
+            <span class="dashboard-guide-title">Guia do usuário</span>
+            <span class="dashboard-guide-description">Passo a passo ilustrado para o perfil Apoio</span>
+          </span>
+          <span class="dashboard-guide-action">Abrir guia <i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
+        </a>
+      </div>
+      <?php endif; ?>
     </div>
 
     <!-- ============= AVALIAÇÃO ============= -->
