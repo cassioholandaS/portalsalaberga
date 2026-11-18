@@ -79,9 +79,9 @@ $segundosAteLimiteValidacao = $prazoValidacaoAtrasosAberto
     ? max(0, $limiteValidacaoAtrasos->getTimestamp() - $agoraSaoPaulo->getTimestamp())
     : 0;
 $sectionInicial = $_GET['section'] ?? ($ehRecepcao ? 'inicio' : 'entrada');
-$sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'cadastro'];
+$sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'restricoes', 'relatorios', 'relatorio-entrada', 'relatorio-saida', 'consulta-saida', 'consulta-estagio', 'consulta-ausencias', 'relatorio-estagio', 'relatorio-dia', 'qrcode', 'ultimas-saidas', 'atrasos', 'historico-atrasos', 'cadastro'];
 if ($ehRecepcao) {
-    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'relatorio-dia', 'ultimas-saidas'];
+    $sectionsPermitidas = ['inicio', 'entrada', 'saida', 'estagio', 'consulta-ausencias', 'atrasos', 'historico-atrasos', 'relatorio-dia', 'ultimas-saidas'];
 }
 if ($ehAdminEntradaSaida) {
     $sectionsPermitidas = array_values(array_diff($sectionsPermitidas, ['inicio']));
@@ -5861,45 +5861,46 @@ input[type="radio"] {
 
     html[data-theme="dark"] #atrasos .delays-shell,
     html[data-theme="dark"] #atrasos .delay-card,
-    html[data-theme="dark"] #atrasos .delay-history-card,
-    html[data-theme="dark"] #atrasos .delay-history-table,
-    html[data-theme="dark"] #atrasos .delay-history-filters {
+    html[data-theme="dark"] #historico-atrasos .delays-shell,
+    html[data-theme="dark"] #historico-atrasos .delay-history-card,
+    html[data-theme="dark"] #historico-atrasos .delay-history-table,
+    html[data-theme="dark"] #historico-atrasos .delay-history-filters {
         border-color: rgba(255, 255, 255, .08);
         background-color: #171717;
         color: #f3f4f6;
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-card-header,
-    html[data-theme="dark"] #atrasos .delay-history-table th {
+    html[data-theme="dark"] #historico-atrasos .delay-history-card-header,
+    html[data-theme="dark"] #historico-atrasos .delay-history-table th {
         border-color: rgba(255, 255, 255, .08);
         background-color: #1f1f1f;
         color: #d1d5db;
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-card-filters {
+    html[data-theme="dark"] #historico-atrasos .delay-history-card-filters {
         border-color: rgba(255, 255, 255, .08);
         background-color: #1f1f1f;
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-count {
+    html[data-theme="dark"] #historico-atrasos .delay-history-count {
         background-color: #262626;
         color: #d1d5db;
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-filter,
-    html[data-theme="dark"] #atrasos .delay-history-entry-name,
-    html[data-theme="dark"] #atrasos .delay-history-entry-meta,
-    html[data-theme="dark"] #atrasos .delay-history-empty {
+    html[data-theme="dark"] #historico-atrasos .delay-history-filter,
+    html[data-theme="dark"] #historico-atrasos .delay-history-entry-name,
+    html[data-theme="dark"] #historico-atrasos .delay-history-entry-meta,
+    html[data-theme="dark"] #historico-atrasos .delay-history-empty {
         color: #d1d5db;
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-entry {
+    html[data-theme="dark"] #historico-atrasos .delay-history-entry {
         border-color: rgba(255, 255, 255, .08);
     }
 
-    html[data-theme="dark"] #atrasos .delay-history-reset,
-    html[data-theme="dark"] #atrasos .delay-history-filter input,
-    html[data-theme="dark"] #atrasos .delay-history-filter select {
+    html[data-theme="dark"] #historico-atrasos .delay-history-reset,
+    html[data-theme="dark"] #historico-atrasos .delay-history-filter input,
+    html[data-theme="dark"] #historico-atrasos .delay-history-filter select {
         border-color: rgba(255, 255, 255, .12);
         background-color: #262626;
         color: #f3f4f6;
@@ -6091,11 +6092,12 @@ input[type="radio"] {
             <button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída antecipada</button>
             <button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button>
             <button class="nav-item" type="button" data-target="consulta-ausencias"><i class="fas fa-user-xmark"></i>Ausências registradas</button>
+            <button class="nav-item" type="button" data-target="historico-atrasos"><i class="fas fa-clock-rotate-left"></i>Histórico de atrasos</button>
             <button class="nav-item" type="button" data-target="ultimas-saidas"><i class="fas fa-clock"></i>Últimas saídas</button>
         </div>
         <?php } else { ?>
         <details class="nav-group" data-sidebar-group="registros"><summary class="nav-label">Registros</summary><button class="nav-item" type="button" data-target="entrada"><i class="fas fa-arrow-right-to-bracket"></i>Registro de Atraso</button><button class="nav-item" type="button" data-target="saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída Antecipada</button><button class="nav-item" type="button" data-target="estagio"><i class="fas fa-briefcase"></i>Saída para estágio</button><button class="nav-item" type="button" data-target="cadastro"><i class="fas fa-user-plus"></i>Cadastrar aluno</button><button class="nav-item" type="button" data-target="restricoes"><i class="fas fa-ban"></i>Restrições</button></details>
-        <details class="nav-group" data-sidebar-group="consultas"><summary class="nav-label">Consultas</summary><button class="nav-item" type="button" data-target="consulta-saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída antecipada</button><button class="nav-item" type="button" data-target="consulta-estagio"><i class="fas fa-user-tie"></i>Saídas para estágio</button><button class="nav-item" type="button" data-target="consulta-ausencias"><i class="fas fa-user-xmark"></i>Ausências Registradas</button><button class="nav-item" type="button" data-target="atrasos"><i class="fas fa-clock-rotate-left"></i>Atrasos registrados</button><button class="nav-item" type="button" data-target="ultimas-saidas"><i class="fas fa-clock"></i>Últimas Saídas</button></details>
+        <details class="nav-group" data-sidebar-group="consultas"><summary class="nav-label">Consultas</summary><button class="nav-item" type="button" data-target="consulta-saida"><i class="fas fa-arrow-right-from-bracket"></i>Saída antecipada</button><button class="nav-item" type="button" data-target="consulta-estagio"><i class="fas fa-user-tie"></i>Saídas para estágio</button><button class="nav-item" type="button" data-target="consulta-ausencias"><i class="fas fa-user-xmark"></i>Ausências Registradas</button><button class="nav-item" type="button" data-target="atrasos"><i class="fas fa-clock-rotate-left"></i>Atrasos registrados</button><button class="nav-item" type="button" data-target="historico-atrasos"><i class="fas fa-clock-rotate-left"></i>Histórico de atrasos</button><button class="nav-item" type="button" data-target="ultimas-saidas"><i class="fas fa-clock"></i>Últimas Saídas</button></details>
         <details class="nav-group" data-sidebar-group="relatorios"><summary class="nav-label">Relatórios</summary><button class="nav-item report-nav" type="button" data-target="relatorio-dia"><i class="fas fa-clock-rotate-left"></i>Atrasos registrados</button><button class="nav-item report-nav" type="button" data-target="relatorio-saida"><i class="fas fa-arrow-right-from-bracket"></i>Saídas antecipadas</button><button class="nav-item report-nav" type="button" data-target="relatorio-estagio"><i class="fas fa-user-tie"></i>Saídas para estágio</button><a class="nav-item report-nav" href="relatorios/pre_estagio.php" target="_blank" rel="noopener"><i class="fas fa-graduation-cap"></i>Preparação para estágio</a><button class="nav-item report-nav" type="button" data-target="qrcode"><i class="fas fa-qrcode"></i>QR Code</button></details>
         <?php } ?>
   </nav>
@@ -6202,7 +6204,17 @@ input[type="radio"] {
           </div>
           <div>
             <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Consultar Atrasos</h3>
-            <p class="text-sm text-gray-500">Valide atrasos, consulte o histórico por turma e imprima os registros</p>
+            <p class="text-sm text-gray-500">Valide atrasos e acompanhe os registros do dia</p>
+          </div>
+        </a>
+
+        <a href="#" data-section-target="historico-atrasos" class="menu-card reception-card-delay-history p-6 flex items-center gap-4 group">
+          <div class="menu-icon">
+            <i class="fas fa-clock-rotate-left text-xl"></i>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">Histórico de atrasos</h3>
+            <p class="text-sm text-gray-500">Consulte atrasos anteriores por turma, aluno, data e situação</p>
           </div>
         </a>
 
@@ -9720,21 +9732,30 @@ class TurmaSelector {
 </script>
 
 <style>
+    #historico-atrasos { max-width:none; width:100%; margin:0; }
+    .reception-interface #historico-atrasos { margin-bottom:28px; }
+    #historico-atrasos .delays-shell { min-height:0; }
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
     #atrasos .delay-card-header.turma-1a, #atrasos .delay-card-header.turma-2a { background:#cf2035; }
     #atrasos .delay-card-header.turma-1b, #atrasos .delay-card-header.turma-2b { background:#3854d9; }
     #atrasos .delay-card-header.turma-1c, #atrasos .delay-card-header.turma-2c { background:#0db5d0; }
-    #atrasos .delay-history-card.turma-1a .delay-history-card-header, #atrasos .delay-history-card.turma-2a .delay-history-card-header { background:#cf2035; }
-    #atrasos .delay-history-card.turma-1b .delay-history-card-header, #atrasos .delay-history-card.turma-2b .delay-history-card-header { background:#3854d9; }
-    #atrasos .delay-history-card.turma-1c .delay-history-card-header, #atrasos .delay-history-card.turma-2c .delay-history-card-header { background:#0b9bb2; }
-    #atrasos .delays-year-filter { display:inline-flex; align-items:center; gap:10px; padding:8px 11px; border:1px solid #a9d8b8; border-radius:11px; background:linear-gradient(135deg,#f4fbf6,#e7f5eb); color:#16482d; box-shadow:0 3px 10px #123b2018; font-size:14px; font-weight:700; }
-    #atrasos .delays-year-filter i { color:#08723a; }
-    #atrasos .delays-year-filter select { min-width:145px; min-height:42px; padding:0 32px 0 12px; border:2px solid #08723a; border-radius:8px; background-color:#fff; color:#173d29; box-shadow:0 2px 5px #123b2014; font:700 14px 'Inter',sans-serif; cursor:pointer; }
-    #atrasos .delays-year-filter select:focus-visible { outline:3px solid #008c4540; outline-offset:2px; border-color:#005c2e; }
-    #atrasos .delay-card[hidden], #atrasos .delay-history-card[hidden] { display:none !important; }
-    html[data-theme="dark"] #atrasos .delays-year-filter { border-color:#43795a; background:linear-gradient(135deg,#1d3427,#263c30); color:#e4f2e8; }
-    html[data-theme="dark"] #atrasos .delays-year-filter i { color:#8ee0a9; }
-    html[data-theme="dark"] #atrasos .delays-year-filter select { border-color:#70ca8b; background-color:#202a34; color:#eef3f6; }
+    #historico-atrasos .delay-history-card.turma-1a .delay-history-card-header, #historico-atrasos .delay-history-card.turma-2a .delay-history-card-header, #historico-atrasos .delay-history-card.turma-3a .delay-history-card-header { background:#cf2035; }
+    #historico-atrasos .delay-history-card.turma-1b .delay-history-card-header, #historico-atrasos .delay-history-card.turma-2b .delay-history-card-header, #historico-atrasos .delay-history-card.turma-3b .delay-history-card-header { background:#3854d9; }
+    #historico-atrasos .delay-history-card.turma-1c .delay-history-card-header, #historico-atrasos .delay-history-card.turma-2c .delay-history-card-header, #historico-atrasos .delay-history-card.turma-3c .delay-history-card-header { background:#0b9bb2; }
+    #historico-atrasos .delay-history-card.turma-1d .delay-history-card-header, #historico-atrasos .delay-history-card.turma-2d .delay-history-card-header, #historico-atrasos .delay-history-card.turma-3d .delay-history-card-header { background:#59636b; }
+    #atrasos .delays-year-filter, #historico-atrasos .delays-year-filter { display:inline-flex; align-items:center; gap:10px; padding:8px 11px; border:1px solid #a9d8b8; border-radius:11px; background:linear-gradient(135deg,#f4fbf6,#e7f5eb); color:#16482d; box-shadow:0 3px 10px #123b2018; font-size:14px; font-weight:700; }
+    #atrasos .delays-year-filter i, #historico-atrasos .delays-year-filter i { color:#08723a; }
+    #atrasos .delays-year-filter select, #historico-atrasos .delays-year-filter select { min-width:145px; min-height:42px; padding:0 32px 0 12px; border:2px solid #08723a; border-radius:8px; background-color:#fff; color:#173d29; box-shadow:0 2px 5px #123b2014; font:700 14px 'Inter',sans-serif; cursor:pointer; }
+    #atrasos .delays-year-filter select:focus-visible, #historico-atrasos .delays-year-filter select:focus-visible { outline:3px solid #008c4540; outline-offset:2px; border-color:#005c2e; }
+    #atrasos .delay-card[hidden], #historico-atrasos .delay-history-card[hidden] { display:none !important; }
+    #historico-atrasos .delay-history { margin-top:0; padding-top:0; border-top:0; }
+    #historico-atrasos .delay-history-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; margin:4px 0 24px; }
+    #historico-atrasos .delay-history-heading h1 { margin:0; }
+    #historico-atrasos .delay-history-note { margin:7px 0 0; }
+    @media(max-width:640px) { #historico-atrasos .delay-history-heading { align-items:flex-start; flex-direction:column; } }
+    html[data-theme="dark"] #atrasos .delays-year-filter, html[data-theme="dark"] #historico-atrasos .delays-year-filter { border-color:#43795a; background:linear-gradient(135deg,#1d3427,#263c30); color:#e4f2e8; }
+    html[data-theme="dark"] #atrasos .delays-year-filter i, html[data-theme="dark"] #historico-atrasos .delays-year-filter i { color:#8ee0a9; }
+    html[data-theme="dark"] #atrasos .delays-year-filter select, html[data-theme="dark"] #historico-atrasos .delays-year-filter select { border-color:#70ca8b; background-color:#202a34; color:#eef3f6; }
 </style>
 <section class="page-section" id="atrasos" aria-label="Atrasos registrados">
     <div class="delays-shell">
@@ -9743,7 +9764,7 @@ class TurmaSelector {
                 <h1 class="delays-title gradient-text">Atrasos registrados</h1>
                 <time class="delays-clock" id="atrasos-relogio" aria-live="off"></time>
                 <label class="delays-year-filter" for="atrasos-filtro-ano"><i class="fas fa-filter" aria-hidden="true"></i><span>Filtrar atrasos</span>
-                    <select id="atrasos-filtro-ano">
+                    <select id="atrasos-filtro-ano" data-delay-year-filter>
                         <option value="todos">Geral</option>
                         <option value="1">1º Ano</option>
                         <option value="2">2º Ano</option>
@@ -9819,9 +9840,26 @@ class TurmaSelector {
             <?php } ?>
         </div>
 
+    </div>
+</section>
+
+<section class="page-section<?= $sectionInicial === 'historico-atrasos' ? ' active' : '' ?>" id="historico-atrasos" aria-label="Histórico de atrasos">
+    <div class="delays-shell">
         <section class="delay-history" aria-labelledby="historico-atrasos-titulo">
-            <h2 id="historico-atrasos-titulo">Histórico de atrasos</h2>
-            <p class="delay-history-note">Consulte os registros anteriores por turma, aluno, data e situação.</p>
+            <header class="delay-history-heading">
+                <div>
+                    <h1 class="delays-title gradient-text" id="historico-atrasos-titulo">Histórico de atrasos</h1>
+                    <p class="delay-history-note">Consulte registros anteriores por turma, aluno, data e situação.</p>
+                </div>
+                <label class="delays-year-filter" for="historico-atrasos-filtro-ano"><i class="fas fa-filter" aria-hidden="true"></i><span>Filtrar atrasos</span>
+                    <select id="historico-atrasos-filtro-ano" data-delay-year-filter>
+                        <option value="todos">Geral</option>
+                        <option value="1">1º Ano</option>
+                        <option value="2">2º Ano</option>
+                        <option value="3">3º Ano</option>
+                    </select>
+                </label>
+            </header>
             <div class="delay-history-grid" id="delay-history-grid">
                 <?php foreach ($turmasAtraso as $turmaAcesso) {
                     $idTurma = (int) $turmaAcesso['id_turma'];
@@ -9882,6 +9920,8 @@ class TurmaSelector {
             </div>
         </section>
     </div>
+</section>
+
     <dialog class="delay-dialog" id="delay-details-dialog" aria-labelledby="delay-dialog-title">
         <div class="delay-dialog-header">
             <div class="delay-dialog-heading"><div><h2 id="delay-dialog-title">Validar atraso</h2><p id="delay-dialog-subtitle">Confirme o registro do atraso e informe sua avaliação.</p></div></div>
@@ -9920,29 +9960,32 @@ class TurmaSelector {
             const prazoValidacaoPorBanco = <?= $validacaoAtrasosDisponivel ? 'true' : 'false' ?>;
             const limiteValidacaoNoCliente = Date.now() + <?= $segundosAteLimiteValidacao ?> * 1000;
             window.atrasosPodemSerValidados = () => prazoValidacaoPorBanco && Date.now() < limiteValidacaoNoCliente;
-            const filtroAno = document.getElementById('atrasos-filtro-ano');
+            const filtrosAno = Array.from(document.querySelectorAll('[data-delay-year-filter]'));
             const chaveFiltroAno = 'sgtm-delay-year-filter';
+            const anosValidos = ['todos', '1', '2', '3'];
+            let anoSelecionado = 'todos';
             try {
                 const filtroSalvo = localStorage.getItem(chaveFiltroAno);
-                if (['todos', '1', '2', '3'].includes(filtroSalvo)) filtroAno.value = filtroSalvo;
+                if (anosValidos.includes(filtroSalvo)) anoSelecionado = filtroSalvo;
             } catch (error) {
                 console.warn('Não foi possível restaurar o filtro de atrasos:', error);
             }
             const aplicarFiltroAno = () => {
-                const anoSelecionado = filtroAno.value;
+                filtrosAno.forEach((filtro) => { filtro.value = anoSelecionado; });
                 document.querySelectorAll('.delay-card[data-delay-year], .delay-history-card[data-history-year]').forEach((card) => {
                     const anoCard = card.dataset.delayYear || card.dataset.historyYear;
                     card.hidden = anoSelecionado !== 'todos' && anoCard !== anoSelecionado;
                 });
             };
-            filtroAno?.addEventListener('change', () => {
+            filtrosAno.forEach((filtro) => filtro.addEventListener('change', () => {
+                anoSelecionado = anosValidos.includes(filtro.value) ? filtro.value : 'todos';
                 aplicarFiltroAno();
                 try {
-                    localStorage.setItem(chaveFiltroAno, filtroAno.value);
+                    localStorage.setItem(chaveFiltroAno, anoSelecionado);
                 } catch (error) {
                     console.warn('Não foi possível salvar o filtro de atrasos:', error);
                 }
-            });
+            }));
             aplicarFiltroAno();
             const atualizarBotoesValidacao = () => {
                 const prazoAberto = window.atrasosPodemSerValidados();
@@ -10230,7 +10273,6 @@ class TurmaSelector {
             });
         })();
     </script>
-</section>
 
 <section class="page-section" id="ultimas-saidas" aria-label="Últimas Saídas">
 
@@ -11497,7 +11539,7 @@ function normalizeStudentSearch(value) {
   const activate = (target, selectedItem, addHistoryEntry = true) => {
     navItems.forEach(nav => nav.classList.remove('active'));
     sections.forEach(section => section.classList.remove('active'));
-    document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos');
+    document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos' || target === 'historico-atrasos');
     const receptionHomeLink = document.querySelector('[data-reception-home]');
     if (receptionHomeLink) receptionHomeLink.hidden = target === 'inicio';
     selectedItem?.classList.add('active');
@@ -13821,14 +13863,14 @@ html[data-theme="lula"] .delay-history-entry-action:not(.delay-detail-button-sec
 }
 
 #atrasos .delay-entry .delay-detail-button-secondary,
-#atrasos .delay-history-entry .delay-detail-button-secondary {
+#historico-atrasos .delay-history-entry .delay-detail-button-secondary {
     border-color: #6b7280;
     background: #6b7280;
     color: #fff;
 }
 
 #atrasos .delay-entry .delay-detail-button-secondary:hover,
-#atrasos .delay-history-entry .delay-detail-button-secondary:hover {
+#historico-atrasos .delay-history-entry .delay-detail-button-secondary:hover {
     border-color: #4b5563;
     background: #4b5563;
     color: #fff;
