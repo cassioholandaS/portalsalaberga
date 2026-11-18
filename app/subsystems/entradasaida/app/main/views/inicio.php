@@ -5438,6 +5438,7 @@ input[type="radio"] {
     .reception-interface.reception-scroll-enabled .main-content {
         overflow-x: hidden;
         overflow-y: auto;
+        padding-bottom: 0;
         overscroll-behavior-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -5600,6 +5601,10 @@ input[type="radio"] {
         color: #59665f;
         text-align: center;
         font-size: 11px;
+    }
+
+    .reception-interface.reception-scroll-enabled .reception-footer {
+        margin-top: 24px;
     }
 
     .reception-footer::before {
@@ -9733,7 +9738,6 @@ class TurmaSelector {
 
 <style>
     #historico-atrasos { max-width:none; width:100%; margin:0; }
-    .reception-interface #historico-atrasos { margin-bottom:28px; }
     #historico-atrasos .delays-shell { min-height:0; }
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
     #atrasos .delay-card-header.turma-1a, #atrasos .delay-card-header.turma-2a { background:#cf2035; }
@@ -11540,6 +11544,7 @@ function normalizeStudentSearch(value) {
     navItems.forEach(nav => nav.classList.remove('active'));
     sections.forEach(section => section.classList.remove('active'));
     document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos' || target === 'historico-atrasos');
+    document.body.classList.toggle('reception-history-active', target === 'historico-atrasos');
     const receptionHomeLink = document.querySelector('[data-reception-home]');
     if (receptionHomeLink) receptionHomeLink.hidden = target === 'inicio';
     selectedItem?.classList.add('active');
