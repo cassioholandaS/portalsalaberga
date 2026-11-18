@@ -5603,10 +5603,6 @@ input[type="radio"] {
         font-size: 11px;
     }
 
-    .reception-interface.reception-scroll-enabled .reception-footer {
-        margin-top: 24px;
-    }
-
     .reception-footer::before {
         position: absolute;
         top: 0;
@@ -9738,7 +9734,10 @@ class TurmaSelector {
 
 <style>
     #historico-atrasos { max-width:none; width:100%; margin:0; }
+    .page-section#atrasos .delays-shell,
+    .page-section#historico-atrasos .delays-shell { margin-bottom:24px; }
     #historico-atrasos .delays-shell { min-height:0; }
+    body:not(.reception-interface).delay-screen-active .main-content { padding-bottom:3.5rem; }
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
     #atrasos .delay-card-header.turma-1a, #atrasos .delay-card-header.turma-2a { background:#cf2035; }
     #atrasos .delay-card-header.turma-1b, #atrasos .delay-card-header.turma-2b { background:#3854d9; }
@@ -11544,7 +11543,7 @@ function normalizeStudentSearch(value) {
     navItems.forEach(nav => nav.classList.remove('active'));
     sections.forEach(section => section.classList.remove('active'));
     document.body.classList.toggle('reception-scroll-enabled', target === 'atrasos' || target === 'historico-atrasos');
-    document.body.classList.toggle('reception-history-active', target === 'historico-atrasos');
+    document.body.classList.toggle('delay-screen-active', target === 'atrasos' || target === 'historico-atrasos');
     const receptionHomeLink = document.querySelector('[data-reception-home]');
     if (receptionHomeLink) receptionHomeLink.hidden = target === 'inicio';
     selectedItem?.classList.add('active');
