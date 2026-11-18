@@ -642,6 +642,7 @@
     .dashboard-panel--green { border-left-color:var(--c3); }
     .dashboard-panel--green::after { background:rgba(0,166,81,0.06); }
     .dashboard-guide { display:flex; justify-content:flex-start; margin-top:18px; }
+    .dashboard-guide--pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
     .dashboard-guide-link {
       display:flex; align-items:center; gap:15px; width:min(100%,540px); min-height:86px;
       padding:15px 20px; border:1px solid var(--border); border-left:5px solid var(--c3);
@@ -649,6 +650,8 @@
       box-shadow:0 5px 18px rgba(7,91,45,0.05);
       transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
+    .dashboard-guide--pair .dashboard-guide-link { width:100%; min-width:0; gap:10px; padding:14px; }
+    .dashboard-guide--pair .dashboard-guide-title { overflow-wrap:anywhere; }
     .dashboard-guide-link:hover { transform:translateY(-2px); border-color:rgba(0,166,81,.3); box-shadow:0 10px 24px rgba(7,91,45,.1); }
     .dashboard-guide-link:focus-visible { outline:2px solid var(--c3); outline-offset:3px; }
     .dashboard-guide-icon {
@@ -662,6 +665,7 @@
       display:inline-flex; align-items:center; gap:6px; margin-left:auto; padding-left:8px;
       color:var(--c1); font-size:12px; font-weight:700; white-space:nowrap;
     }
+    @media (max-width:900px) { .dashboard-guide--pair { grid-template-columns:1fr; } }
     .diag-list { display:flex; flex-direction:column; gap:15px; padding-top:2px; }
     .diag-item { position:relative; }
     .diag-item-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px; }
@@ -1933,17 +1937,45 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
         </div>
       </div>
       </div>
-      <?php if ($tipoUsuario === 'apoio'): ?>
-      <?php $arquivoGuiaApoio = dirname(__DIR__, 2) . '/docs/Guia_usuario_conectePCD_apoio.pdf'; ?>
-      <div class="dashboard-guide">
-        <a class="dashboard-guide-link" href="docs/Guia_usuario_conectePCD_apoio.pdf?v=<?= filemtime($arquivoGuiaApoio) ?>" target="_blank" rel="noopener" aria-label="Abrir o guia do usuário do perfil Apoio em uma nova aba">
+      <?php
+      $guiasInicio = [];
+      if ($tipoUsuario === 'apoio') {
+        $guiasInicio[] = [
+          'arquivo' => 'Guia_usuario_conectePCD_apoio.pdf',
+          'titulo' => 'Guia do usuário',
+          'descricao' => 'Passo a passo ilustrado para o perfil Apoio',
+          'rotulo' => 'perfil Apoio',
+        ];
+      } elseif ($tipoUsuario === 'aee') {
+        $guiasInicio = [
+          [
+            'arquivo' => 'Guia_usuario_conectePCD_apoio.pdf',
+            'titulo' => 'Guia do usuário - Apoio',
+            'descricao' => 'Passo a passo ilustrado para o perfil Apoio',
+            'rotulo' => 'perfil Apoio',
+          ],
+          [
+            'arquivo' => 'Guia_usuario_conectePCD_aee.pdf',
+            'titulo' => 'Guia do usuário - AEE',
+            'descricao' => 'Passo a passo ilustrado para o perfil AEE',
+            'rotulo' => 'perfil AEE',
+          ],
+        ];
+      }
+      ?>
+      <?php if ($guiasInicio): ?>
+      <div class="dashboard-guide<?= count($guiasInicio) > 1 ? ' dashboard-guide--pair' : '' ?>">
+        <?php foreach ($guiasInicio as $guiaInicio): ?>
+        <?php $arquivoGuiaInicio = dirname(__DIR__, 2) . '/docs/' . $guiaInicio['arquivo']; ?>
+        <a class="dashboard-guide-link" href="docs/<?= htmlspecialchars($guiaInicio['arquivo'], ENT_QUOTES, 'UTF-8') ?>?v=<?= filemtime($arquivoGuiaInicio) ?>" target="_blank" rel="noopener" aria-label="Abrir o guia do usuário do <?= htmlspecialchars($guiaInicio['rotulo'], ENT_QUOTES, 'UTF-8') ?> em uma nova aba">
           <span class="dashboard-guide-icon" aria-hidden="true"><i class="bi bi-book-half"></i></span>
           <span class="dashboard-guide-copy">
-            <span class="dashboard-guide-title">Guia do usuário</span>
-            <span class="dashboard-guide-description">Passo a passo ilustrado para o perfil Apoio</span>
+            <span class="dashboard-guide-title"><?= htmlspecialchars($guiaInicio['titulo'], ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="dashboard-guide-description"><?= htmlspecialchars($guiaInicio['descricao'], ENT_QUOTES, 'UTF-8') ?></span>
           </span>
           <span class="dashboard-guide-action">Abrir guia <i class="bi bi-arrow-up-right" aria-hidden="true"></i></span>
         </a>
+        <?php endforeach; ?>
       </div>
       <?php endif; ?>
     </div>
