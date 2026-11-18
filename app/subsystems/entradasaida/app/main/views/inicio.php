@@ -9737,7 +9737,23 @@ class TurmaSelector {
     .page-section#atrasos .delays-shell,
     .page-section#historico-atrasos .delays-shell { margin-bottom:24px; }
     #historico-atrasos .delays-shell { min-height:0; }
-    body:not(.reception-interface).delay-screen-active .main-content { padding-bottom:3.5rem; }
+    body:not(.reception-interface).delay-screen-active .main-content {
+        height:calc(100dvh - 5rem);
+        min-height:0;
+        overflow-y:auto;
+        padding-bottom:0;
+    }
+    body:not(.reception-interface).delay-screen-active .page-section#atrasos .delays-shell,
+    body:not(.reception-interface).delay-screen-active .page-section#historico-atrasos .delays-shell { margin-bottom:0; }
+    @media(min-width:1101px) {
+        body.delay-screen-active:not(.delay-year-general) .main-content { overflow-y:hidden; }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-card-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-card-filters > * { min-width:0; }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-entry { grid-template-columns:minmax(0,1fr); }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-entry-meta { flex-wrap:wrap; white-space:normal; }
+        body.delay-screen-active:not(.delay-year-general) #historico-atrasos .delay-history-entry-actions { grid-column:auto; }
+    }
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
     #atrasos .delay-card-header.turma-1a, #atrasos .delay-card-header.turma-2a { background:#cf2035; }
     #atrasos .delay-card-header.turma-1b, #atrasos .delay-card-header.turma-2b { background:#3854d9; }
@@ -9975,6 +9991,7 @@ class TurmaSelector {
             }
             const aplicarFiltroAno = () => {
                 filtrosAno.forEach((filtro) => { filtro.value = anoSelecionado; });
+                document.body.classList.toggle('delay-year-general', anoSelecionado === 'todos');
                 document.querySelectorAll('.delay-card[data-delay-year], .delay-history-card[data-history-year]').forEach((card) => {
                     const anoCard = card.dataset.delayYear || card.dataset.historyYear;
                     card.hidden = anoSelecionado !== 'todos' && anoCard !== anoSelecionado;
@@ -9983,6 +10000,10 @@ class TurmaSelector {
             filtrosAno.forEach((filtro) => filtro.addEventListener('change', () => {
                 anoSelecionado = anosValidos.includes(filtro.value) ? filtro.value : 'todos';
                 aplicarFiltroAno();
+                if (anoSelecionado !== 'todos' && document.querySelector('#atrasos.active, #historico-atrasos.active')) {
+                    const mainContent = document.querySelector('main.main-content');
+                    if (mainContent) mainContent.scrollTop = 0;
+                }
                 try {
                     localStorage.setItem(chaveFiltroAno, anoSelecionado);
                 } catch (error) {
