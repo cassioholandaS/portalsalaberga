@@ -128,6 +128,44 @@ class RestrictionModel extends connect
             throw new InvalidArgumentException('A turma selecionada é inválida.');
         }
 
+        $this->salvarRestricoesParaTurmas([$idTurma], $idsRestricoes);
+    }
+
+    public function salvarRestricoesPorEscopo($escopo, $valor, array $idsRestricoes)
+    {
+        if (!is_string($escopo)) {
+            throw new InvalidArgumentException('O escopo selecionado é inválido.');
+        }
+
+        if ($escopo === 'turma') {
+            $idTurma = filter_var($valor, FILTER_VALIDATE_INT);
+            if (!$idTurma || $idTurma < 1) {
+                throw new InvalidArgumentException('A turma selecionada é inválida.');
+            }
+            $turmas = $this->connect->prepare('SELECT id_turma FROM turma WHERE id_turma = :id_turma');
+            $turmas->execute(['id_turma' => $idTurma]);
+        } elseif ($escopo === 'ano') {
+            if (!is_string($valor) || !in_array($valor, ['1', '2', '3'], true)) {
+                throw new InvalidArgumentException('O ano selecionado é inválido.');
+            }
+            $turmas = $this->connect->prepare('SELECT id_turma FROM turma WHERE ano = :ano');
+            $turmas->execute(['ano' => $valor . ' ano']);
+        } elseif ($escopo === 'todos') {
+            $turmas = $this->connect->query('SELECT id_turma FROM turma ORDER BY id_turma');
+        } else {
+            throw new InvalidArgumentException('O escopo selecionado é inválido.');
+        }
+
+        $idsTurmas = array_map('intval', $turmas->fetchAll(PDO::FETCH_COLUMN));
+        if (!$idsTurmas) {
+            throw new InvalidArgumentException('Nenhuma turma foi encontrada para o escopo selecionado.');
+        }
+
+        $this->salvarRestricoesParaTurmas($idsTurmas, $idsRestricoes);
+    }
+
+    private function salvarRestricoesParaTurmas(array $idsTurmas, array $idsRestricoes)
+    {
         $idsRestricoes = array_values(array_unique(array_map('intval', $idsRestricoes)));
         $idsRestricoes = array_filter($idsRestricoes, static function ($id) {
             return $id > 0;
@@ -135,10 +173,17 @@ class RestrictionModel extends connect
 
         $this->connect->beginTransaction();
         try {
-            $turma = $this->connect->prepare('SELECT 1 FROM turma WHERE id_turma = :id');
-            $turma->execute(['id' => $idTurma]);
-            if (!$turma->fetchColumn()) {
-                throw new InvalidArgumentException('A turma selecionada não foi encontrada.');
+            if (!$idsTurmas) {
+                throw new InvalidArgumentException('Nenhuma turma foi selecionada.');
+            }
+
+            $placeholdersTurmas = implode(',', array_fill(0, count($idsTurmas), '?'));
+            $turmasExistentes = $this->connect->prepare(
+                'SELECT COUNT(*) FROM turma WHERE id_turma IN (' . $placeholdersTurmas . ')'
+            );
+            $turmasExistentes->execute($idsTurmas);
+            if ((int) $turmasExistentes->fetchColumn() !== count($idsTurmas)) {
+                throw new InvalidArgumentException('Uma das turmas selecionadas não foi encontrada.');
             }
 
             if ($idsRestricoes) {
@@ -152,13 +197,17 @@ class RestrictionModel extends connect
                 }
             }
 
-            $excluir = $this->connect->prepare('DELETE FROM restricao_turma WHERE id_turma = :id_turma');
-            $excluir->execute(['id_turma' => $idTurma]);
+            $excluir = $this->connect->prepare(
+                'DELETE FROM restricao_turma WHERE id_turma IN (' . $placeholdersTurmas . ')'
+            );
+            $excluir->execute($idsTurmas);
             $inserir = $this->connect->prepare(
                 'INSERT INTO restricao_turma (id_restricao, id_turma) VALUES (:id_restricao, :id_turma)'
             );
-            foreach ($idsRestricoes as $idRestricao) {
-                $inserir->execute(['id_restricao' => $idRestricao, 'id_turma' => $idTurma]);
+            foreach ($idsTurmas as $idTurma) {
+                foreach ($idsRestricoes as $idRestricao) {
+                    $inserir->execute(['id_restricao' => $idRestricao, 'id_turma' => $idTurma]);
+                }
             }
             $this->connect->commit();
         } catch (Throwable $e) {

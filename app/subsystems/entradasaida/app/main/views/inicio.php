@@ -9721,6 +9721,12 @@ class TurmaSelector {
 
 <style>
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
+    #atrasos .delays-year-filter { display:inline-flex; align-items:center; gap:8px; color:#53615a; font-size:13px; font-weight:600; }
+    #atrasos .delays-year-filter select { min-height:40px; padding:0 34px 0 12px; border:1px solid #d6e0e8; border-radius:8px; background:#fff; color:#243c4e; font:500 13px 'Inter',sans-serif; }
+    #atrasos .delays-year-filter select:focus { outline:2px solid #008c4540; border-color:#008c45; }
+    #atrasos .delay-card[hidden], #atrasos .delay-history-card[hidden] { display:none !important; }
+    html[data-theme="dark"] #atrasos .delays-year-filter { color:#d5e0e7; }
+    html[data-theme="dark"] #atrasos .delays-year-filter select { border-color:#536575; background:#202a34; color:#eef3f6; }
 </style>
 <section class="page-section" id="atrasos" aria-label="Atrasos registrados">
     <div class="delays-shell">
@@ -9728,6 +9734,14 @@ class TurmaSelector {
             <div class="delays-topline">
                 <h1 class="delays-title gradient-text">Atrasos registrados</h1>
                 <time class="delays-clock" id="atrasos-relogio" aria-live="off"></time>
+                <label class="delays-year-filter" for="atrasos-filtro-ano">Filtrar por
+                    <select id="atrasos-filtro-ano">
+                        <option value="todos">Geral</option>
+                        <option value="1">1º Ano</option>
+                        <option value="2">2º Ano</option>
+                        <option value="3">3º Ano</option>
+                    </select>
+                </label>
             </div>
             <p class="delays-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Registros entre 07:40 e 11:40 são considerados atraso.</p>
             <p data-qr-reader-status class="mt-2 max-w-full break-all text-sm text-gray-500" role="status" aria-live="polite">Leitor pronto para receber um crachá.</p>
@@ -9738,12 +9752,15 @@ class TurmaSelector {
         <div class="delays-grid">
             <?php foreach ($turmasAtraso as $turmaAcesso) {
                 $idTurma = (int) $turmaAcesso['id_turma'];
+                $numeroAnoAtraso = preg_match('/^([123])\s*ano$/i', trim((string) $turmaAcesso['ano']), $anoAtrasoMatch)
+                    ? $anoAtrasoMatch[1]
+                    : 'outros';
                 $anoTurmaAtraso = preg_replace('/\s+ano$/i', 'º Ano', (string) $turmaAcesso['ano']);
                 $letraTurmaAtraso = strtoupper((string) $turmaAcesso['turma']);
                 $rotuloTurmaAtraso = $anoTurmaAtraso . ' ' . $letraTurmaAtraso;
             ?>
                 <?php $registrosTurma = $atrasosPorTurma[$idTurma]; ?>
-                <article class="delay-card" aria-label="Atrasos do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
+                <article class="delay-card" data-delay-year="<?= htmlspecialchars($numeroAnoAtraso, ENT_QUOTES, 'UTF-8') ?>" aria-label="Atrasos do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
                     <div class="delay-card-header turma-<?= substr((string) $turmaAcesso['ano'], 0, 1) . strtolower($letraTurmaAtraso) ?>">
                         <div class="delay-card-heading">
                             <h2><i class="fas fa-users" aria-hidden="true"></i><span><?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?></span></h2>
@@ -9800,11 +9817,14 @@ class TurmaSelector {
             <div class="delay-history-grid" id="delay-history-grid">
                 <?php foreach ($turmasAtraso as $turmaAcesso) {
                     $idTurma = (int) $turmaAcesso['id_turma'];
+                    $numeroAnoAtraso = preg_match('/^([123])\s*ano$/i', trim((string) $turmaAcesso['ano']), $anoAtrasoMatch)
+                        ? $anoAtrasoMatch[1]
+                        : 'outros';
                     $anoTurmaAtraso = preg_replace('/\s+ano$/i', 'º Ano', (string) $turmaAcesso['ano']);
                     $letraTurmaAtraso = strtoupper((string) $turmaAcesso['turma']);
                     $rotuloTurmaAtraso = $anoTurmaAtraso . ' ' . $letraTurmaAtraso;
                 ?>
-                    <article class="delay-history-card turma-<?= substr((string) $turmaAcesso['ano'], 0, 1) . strtolower($letraTurmaAtraso) ?>" data-history-card="<?= $idTurma ?>">
+                    <article class="delay-history-card turma-<?= substr((string) $turmaAcesso['ano'], 0, 1) . strtolower($letraTurmaAtraso) ?>" data-history-card="<?= $idTurma ?>" data-history-year="<?= htmlspecialchars($numeroAnoAtraso, ENT_QUOTES, 'UTF-8') ?>">
                         <header class="delay-history-card-header"><h3><i class="fas fa-users" aria-hidden="true"></i> <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?></h3><span class="delay-history-count" data-history-count><?= count($historicoPorTurma[$idTurma]) ?></span></header>
                         <div class="delay-history-card-filters" aria-label="Filtros do <?= htmlspecialchars($rotuloTurmaAtraso, ENT_QUOTES, 'UTF-8') ?>">
                             <label class="delay-history-filter">Aluno<input type="search" data-history-filter-name placeholder="Buscar aluno"></label>
@@ -9892,6 +9912,16 @@ class TurmaSelector {
             const prazoValidacaoPorBanco = <?= $validacaoAtrasosDisponivel ? 'true' : 'false' ?>;
             const limiteValidacaoNoCliente = Date.now() + <?= $segundosAteLimiteValidacao ?> * 1000;
             window.atrasosPodemSerValidados = () => prazoValidacaoPorBanco && Date.now() < limiteValidacaoNoCliente;
+            const filtroAno = document.getElementById('atrasos-filtro-ano');
+            const aplicarFiltroAno = () => {
+                const anoSelecionado = filtroAno.value;
+                document.querySelectorAll('.delay-card[data-delay-year], .delay-history-card[data-history-year]').forEach((card) => {
+                    const anoCard = card.dataset.delayYear || card.dataset.historyYear;
+                    card.hidden = anoSelecionado !== 'todos' && anoCard !== anoSelecionado;
+                });
+            };
+            filtroAno?.addEventListener('change', aplicarFiltroAno);
+            aplicarFiltroAno();
             const atualizarBotoesValidacao = () => {
                 const prazoAberto = window.atrasosPodemSerValidados();
                 document.querySelectorAll('[data-delay-validation]').forEach((button) => {

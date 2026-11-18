@@ -112,6 +112,20 @@ if (isset($_POST['restriction_action'])) {
             }
             $restrictionModel->salvarRestricoesDaTurma($_POST['id_turma'] ?? null, $ids);
             $status = 'assigned';
+        } elseif ($action === 'assign_scope') {
+            $ids = $_POST['restricoes'] ?? [];
+            if (!is_array($ids)) {
+                throw new InvalidArgumentException('A seleção de restrições é inválida.');
+            }
+            foreach ($ids as $restrictionId) {
+                if (!is_string($restrictionId) || !ctype_digit($restrictionId)) {
+                    throw new InvalidArgumentException('A seleção de restrições é inválida.');
+                }
+            }
+            $scope = $_POST['restriction_scope'] ?? '';
+            $value = $_POST['restriction_target'] ?? '';
+            $restrictionModel->salvarRestricoesPorEscopo($scope, $value, $ids);
+            $status = 'assigned';
         } else {
             throw new InvalidArgumentException('Ação inválida.');
         }

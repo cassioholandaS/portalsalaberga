@@ -5,7 +5,7 @@ $restrictionAssignments = isset($restrictionAssignments) && is_array($restrictio
 $restrictionModelError = isset($restrictionModelError) && $restrictionModelError;
 $restrictionMessages = [
     'success' => 'Restrição salva com sucesso.',
-    'assigned' => 'Restrições da turma atualizadas.',
+    'assigned' => 'Restrições atribuídas ao escopo selecionado.',
     'deleted' => 'Restrição excluída.',
     'invalid' => 'Confira os dados da restrição e tente novamente.',
     'error' => 'Não foi possível salvar as alterações. Confira a instalação da migration.'
@@ -29,8 +29,10 @@ $restrictionStatus = is_string($_GET['restriction_status'] ?? null) ? $_GET['res
 .restriction-class-assignment .restriction-class-actions{display:block;margin-top:12px}.restriction-class-assignment .restriction-class-actions .restriction-tag{display:none}.restriction-class-assignment .restriction-class-actions .restriction-primary{display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;gap:8px;padding:0 16px;font-size:13px}
 @media(prefers-reduced-motion:reduce){#restricoes.page-section.active{animation:none}}
 .restriction-class-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.restriction-bulk-form{margin-bottom:18px}.restriction-bulk-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.restriction-bulk-fields .restriction-field[hidden]{display:none!important}.restriction-bulk-form .restriction-assignment{grid-template-columns:repeat(3,minmax(0,1fr));max-height:190px;overflow:auto;padding:12px;border:1px solid #e2eaf0;border-radius:8px}.restriction-bulk-note{margin:0 0 12px;color:#597084;font-size:12px;line-height:1.5}
 @media(max-width:900px){.restriction-class-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.restriction-class-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.restriction-bulk-fields,.restriction-bulk-form .restriction-assignment{grid-template-columns:1fr}}
 </style>
 <section class="page-section restriction-page" id="restricoes" aria-label="Restrições">
     <header class="restriction-heading">
@@ -139,6 +141,55 @@ $restrictionStatus = is_string($_GET['restriction_status'] ?? null) ? $_GET['res
             <?php if (empty($restrictionList)) { ?>
                 <div class="restriction-empty">Crie uma restrição na aba “Regras” antes de atribuí-la às turmas.</div>
             <?php } else { ?>
+                <form class="restriction-form restriction-bulk-form" action="../control/control_index.php" method="post" id="restriction-bulk-form">
+                    <div class="restriction-form-heading">
+                        <span class="restriction-heading-icon" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                        <div><h2>Atribuir restrições</h2><p class="restriction-form-intro">A seleção substituirá as regras atuais das turmas incluídas no escopo.</p></div>
+                    </div>
+                    <input type="hidden" name="restriction_action" value="assign_scope">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+                    <div class="restriction-bulk-fields">
+                        <div class="restriction-field">
+                            <label for="restriction-scope">Aplicar em</label>
+                            <select id="restriction-scope" name="restriction_scope" required>
+                                <option value="turma">Turma específica</option>
+                                <option value="ano">Ano inteiro</option>
+                                <option value="todos">Todas as turmas</option>
+                            </select>
+                        </div>
+                        <div class="restriction-field" id="restriction-class-target-field">
+                            <label for="restriction-class-target">Turma</label>
+                            <select id="restriction-class-target" name="restriction_target" required>
+                                <?php foreach ($restrictionClasses as $restrictionClass) {
+                                    $classTargetId = (int) $restrictionClass['id_turma'];
+                                    $classTargetName = trim((string) $restrictionClass['ano'] . ' ' . (string) $restrictionClass['turma']);
+                                ?>
+                                    <option value="<?= $classTargetId ?>"><?= htmlspecialchars(mb_strtoupper($classTargetName, 'UTF-8'), ENT_QUOTES, 'UTF-8') ?></option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="restriction-field" id="restriction-year-target-field" hidden>
+                            <label for="restriction-year-target">Ano</label>
+                            <select id="restriction-year-target" name="restriction_year_target" disabled>
+                                <option value="1">1º Ano</option>
+                                <option value="2">2º Ano</option>
+                                <option value="3">3º Ano</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="restriction-bulk-note">Marque as regras que devem ficar atribuídas. Se nenhuma for marcada, as atribuições atuais do escopo serão removidas.</p>
+                    <div class="restriction-assignment">
+                        <?php foreach ($restrictionList as $restriction) { ?>
+                            <label class="restriction-check">
+                                <input type="checkbox" name="restricoes[]" value="<?= (int) $restriction['id_restricao'] ?>">
+                                <span><?= htmlspecialchars($restriction['nome'], ENT_QUOTES, 'UTF-8') ?><?= (int) $restriction['ativo'] !== 1 ? ' (inativa)' : '' ?></span>
+                            </label>
+                        <?php } ?>
+                    </div>
+                    <div class="restriction-form-actions">
+                        <button class="restriction-primary" type="submit"><i class="fas fa-floppy-disk" aria-hidden="true"></i>Salvar atribuições</button>
+                    </div>
+                </form>
                 <div class="restriction-class-grid">
                     <?php foreach ($restrictionClasses as $restrictionClass) {
                         $classId = (int) $restrictionClass['id_turma'];
@@ -237,6 +288,33 @@ $restrictionStatus = is_string($_GET['restriction_status'] ?? null) ? $_GET['res
         button.querySelector('span').textContent = isOpen ? 'Acessar' : 'Fechar';
         button.querySelector('i').className = isOpen ? 'fas fa-arrow-up-right-from-square' : 'fas fa-xmark';
     }));
+    const bulkForm = document.getElementById('restriction-bulk-form');
+    const scopeSelect = document.getElementById('restriction-scope');
+    const classTargetField = document.getElementById('restriction-class-target-field');
+    const classTargetSelect = document.getElementById('restriction-class-target');
+    const yearTargetField = document.getElementById('restriction-year-target-field');
+    const yearTargetSelect = document.getElementById('restriction-year-target');
+    const updateAssignmentTarget = () => {
+        if (!scopeSelect || !classTargetField || !classTargetSelect || !yearTargetField || !yearTargetSelect) return;
+        const isClass = scopeSelect.value === 'turma';
+        const isYear = scopeSelect.value === 'ano';
+        classTargetField.hidden = !isClass;
+        classTargetSelect.disabled = !isClass;
+        classTargetSelect.required = isClass;
+        yearTargetField.hidden = !isYear;
+        yearTargetSelect.disabled = !isYear;
+        yearTargetSelect.required = isYear;
+        yearTargetSelect.name = isYear ? 'restriction_target' : 'restriction_year_target';
+    };
+    scopeSelect?.addEventListener('change', updateAssignmentTarget);
+    updateAssignmentTarget();
+    bulkForm?.addEventListener('submit', (event) => {
+        if (scopeSelect.value === 'todos' && !bulkForm.querySelector('input[name="restricoes[]"]:checked')) {
+            if (!window.confirm('Nenhuma regra foi marcada. Isso removerá todas as restrições de todas as turmas. Deseja continuar?')) {
+                event.preventDefault();
+            }
+        }
+    });
     form?.addEventListener('reset', () => window.setTimeout(() => {
         form.elements.id_restricao.value = '';
         formTitle.textContent = 'Criar restrição';
