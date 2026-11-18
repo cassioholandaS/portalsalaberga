@@ -139,12 +139,13 @@ $paginas = [
     [
         'titulo' => 'Início e alunos vinculados',
         'imagem' => '01-inicio.png',
-        'marcadores' => [[1, 510, 126], [2, 655, 409], [3, 1036, 396], [4, 211, 476]],
+        'marcadores' => [[1, 510, 126], [2, 655, 409], [3, 1036, 396], [4, 211, 476], [5, 830, 500]],
         'itens' => [
             ['Resumo do acompanhamento', 'Os cartões do topo mostram os totais disponíveis para o perfil Apoio.'],
             ['Evolução por quesito', 'Resume a pontuação das avaliações registradas para o aluno acompanhado.'],
             ['Aluno vinculado', 'Abra o cartão para acessar o perfil do estudante associado à sua conta.'],
-            ['Navegação', 'Use Início, Perfil do Aluno, PEI, PAEE, Avaliação e Relatórios conforme a tarefa.']
+            ['Navegação', 'Use Início, Perfil do Aluno, PEI, PAEE, Avaliação e Relatórios conforme a tarefa.'],
+            ['Guia do usuário', 'Abra o passo a passo ilustrado do perfil Apoio em uma nova aba.']
         ],
         'nota' => 'O acesso do Apoio é restrito aos alunos vinculados à própria conta. Os nomes e registros exibidos neste guia são fictícios.'
     ],
