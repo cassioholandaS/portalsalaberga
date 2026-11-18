@@ -9721,12 +9721,20 @@ class TurmaSelector {
 
 <style>
     #atrasos .delay-card-header:not([class*="turma-3"]) { background: #59636b; }
-    #atrasos .delays-year-filter { display:inline-flex; align-items:center; gap:8px; color:#53615a; font-size:13px; font-weight:600; }
-    #atrasos .delays-year-filter select { min-height:40px; padding:0 34px 0 12px; border:1px solid #d6e0e8; border-radius:8px; background:#fff; color:#243c4e; font:500 13px 'Inter',sans-serif; }
-    #atrasos .delays-year-filter select:focus { outline:2px solid #008c4540; border-color:#008c45; }
+    #atrasos .delay-card-header.turma-1a, #atrasos .delay-card-header.turma-2a { background:#cf2035; }
+    #atrasos .delay-card-header.turma-1b, #atrasos .delay-card-header.turma-2b { background:#3854d9; }
+    #atrasos .delay-card-header.turma-1c, #atrasos .delay-card-header.turma-2c { background:#0db5d0; }
+    #atrasos .delay-history-card.turma-1a .delay-history-card-header, #atrasos .delay-history-card.turma-2a .delay-history-card-header { background:#cf2035; }
+    #atrasos .delay-history-card.turma-1b .delay-history-card-header, #atrasos .delay-history-card.turma-2b .delay-history-card-header { background:#3854d9; }
+    #atrasos .delay-history-card.turma-1c .delay-history-card-header, #atrasos .delay-history-card.turma-2c .delay-history-card-header { background:#0b9bb2; }
+    #atrasos .delays-year-filter { display:inline-flex; align-items:center; gap:10px; padding:8px 11px; border:1px solid #a9d8b8; border-radius:11px; background:linear-gradient(135deg,#f4fbf6,#e7f5eb); color:#16482d; box-shadow:0 3px 10px #123b2018; font-size:14px; font-weight:700; }
+    #atrasos .delays-year-filter i { color:#08723a; }
+    #atrasos .delays-year-filter select { min-width:145px; min-height:42px; padding:0 32px 0 12px; border:2px solid #08723a; border-radius:8px; background-color:#fff; color:#173d29; box-shadow:0 2px 5px #123b2014; font:700 14px 'Inter',sans-serif; cursor:pointer; }
+    #atrasos .delays-year-filter select:focus-visible { outline:3px solid #008c4540; outline-offset:2px; border-color:#005c2e; }
     #atrasos .delay-card[hidden], #atrasos .delay-history-card[hidden] { display:none !important; }
-    html[data-theme="dark"] #atrasos .delays-year-filter { color:#d5e0e7; }
-    html[data-theme="dark"] #atrasos .delays-year-filter select { border-color:#536575; background:#202a34; color:#eef3f6; }
+    html[data-theme="dark"] #atrasos .delays-year-filter { border-color:#43795a; background:linear-gradient(135deg,#1d3427,#263c30); color:#e4f2e8; }
+    html[data-theme="dark"] #atrasos .delays-year-filter i { color:#8ee0a9; }
+    html[data-theme="dark"] #atrasos .delays-year-filter select { border-color:#70ca8b; background-color:#202a34; color:#eef3f6; }
 </style>
 <section class="page-section" id="atrasos" aria-label="Atrasos registrados">
     <div class="delays-shell">
@@ -9734,7 +9742,7 @@ class TurmaSelector {
             <div class="delays-topline">
                 <h1 class="delays-title gradient-text">Atrasos registrados</h1>
                 <time class="delays-clock" id="atrasos-relogio" aria-live="off"></time>
-                <label class="delays-year-filter" for="atrasos-filtro-ano">Filtrar por
+                <label class="delays-year-filter" for="atrasos-filtro-ano"><i class="fas fa-filter" aria-hidden="true"></i><span>Filtrar atrasos</span>
                     <select id="atrasos-filtro-ano">
                         <option value="todos">Geral</option>
                         <option value="1">1º Ano</option>
@@ -9913,6 +9921,13 @@ class TurmaSelector {
             const limiteValidacaoNoCliente = Date.now() + <?= $segundosAteLimiteValidacao ?> * 1000;
             window.atrasosPodemSerValidados = () => prazoValidacaoPorBanco && Date.now() < limiteValidacaoNoCliente;
             const filtroAno = document.getElementById('atrasos-filtro-ano');
+            const chaveFiltroAno = 'sgtm-delay-year-filter';
+            try {
+                const filtroSalvo = localStorage.getItem(chaveFiltroAno);
+                if (['todos', '1', '2', '3'].includes(filtroSalvo)) filtroAno.value = filtroSalvo;
+            } catch (error) {
+                console.warn('Não foi possível restaurar o filtro de atrasos:', error);
+            }
             const aplicarFiltroAno = () => {
                 const anoSelecionado = filtroAno.value;
                 document.querySelectorAll('.delay-card[data-delay-year], .delay-history-card[data-history-year]').forEach((card) => {
@@ -9920,7 +9935,14 @@ class TurmaSelector {
                     card.hidden = anoSelecionado !== 'todos' && anoCard !== anoSelecionado;
                 });
             };
-            filtroAno?.addEventListener('change', aplicarFiltroAno);
+            filtroAno?.addEventListener('change', () => {
+                aplicarFiltroAno();
+                try {
+                    localStorage.setItem(chaveFiltroAno, filtroAno.value);
+                } catch (error) {
+                    console.warn('Não foi possível salvar o filtro de atrasos:', error);
+                }
+            });
             aplicarFiltroAno();
             const atualizarBotoesValidacao = () => {
                 const prazoAberto = window.atrasosPodemSerValidados();
