@@ -19,7 +19,7 @@ class connect
             $tables['salaberga_users'][2],
         ];
 
-        foreach (['local', 'hospedagem'] as $environment) {
+        foreach ($this->getEnvironmentOrder() as $environment) {
             if (
                 !isset($config[$environment]['salaberga_estoque']) ||
                 !isset($config[$environment]['salaberga_users'])
@@ -44,7 +44,46 @@ class connect
 
         $this->connect = null;
         $this->connect_users = null;
-        header('location:../views/windows/desconnect.php');
+        $this->redirectToConnectionError();
+    }
+
+    private function getEnvironmentOrder(): array
+    {
+        $appEnvironment = strtolower((string) getenv('APP_ENV'));
+
+        if (in_array($appEnvironment, ['production', 'prod'], true)) {
+            return ['hospedagem', 'local'];
+        }
+
+        if (in_array($appEnvironment, ['local', 'development', 'dev'], true)) {
+            return ['local', 'hospedagem'];
+        }
+
+        $requestHost = strtolower((string) ($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? ''));
+        $requestHost = preg_replace('/:\d+$/', '', $requestHost);
+        $localHosts = ['localhost', '127.0.0.1', '::1'];
+        $isLocalHost = in_array($requestHost, $localHosts, true)
+            || substr($requestHost, -6) === '.local'
+            || substr($requestHost, -5) === '.test';
+
+        return $isLocalHost || $requestHost === ''
+            ? ['local', 'hospedagem']
+            : ['hospedagem', 'local'];
+    }
+
+    private function redirectToConnectionError(): void
+    {
+        $scriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+        $modulePath = '/subsystems/controle_de_estoque/';
+        $modulePosition = strpos($scriptPath, $modulePath);
+
+        if ($modulePosition === false) {
+            http_response_code(500);
+            exit('Não foi possível estabelecer conexão com o banco de dados do estoque.');
+        }
+
+        $moduleBasePath = substr($scriptPath, 0, $modulePosition + strlen($modulePath));
+        header('Location: ' . $moduleBasePath . 'views/windows/desconnect.php');
         exit();
     }
 
