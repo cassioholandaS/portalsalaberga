@@ -9,10 +9,36 @@ class connect
         $this->connect_database();
     }
 
+
     function connect_database()
     {
-        $config = require(__DIR__ . "/../../../../.env/config.php");
-        $tables = require(__DIR__ . "/../../../../.env/tables.php");
+        $configPath = __DIR__ . '/../../../../.env/config.php';
+        $tablesPath = __DIR__ . '/../../../../.env/tables.php';
+
+        if (!is_file($configPath) || !is_file($tablesPath)) {
+            error_log('Arquivo de configuracao ou mapa de tabelas do estoque ausente.');
+            $this->redirectToConnectionError();
+        }
+
+        try {
+            $config = require $configPath;
+            $tables = require $tablesPath;
+        } catch (Throwable $e) {
+            error_log('Falha ao carregar a configuracao do banco de estoque: ' . $e->getMessage());
+            $this->redirectToConnectionError();
+        }
+
+        if (
+            !is_array($config) ||
+            !is_array($tables) ||
+            !isset($tables['salaberga_estoque'], $tables['salaberga_users']) ||
+            !is_array($tables['salaberga_estoque']) ||
+            !is_array($tables['salaberga_users'])
+        ) {
+            error_log('Configuracao ou mapa de tabelas do estoque invalido.');
+            $this->redirectToConnectionError();
+        }
+
         $requiredStockTables = array_values($tables['salaberga_estoque']);
         $requiredUsersTables = [
             $tables['salaberga_users'][1],
@@ -21,8 +47,14 @@ class connect
 
         foreach ($this->getEnvironmentOrder() as $environment) {
             if (
-                !isset($config[$environment]['salaberga_estoque']) ||
-                !isset($config[$environment]['salaberga_users'])
+                !isset($config[$environment]) ||
+                !is_array($config[$environment]) ||
+                !isset(
+                    $config[$environment]['salaberga_estoque'],
+                    $config[$environment]['salaberga_users']
+                ) ||
+                !is_array($config[$environment]['salaberga_estoque']) ||
+                !is_array($config[$environment]['salaberga_users'])
             ) {
                 continue;
             }
@@ -44,6 +76,7 @@ class connect
 
         $this->connect = null;
         $this->connect_users = null;
+        error_log('Nenhuma conexao valida foi estabelecida para o banco de estoque.');
         $this->redirectToConnectionError();
     }
 
@@ -89,6 +122,16 @@ class connect
 
     private function openConnection(array $databaseConfig): PDO
     {
+        foreach (['host', 'banco', 'user', 'senha'] as $key) {
+            if (!array_key_exists($key, $databaseConfig) || !is_string($databaseConfig[$key])) {
+                throw new PDOException('Configuracao de conexao incompleta.');
+            }
+        }
+
+        if ($databaseConfig['host'] === '' || $databaseConfig['banco'] === '' || $databaseConfig['user'] === '') {
+            throw new PDOException('Configuracao de conexao incompleta.');
+        }
+
         $dsn = 'mysql:host=' . $databaseConfig['host'] . ';dbname=' . $databaseConfig['banco'] . ';charset=utf8mb4';
         $connection = new PDO($dsn, $databaseConfig['user'], $databaseConfig['senha']);
         $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

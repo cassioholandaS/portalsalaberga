@@ -1,11 +1,11 @@
 <?php
-require_once(__DIR__ . '\..\..\models\sessions.php');
+require_once(__DIR__ . '/../../models/sessions.php');
 $session = new sessions();
 $session->autenticar_session();
 $session->tempo_session();
 
-require("../../config/connect.php");
-require("../../assets/libs/FPDF/fpdf.php");
+require_once(__DIR__ . '/../../config/connect.php');
+require_once(__DIR__ . '/../../assets/libs/FPDF/fpdf.php');
 
 class relatorios extends connect
 {

@@ -1,5 +1,5 @@
 <?php
-require_once('sessions.php');
+require_once(__DIR__ . '/sessions.php');
 $session = new sessions();
 $session->autenticar_session();
 $session->tempo_session();

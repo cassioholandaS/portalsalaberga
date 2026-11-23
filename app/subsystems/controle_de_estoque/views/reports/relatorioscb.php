@@ -1,11 +1,11 @@
 <?php
-require_once(__DIR__ . '\..\..\models\sessions.php');
+require_once(__DIR__ . '/../../models/sessions.php');
 $session = new sessions();
 $session->autenticar_session();
 $session->tempo_session();
 
-require("../../config/connect.php");
-require("../../assets/libs/FPDF/fpdf.php");
+require_once(__DIR__ . '/../../config/connect.php');
+require_once(__DIR__ . '/../../assets/libs/FPDF/fpdf.php');
 
 class relatorios extends connect
 {
@@ -19,7 +19,7 @@ class relatorios extends connect
     {
 
         $consulta = "SELECT * FROM produtos WHERE barcode LIKE 'SCB_%' ORDER BY natureza, nome_produto";
-        $query = $this->pdo->prepare($consulta);
+        $query = $this->connect->prepare($consulta);
         $query->execute();
         $result = $query->rowCount();
 
@@ -73,7 +73,7 @@ class relatorios extends connect
         SUM(CASE WHEN quantidade <= 5 THEN 1 ELSE 0 END) as produtos_criticos,
         COUNT(DISTINCT natureza) as total_categorias
         FROM produtos WHERE barcode LIKE 'SCB_%' ORDER BY natureza, nome_produto";
-        $queryResumo = $this->pdo->prepare($consultaResumo);
+        $queryResumo = $this->connect->prepare($consultaResumo);
         $queryResumo->execute();
         $resumo = $queryResumo->fetch(PDO::FETCH_ASSOC);
 
