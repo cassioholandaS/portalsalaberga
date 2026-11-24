@@ -2798,9 +2798,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
 </script>
 <script>
-  const pcdLogoutGuard = { pcdLogoutGuard: true };
-  history.pushState(pcdLogoutGuard, '', window.location.href);
-  history.pushState(pcdLogoutGuard, '', window.location.href);
+  const pcdLogoutGuardUrl = new URL(window.location.href);
+  pcdLogoutGuardUrl.hash = 'pcd-logout-guard';
+  history.pushState({ pcdLogoutGuard: true }, '', pcdLogoutGuardUrl);
   window.addEventListener('popstate', function () {
     window.location.replace('controllers/usuario_controller.php?action=logout');
   });
