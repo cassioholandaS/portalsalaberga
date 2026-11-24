@@ -2811,8 +2811,15 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     }
   });
 
+  let pcdLeavingByHistoryTraversal = false;
+  if (window.navigation) {
+    window.navigation.addEventListener('navigate', function (event) {
+      pcdLeavingByHistoryTraversal = event.navigationType === 'traverse';
+    });
+  }
+
   window.addEventListener('pagehide', function () {
-    if (pcdLogoutInProgress) return;
+    if (pcdLogoutInProgress || !pcdLeavingByHistoryTraversal) return;
     pcdLogoutInProgress = true;
 
     const cookiePath = new URL('../../', window.location.href).pathname;
