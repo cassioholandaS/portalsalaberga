@@ -1,6 +1,9 @@
 <?php
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('PCDSESSID');
+    session_start();
+}
 
 require_once __DIR__ . '/../models/usuario_model.php';
 
@@ -182,7 +185,7 @@ if ($action === 'logout') {
         setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
     }
     session_destroy();
-    header('Location: ../index.php');
+    header('Location: ../../../../../main/views/subsystems.php');
     exit;
 }
 

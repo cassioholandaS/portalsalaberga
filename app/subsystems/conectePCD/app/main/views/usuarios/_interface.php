@@ -1785,7 +1785,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
       </button>
     </div>
     <div class="nav-item sidebar-logout"
-      onclick="window.location.href='../../../../main/views/subsystems.php'">
+      onclick="window.location.replace('controllers/usuario_controller.php?action=logout')">
       <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
     </div>
   </div>
@@ -2796,6 +2796,12 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
 <script src="js/app.js?v=20261110-edit-student-profile-2">
 
+</script>
+<script>
+  history.pushState({ pcdLogoutGuard: true }, '', window.location.href);
+  window.addEventListener('popstate', function () {
+    window.location.replace('controllers/usuario_controller.php?action=logout');
+  });
 </script>
 </body>
 </html>

@@ -2,8 +2,12 @@
 require_once __DIR__ . '/config/database.php';
 
 if (session_status() === PHP_SESSION_NONE) {
+    session_name('PCDSESSID');
     session_start();
 }
+
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 if (isset($_SESSION['usuario_id'])) {
     $tipoUsuario = $_SESSION['tipo'] ?? 'responsavel';
