@@ -1785,7 +1785,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
       </button>
     </div>
     <div class="nav-item sidebar-logout"
-      onclick="window.location.replace('controllers/usuario_controller.php?action=logout')">
+      onclick="pcdLogoutAndReturnToCards()">
       <i class="bi bi-box-arrow-right ni"></i><span>Sair</span>
     </div>
   </div>
@@ -2801,8 +2801,31 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   const pcdLogoutGuardUrl = new URL(window.location.href);
   pcdLogoutGuardUrl.hash = 'pcd-logout-guard';
   history.pushState({ pcdLogoutGuard: true }, '', pcdLogoutGuardUrl);
+
+  let pcdLogoutInProgress = false;
+  async function pcdLogoutAndReturnToCards() {
+    if (pcdLogoutInProgress) return;
+    pcdLogoutInProgress = true;
+
+    try {
+      const response = await fetch('controllers/usuario_controller.php?action=logout', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error(`Logout falhou com status ${response.status}.`);
+    } catch (error) {
+      console.error('Não foi possível encerrar a sessão do PCD:', error);
+      window.location.replace('controllers/usuario_controller.php?action=logout');
+      return;
+    }
+
+    window.location.replace('../../../../main/views/subsystems.php');
+  }
+
   window.addEventListener('popstate', function () {
-    window.location.replace('controllers/usuario_controller.php?action=logout');
+    pcdLogoutAndReturnToCards();
   });
 </script>
 </body>

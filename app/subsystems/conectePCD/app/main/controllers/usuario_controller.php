@@ -185,6 +185,12 @@ if ($action === 'logout') {
         setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
     }
     session_destroy();
+
+    if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest') {
+        http_response_code(204);
+        exit;
+    }
+
     header('Location: ../../../../../main/views/subsystems.php');
     exit;
 }
