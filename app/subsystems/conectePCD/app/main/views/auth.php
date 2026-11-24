@@ -8,6 +8,7 @@ $mensagens = [
     '7' => ['error', 'Seu cadastro foi recusado.'],
     'erro_servidor' => ['error', 'Não foi possível concluir a operação. Tente novamente.'],
     'usuario_ja_existe' => ['error', 'Já existe um cadastro com este e-mail.'],
+    'cpf_ja_cadastrado' => ['error', 'Já existe um cadastro com este CPF.'],
     'cpf_invalido' => ['error', 'Informe um CPF válido com 11 dígitos.'],
     'telefone_invalido' => ['error', 'Informe um telefone válido com DDD.'],
     'perfil_invalido' => ['error', 'Perfil inválido. Procure o master.'],

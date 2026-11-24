@@ -38,6 +38,7 @@ $mensagensAcesso = [
     'senha_fraca' => ['error', 'A senha deve ter no mínimo 6 caracteres.'],
     'tipo_invalido' => ['error', 'Tipo de usuário inválido.'],
     'usuario_ja_existe' => ['error', 'Já existe um cadastro com este e-mail.'],
+    'cpf_ja_cadastrado' => ['error', 'Já existe um cadastro com este CPF.'],
     'erro_servidor' => ['error', 'Não foi possível concluir o primeiro acesso neste momento. Tente novamente.'],
     'usuario_nao_encontrado' => ['error', 'Usuário não encontrado. Verifique os dados informados.'],
     'senha_incorreta' => ['error', 'Senha incorreta. Verifique sua senha e tente novamente.'],

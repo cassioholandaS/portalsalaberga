@@ -235,6 +235,11 @@ if ($action === 'primeiro_acesso') {
             exit;
         }
 
+        if ($resultado === 6) {
+            header('Location: ../index.php?erro=cpf_ja_cadastrado');
+            exit;
+        }
+
         header('Location: ../index.php?erro=erro_servidor');
         exit;
     } catch (Throwable $e) {

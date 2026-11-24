@@ -4,6 +4,16 @@
 
 SET @pcd_schema = DATABASE();
 
+-- CPFs repetidos existentes devem ser resolvidos antes de criar o indice.
+SET @pcd_ddl = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = @pcd_schema AND TABLE_NAME = 'usuarios' AND INDEX_NAME = 'uq_usuarios_cpf') = 0,
+  'ALTER TABLE `usuarios` ADD UNIQUE KEY `uq_usuarios_cpf` (`cpf`)',
+  'SET @pcd_noop = 1'
+);
+PREPARE pcd_stmt FROM @pcd_ddl;
+EXECUTE pcd_stmt;
+DEALLOCATE PREPARE pcd_stmt;
+
 -- Frequencia do profissional de apoio.
 CREATE TABLE IF NOT EXISTS `frequencia_apoio` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

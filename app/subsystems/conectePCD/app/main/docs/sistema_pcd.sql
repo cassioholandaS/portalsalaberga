@@ -304,7 +304,8 @@ CREATE TABLE `relatorios_acompanhamento` (
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `uq_usuarios_cpf` (`cpf`);
 
 --
 -- Índices de tabela `agenda`

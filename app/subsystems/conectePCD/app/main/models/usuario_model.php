@@ -56,6 +56,17 @@ class usuario_model
             return 2;
         }
 
+        $stmtCpfCheck = $this->pdo->prepare(
+            "SELECT 1 FROM usuarios
+             WHERE REPLACE(REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), '/', ''), ' ', '') = :cpf
+             LIMIT 1"
+        );
+        $stmtCpfCheck->execute([':cpf' => $cpf]);
+
+        if ($stmtCpfCheck->fetchColumn()) {
+            return 6;
+        }
+
         $hash = password_hash($senha, PASSWORD_DEFAULT);
 
         $stmt = $this->pdo->prepare(
@@ -153,7 +164,7 @@ class usuario_model
         $params = [];
 
         if ($usuarioAtualId !== null && $usuarioAtualId > 0) {
-            $sql .= ' AND (tipo <> \'master\' OR id = :usuario_atual_id)';
+            $sql .= ' AND id <> :usuario_atual_id';
             $params[':usuario_atual_id'] = $usuarioAtualId;
         }
 
