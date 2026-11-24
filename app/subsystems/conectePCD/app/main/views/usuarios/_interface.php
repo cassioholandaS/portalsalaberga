@@ -2827,6 +2827,22 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   window.addEventListener('popstate', function () {
     pcdLogoutAndReturnToCards();
   });
+
+  window.addEventListener('pagehide', function () {
+    if (pcdLogoutInProgress) return;
+    pcdLogoutInProgress = true;
+
+    const logoutUrl = new URL('controllers/usuario_controller.php?action=logout', window.location.href);
+    if (navigator.sendBeacon && navigator.sendBeacon(logoutUrl)) return;
+
+    fetch(logoutUrl, {
+      method: 'POST',
+      credentials: 'same-origin',
+      keepalive: true
+    }).catch(function (error) {
+      console.error('Não foi possível encerrar a sessão do PCD ao sair da página:', error);
+    });
+  });
 </script>
 </body>
 </html>

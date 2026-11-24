@@ -186,7 +186,10 @@ if ($action === 'logout') {
     }
     session_destroy();
 
-    if (strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest') {
+    if (
+        ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+        || strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest'
+    ) {
         http_response_code(204);
         exit;
     }
