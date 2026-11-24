@@ -1133,7 +1133,8 @@ if ($mensagemAcesso === null && !empty($_GET['erro'])) {
             }
 
             // Enhanced form submission for login
-            loginForm.addEventListener('submit', function(e) {
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 const email = loginEmailInput.value.trim();
                 const password = loginPasswordInput.value;
 
@@ -1156,12 +1157,25 @@ if ($mensagemAcesso === null && !empty($_GET['erro'])) {
                 const originalText = submitButton.innerHTML;
                 submitButton.innerHTML = '<span><i class="fas fa-spinner fa-spin mr-2"></i>Entrando...</span>';
 
-                setTimeout(() => {
+                try {
+                    const response = await fetch(loginForm.action, {
+                        method: 'POST',
+                        body: new FormData(loginForm),
+                        credentials: 'same-origin',
+                        cache: 'no-store'
+                    });
+                    if (!response.ok) {
+                        throw new Error(`O login retornou status ${response.status}.`);
+                    }
+
+                    window.location.replace(response.url);
+                } catch (error) {
+                    console.error('Não foi possível concluir o login do PCD:', error);
                     submitButton.classList.remove('loading');
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalText;
-                    alert('Login realizado com sucesso!');
-                }, 2000);
+                    alert('Não foi possível concluir o login. Tente novamente.');
+                }
             });
 
             // Enhanced form submission for primeiro acesso
