@@ -130,16 +130,6 @@ sidebarCollapseToggle?.addEventListener('click', () => {
 });
 desktopSidebarQuery.addEventListener('change', atualizarSidebarRecolhido);
 
-function alternarGrupoMenu(botao) {
-  const grupo = document.getElementById(botao.getAttribute('aria-controls'));
-  if (!grupo) return;
-  const expandido = botao.getAttribute('aria-expanded') === 'true';
-  botao.setAttribute('aria-expanded', String(!expandido));
-  grupo.hidden = expandido;
-}
-
-window.alternarGrupoMenu = alternarGrupoMenu;
-
 function inicializarModoEscuro() {
   const botao = document.getElementById('theme-toggle');
   if (!botao) return;
@@ -220,11 +210,6 @@ function go(page, sid, persistirNavegacao = true) {
   if (content) content.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   const nav = document.getElementById('nav-' + page);
-  const grupoMenu = nav?.closest('.sidebar-section-items');
-  if (grupoMenu?.hidden) {
-    const botaoGrupo = document.querySelector(`[aria-controls="${grupoMenu.id}"]`);
-    if (botaoGrupo) alternarGrupoMenu(botaoGrupo);
-  }
   if (nav) { nav.classList.add('active'); if(nav.querySelector('.ni')) nav.querySelector('.ni').style.color = 'var(--gold)'; }
   toggleDD(false);
   if (window.innerWidth <= 768) fecharMenu();

@@ -143,20 +143,11 @@
     .sidebar nav { flex:1; min-height:0; padding:4px 0 12px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.22) transparent; }
     .sidebar nav::-webkit-scrollbar { width:4px; }
     .sidebar nav::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.22); border-radius:4px; }
-    .sidebar-section {
-      width:calc(100% - 36px); text-align:left; font-family:inherit; cursor:pointer;
-      display:flex; align-items:center; justify-content:space-between; gap:9px;
-      margin:10px 18px 7px; padding:9px 10px;
+    .sidebar-section-title {
+      margin:14px 18px 7px; padding:0 10px;
       color:rgba(255,255,255,0.78); font-size:9.5px; font-weight:700;
       letter-spacing:.75px; text-transform:uppercase;
-      border:1px solid rgba(255,255,255,0.14); border-radius:7px;
-      background:rgba(255,255,255,0.025);
     }
-    .sidebar-section:hover { color:#fff; background:rgba(255,255,255,0.07); }
-    .sidebar-section:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
-    .sidebar-section i { color:rgba(255,255,255,0.58); font-size:11px; transition:transform .2s ease; }
-    .sidebar-section[aria-expanded="false"] i { transform:rotate(180deg); }
-    .sidebar-section-items[hidden] { display:none !important; }
     .nav-item {
       display:flex; align-items:center; gap:10px;
       min-height:41px; padding:6px 10px 6px 12px; border-radius:7px; cursor:pointer;
@@ -1710,19 +1701,19 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
   <nav>
     <div class="sidebar-section-group">
-      <button type="button" class="sidebar-section" aria-expanded="true" aria-controls="sidebar-gerenciamento" onclick="alternarGrupoMenu(this)"><span>Gerenciamento</span><i class="bi bi-chevron-up" aria-hidden="true"></i></button>
+      <div class="sidebar-section-title">Gerenciamento</div>
       <div class="sidebar-section-items" id="sidebar-gerenciamento">
         <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')">
           <i class="bi bi-house-fill ni"></i><span>Início</span>
         </div>
         <div class="nav-item" id="nav-perfis" onclick="go('perfis')">
-          <i class="bi bi-people-fill ni"></i><span><?= $tipoUsuario === 'apoio' ? 'Perfil do Aluno' : 'Perfis' ?></span>
+          <i class="bi bi-people-fill ni"></i><span>Alunos</span>
         </div>
       </div>
     </div>
 
     <div class="sidebar-section-group">
-      <button type="button" class="sidebar-section" aria-expanded="true" aria-controls="sidebar-acompanhamento" onclick="alternarGrupoMenu(this)"><span>Acompanhamento</span><i class="bi bi-chevron-up" aria-hidden="true"></i></button>
+      <div class="sidebar-section-title">Acompanhamento</div>
       <div class="sidebar-section-items" id="sidebar-acompanhamento">
         <div class="nav-item" id="nav-pei" onclick="go('pei')">
           <i class="bi bi-journal-text ni"></i><span>PEI</span>
@@ -1739,7 +1730,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     </div>
 
     <div class="sidebar-section-group">
-      <button type="button" class="sidebar-section" aria-expanded="true" aria-controls="sidebar-relatorios" onclick="alternarGrupoMenu(this)"><span>Relatórios</span><i class="bi bi-chevron-up" aria-hidden="true"></i></button>
+      <div class="sidebar-section-title">Relatórios</div>
       <div class="sidebar-section-items" id="sidebar-relatorios">
         <div class="nav-item" id="nav-relatorios" onclick="go('relatorios')">
           <i class="bi bi-graph-up-arrow ni"></i><span>Relatórios</span>
@@ -1752,10 +1743,10 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     </div>
     <?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
     <div class="sidebar-section-group">
-      <button type="button" class="sidebar-section" aria-expanded="true" aria-controls="sidebar-administracao" onclick="alternarGrupoMenu(this)"><span>Administração</span><i class="bi bi-chevron-up" aria-hidden="true"></i></button>
+      <div class="sidebar-section-title">Administração</div>
       <div class="sidebar-section-items" id="sidebar-administracao">
         <div class="nav-item" id="nav-usuarios" onclick="go('usuarios')">
-          <i class="bi bi-person-gear ni"></i><span>Gerenciar Usuários</span>
+          <i class="bi bi-person-gear ni"></i><span>Usuários</span>
         </div>
         <div class="nav-item" id="nav-quesitos" onclick="go('quesitos')">
           <i class="bi bi-ui-checks-grid ni"></i><span>Quesitos avaliação</span>
@@ -2450,7 +2441,7 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     <!-- ============= PERFIL ALUNO ============= -->
     <div class="page" id="page-aluno">
       <button onclick="go('<?= $tipoUsuario === 'apoio' ? 'dashboard' : 'perfis' ?>')" class="btn-g" style="margin-bottom:18px;font-size:12.5px">
-        <i class="bi bi-arrow-left"></i> <?= $tipoUsuario === 'apoio' ? 'Voltar para Início' : 'Voltar para Perfis' ?>
+        <i class="bi bi-arrow-left"></i> <?= $tipoUsuario === 'apoio' ? 'Voltar para Início' : 'Voltar para Alunos' ?>
       </button>
       <?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">

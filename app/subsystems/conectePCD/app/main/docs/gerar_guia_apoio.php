@@ -144,7 +144,7 @@ $paginas = [
             ['Resumo do acompanhamento', 'Os cartões do topo mostram os totais disponíveis para o perfil Apoio.'],
             ['Evolução por quesito', 'Resume a pontuação das avaliações registradas para o aluno acompanhado.'],
             ['Aluno vinculado', 'Abra o cartão para acessar o perfil do estudante associado à sua conta.'],
-            ['Navegação', 'Use Início, Perfil do Aluno, PEI, PAEE, Avaliação e Relatórios conforme a tarefa.'],
+            ['Navegação', 'Use Início, Alunos, PEI, PAEE, Avaliação e Relatórios conforme a tarefa.'],
             ['Guia do usuário', 'Abra o passo a passo ilustrado do perfil Apoio em uma nova aba.']
         ],
         'nota' => 'O acesso do Apoio é restrito aos alunos vinculados à própria conta. Os nomes e registros exibidos neste guia são fictícios.'
