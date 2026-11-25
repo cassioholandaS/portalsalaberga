@@ -1788,29 +1788,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
             padding-left: 16px !important;
         }
 
-        #sidebar nav .sidebar-item-enter,
-        #menuAdmMobile nav .sidebar-item-enter {
-            animation: sidebar-item-enter 260ms cubic-bezier(0.2, 0.75, 0.3, 1) both;
-            animation-delay: calc(var(--sidebar-item-index, 0) * 35ms);
-        }
-
-        @keyframes sidebar-item-enter {
-            from {
-                opacity: 0;
-                transform: translateY(-7px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         @media (prefers-reduced-motion: reduce) {
-            #sidebar nav .sidebar-item-enter,
-            #menuAdmMobile nav .sidebar-item-enter {
-                animation: none;
-            }
-
             #sidebar .option-nav-adm,
             #sidebar .option-nav-sair,
             #menuAdmMobile .option-nav-adm,
@@ -1900,51 +1878,6 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
         #sidebar .sidebar-section-heading:first-child,
         #menuAdmMobile .sidebar-section-heading:first-child {
             margin-top: 0 !important;
-        }
-
-        #sidebar .sidebar-section-heading i,
-        #menuAdmMobile .sidebar-section-heading i {
-            color: #8db7a1;
-            font-size: 0.65rem;
-        }
-
-        #sidebar .sidebar-group-toggle,
-        #menuAdmMobile .sidebar-group-toggle {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0;
-            border: 0;
-            background: transparent;
-            color: inherit;
-            font: inherit;
-            letter-spacing: inherit;
-            text-align: left;
-            text-transform: inherit;
-            cursor: pointer;
-        }
-
-        #sidebar .sidebar-group-toggle:hover,
-        #menuAdmMobile .sidebar-group-toggle:hover {
-            color: #fff;
-        }
-
-        #sidebar .sidebar-group-toggle i,
-        #menuAdmMobile .sidebar-group-toggle i {
-            transition: transform 180ms ease, color 180ms ease;
-        }
-
-        #sidebar .sidebar-group-toggle[aria-expanded="true"] i,
-        #menuAdmMobile .sidebar-group-toggle[aria-expanded="true"] i {
-            transform: rotate(180deg);
-        }
-
-        #sidebar .sidebar-group-toggle:focus-visible,
-        #menuAdmMobile .sidebar-group-toggle:focus-visible {
-            outline: 2px solid #f3a11a;
-            outline-offset: 3px;
         }
 
         #menuAdmMobile {
@@ -2172,7 +2105,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
                 <div id="menuAdm" class="pt-6 w-full hidden lg:block">
                     <nav class="pt-4 w-full">
                         <ul class="space-y-6 w-full">
-                            <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="demandas" aria-expanded="true"><span>Demandas</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                            <li class="sidebar-section-heading"><span>Demandas</span></li>
                             <li class="flex items-center space-x-2.5 text-gray-200">
                                 <i class="fas fa-tasks h-[50px] w-[65px] flex items-center justify-center rounded-lg lg:text-[1vw] xl:text-[1.2vw] xl:text-[1vw] icon-nav-adm icon-select"></i>
                                 <button data-secao="demandas" class="h-[50px] w-[100%] font-semibold flex justify-start items-center lg:text-[0.8vw] xl:text-[0.7vw] option-nav-adm hover:bg-[var(--gray-btnActive)] lg:px-2 xl:px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar btnSelect effect-bar-select">
@@ -2188,7 +2121,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
                             </li>
 
 
-                            <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="administracao" aria-expanded="true"><span>Administração</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                            <li class="sidebar-section-heading"><span>Administração</span></li>
                             <li class="flex items-center space-x-2.5 text-gray-200">
                                 <i class="fa-solid fa-chart-column h-[50px] w-[65px] flex items-center justify-center rounded-lg lg:text-[1vw] xl:text-[1.2vw] xl:text-[1vw] icon-nav-adm"></i>
                                 <button data-secao="relatorios" class="h-[50px] w-[100%] font-semibold flex justify-start items-center space-x-1.5 text-gray-200 lg:text-[0.8vw] xl:text-[0.7vw] option-nav-adm hover:bg-[var(--gray-btnActive)] lg:px-2 xl:px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar">
@@ -2210,7 +2143,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
                                 </button>
                             </li>
 
-                            <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="conta" aria-expanded="true"><span>Conta</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                            <li class="sidebar-section-heading"><span>Conta</span></li>
                             <li class="flex items-center space-x-2.5 text-gray-200">
                                 <i class="fa-solid fa-user h-[50px] w-[65px] flex items-center justify-center rounded-lg lg:text-[1vw] xl:text-[1.2vw] xl:text-[1vw] icon-nav-adm"></i>
                                 <button data-secao="perfil" class="h-[50px] w-[100%] font-semibold flex justify-start items-center space-x-1.5 text-gray-200 lg:text-[0.8vw] xl:text-[0.7vw] option-nav-adm hover:bg-[var(--gray-btnActive)] lg:px-2 xl:px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar">
@@ -2267,7 +2200,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
 
             <nav class="pt-8 w-full">
                 <ul class="space-y-6 w-full">
-                    <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="demandas" aria-expanded="true"><span>Demandas</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                    <li class="sidebar-section-heading"><span>Demandas</span></li>
                     <li class="flex items-center space-x-2.5 text-gray-200">
                         <i class="fas fa-tasks h-[55px] w-[65px] flex items-center justify-center rounded-lg text-sm icon-nav-adm icon-select"></i>
                         <button data-secao="demandas" class="h-[55px] w-[100%] font-semibold flex justify-start items-center text-sm option-nav-adm hover:bg-[var(--gray-btnActive)] py-2 px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar btnSelect effect-bar-select">
@@ -2289,7 +2222,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
                         </button>
                     </li> -->
 
-                    <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="administracao" aria-expanded="true"><span>Administração</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                    <li class="sidebar-section-heading"><span>Administração</span></li>
                     <li class="flex items-center space-x-2.5 text-gray-200">
                         <i class="fa-solid fa-chart-column h-[55px] w-[65px] flex items-center justify-center rounded-lg text-sm icon-nav-adm"></i>
                         <button data-secao="relatorios" class="h-[55px] w-[100%] font-semibold flex justify-start items-center space-x-1.5 text-gray-200 text-sm option-nav-adm hover:bg-[var(--gray-btnActive)] py-2 px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar">
@@ -2311,7 +2244,7 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
                         </button>
                     </li>
 
-                    <li class="sidebar-section-heading"><button type="button" class="sidebar-group-toggle" data-sidebar-group="conta" aria-expanded="true"><span>Conta</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button></li>
+                    <li class="sidebar-section-heading"><span>Conta</span></li>
                     <li class="flex items-center space-x-2.5 text-gray-200">
                         <i class="fa-solid fa-user h-[55px] w-[65px] flex items-center justify-center rounded-lg text-sm icon-nav-adm"></i>
                         <button data-secao="perfil" class="h-[55px] w-[100%] font-semibold flex justify-start items-center space-x-1.5 text-gray-200 text-sm option-nav-adm hover:bg-[var(--gray-btnActive)] py-2 px-3 rounded-lg hover:translate-x-1 hover:text-[var(--accent-yellow)] transition ease-in-out duration-300 effect-bar">
@@ -3514,13 +3447,10 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
         const openMenuBtn = document.getElementById("openMenuBtn");
         const menuAdmMobile = document.getElementById("menuAdmMobile");
         const closeMenuBtn = document.getElementById("closeMenuBtn");
-        const sidebarGroupButtons = document.querySelectorAll(".sidebar-group-toggle");
-        const sidebarGroupsStorageKey = "system-suporte-sidebar-groups-adm";
         const sidebarElement = document.getElementById("sidebar");
         const sidebarCollapseToggle = document.querySelector(".sidebar-collapse-toggle");
         const desktopSidebarQuery = window.matchMedia("(min-width: 1024px)");
         const sidebarCollapseStorageKey = "system-suporte-sidebar-collapsed-adm";
-        let savedSidebarGroups = {};
         let sidebarCollapsedPreference = false;
 
         try {
@@ -3551,62 +3481,6 @@ $perfilUsuarioExibicao = $tipoSessao === 'master'
             updateSidebarCollapse();
         });
         desktopSidebarQuery.addEventListener("change", updateSidebarCollapse);
-
-        try {
-            const storedSidebarGroups = localStorage.getItem(sidebarGroupsStorageKey);
-            if (storedSidebarGroups) {
-                savedSidebarGroups = JSON.parse(storedSidebarGroups);
-                if (!savedSidebarGroups || typeof savedSidebarGroups !== "object" || Array.isArray(savedSidebarGroups)) {
-                    throw new TypeError("Estado dos grupos do menu inválido.");
-                }
-            }
-        } catch (error) {
-            console.warn("Não foi possível restaurar os grupos do menu lateral.", error);
-            savedSidebarGroups = {};
-        }
-
-        const setSidebarGroupExpanded = (groupKey, expanded, animate = false) => {
-            sidebarGroupButtons.forEach((button) => {
-                if (button.dataset.sidebarGroup !== groupKey) return;
-                button.setAttribute("aria-expanded", String(expanded));
-                let item = button.closest("li")?.nextElementSibling;
-                let itemIndex = 0;
-                while (item && !item.classList.contains("sidebar-section-heading")) {
-                    item.hidden = !expanded;
-                    item.classList.remove("sidebar-item-enter");
-                    item.style.removeProperty("--sidebar-item-index");
-                    if (expanded && animate) {
-                        const animatedItem = item;
-                        animatedItem.style.setProperty("--sidebar-item-index", String(itemIndex));
-                        animatedItem.classList.add("sidebar-item-enter");
-                        animatedItem.addEventListener("animationend", () => {
-                            animatedItem.classList.remove("sidebar-item-enter");
-                            animatedItem.style.removeProperty("--sidebar-item-index");
-                        }, { once: true });
-                    }
-                    itemIndex += 1;
-                    item = item.nextElementSibling;
-                }
-            });
-        };
-
-        sidebarGroupButtons.forEach((button) => {
-            const groupKey = button.dataset.sidebarGroup;
-            const expanded = Object.prototype.hasOwnProperty.call(savedSidebarGroups, groupKey)
-                ? savedSidebarGroups[groupKey] === true
-                : true;
-            setSidebarGroupExpanded(groupKey, expanded);
-            button.addEventListener("click", () => {
-                const nextExpanded = button.getAttribute("aria-expanded") !== "true";
-                setSidebarGroupExpanded(groupKey, nextExpanded, true);
-                savedSidebarGroups[groupKey] = nextExpanded;
-                try {
-                    localStorage.setItem(sidebarGroupsStorageKey, JSON.stringify(savedSidebarGroups));
-                } catch (error) {
-                    console.warn("Não foi possível salvar os grupos do menu lateral.", error);
-                }
-            });
-        });
 
         openMenuBtn.onclick = () => {
             menuAdmMobile.classList.remove("hidden");
