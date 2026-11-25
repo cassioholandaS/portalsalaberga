@@ -9,24 +9,6 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-if (isset($_COOKIE['PCD_LOGOUT_PENDING'])) {
-    $_SESSION = [];
-    if (ini_get('session.use_cookies')) {
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-    }
-
-    session_destroy();
-
-    $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-    $cookiePath = rtrim(dirname(dirname(dirname($scriptPath))), '/') . '/';
-    $secureCookie = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-    setcookie('PCD_LOGOUT_PENDING', '', time() - 42000, $cookiePath, '', $secureCookie, true);
-
-    header('Location: index.php');
-    exit;
-}
-
 if (isset($_SESSION['usuario_id'])) {
     $tipoUsuario = $_SESSION['tipo'] ?? 'responsavel';
     $interfaces = [

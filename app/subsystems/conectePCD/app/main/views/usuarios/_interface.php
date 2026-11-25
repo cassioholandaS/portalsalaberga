@@ -2785,9 +2785,9 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
 </script>
 <script>
-  const pcdLogoutGuardUrl = new URL(window.location.href);
-  pcdLogoutGuardUrl.hash = 'pcd-logout-guard';
-  history.pushState({ pcdLogoutGuard: true }, '', pcdLogoutGuardUrl);
+  const pcdBackGuardUrl = new URL(window.location.href);
+  pcdBackGuardUrl.hash = 'pcd-back-guard';
+  history.pushState({ pcdBackGuard: true }, '', pcdBackGuardUrl);
 
   let pcdLogoutInProgress = false;
   function pcdLogoutAndReturnToCards() {
@@ -2797,40 +2797,8 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
   }
 
   window.addEventListener('popstate', function () {
-    pcdLogoutAndReturnToCards();
-  });
-
-  window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-      pcdLogoutInProgress = false;
-      pcdLogoutAndReturnToCards();
-    }
-  });
-
-  let pcdLeavingByHistoryTraversal = false;
-  if (window.navigation) {
-    window.navigation.addEventListener('navigate', function (event) {
-      pcdLeavingByHistoryTraversal = event.navigationType === 'traverse';
-    });
-  }
-
-  window.addEventListener('pagehide', function () {
-    if (pcdLogoutInProgress || !pcdLeavingByHistoryTraversal) return;
-    pcdLogoutInProgress = true;
-
-    const cookiePath = new URL('../../', window.location.href).pathname;
-    const secureCookie = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `PCD_LOGOUT_PENDING=1; Path=${cookiePath}; SameSite=Lax${secureCookie}`;
-    const logoutUrl = new URL('controllers/usuario_controller.php?action=logout', window.location.href);
-    if (navigator.sendBeacon && navigator.sendBeacon(logoutUrl)) return;
-
-    fetch(logoutUrl, {
-      method: 'POST',
-      credentials: 'same-origin',
-      keepalive: true
-    }).catch(function (error) {
-      console.error('Não foi possível encerrar a sessão do PCD ao sair da página:', error);
-    });
+    history.pushState({ pcdBackGuard: true }, '', pcdBackGuardUrl);
+    window.location.reload();
   });
 </script>
 </body>
