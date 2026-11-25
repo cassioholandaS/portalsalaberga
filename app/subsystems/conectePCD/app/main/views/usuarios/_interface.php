@@ -1701,7 +1701,6 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
 
   <nav>
     <div class="sidebar-section-group">
-      <div class="sidebar-section-title">Gerenciamento</div>
       <div class="sidebar-section-items" id="sidebar-gerenciamento">
         <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')">
           <i class="bi bi-house-fill ni"></i><span>Início</span>
@@ -1713,7 +1712,6 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     </div>
 
     <div class="sidebar-section-group">
-      <div class="sidebar-section-title">Acompanhamento</div>
       <div class="sidebar-section-items" id="sidebar-acompanhamento">
         <div class="nav-item" id="nav-pei" onclick="go('pei')">
           <i class="bi bi-journal-text ni"></i><span>PEI</span>
@@ -1730,7 +1728,6 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     </div>
 
     <div class="sidebar-section-group">
-      <div class="sidebar-section-title">Relatórios</div>
       <div class="sidebar-section-items" id="sidebar-relatorios">
         <div class="nav-item" id="nav-relatorios" onclick="go('relatorios')">
           <i class="bi bi-graph-up-arrow ni"></i><span>Relatórios</span>
@@ -1743,7 +1740,6 @@ $fotoUsuario = $_SESSION['foto'] ?? null;
     </div>
     <?php if (in_array($tipoUsuario, ['master', 'aee'], true)): ?>
     <div class="sidebar-section-group">
-      <div class="sidebar-section-title">Administração</div>
       <div class="sidebar-section-items" id="sidebar-administracao">
         <div class="nav-item" id="nav-usuarios" onclick="go('usuarios')">
           <i class="bi bi-person-gear ni"></i><span>Usuários</span>
